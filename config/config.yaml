@@ -14,7 +14,7 @@ split:                     # out-of-sample KHÔNG chạm tới khi tuning (mục
 
 text:
   primary_lang: en         # NGUYÊN TẮC: tiếng Anh + thư viện chuẩn quốc tế là nhánh CHÍNH
-  sources: [gdelt, rss, cryptopanic]   # agent quyết định cuối cùng sau khi thử API/licensing
+  sources: [gdelt, rss, sec]   # docs/SOURCES.md: CryptoPanic trả phí → loại; RSS chỉ live (ngoài mẫu)
   vn_branch: true          # nhánh phụ: tin tiếng Việt → từ điển tài chính tiếng Việt (dict/fin_vn.csv + crypto_vn.csv)
   dedup_threshold: 0.9     # tương đồng tiêu đề ≥ ngưỡng → coi là trùng, giữ bản CÔNG BỐ SỚM NHẤT
   vn_source_tz: Asia/Ho_Chi_Minh
