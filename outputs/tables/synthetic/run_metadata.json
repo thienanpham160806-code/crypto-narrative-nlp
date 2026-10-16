@@ -1,5 +1,7 @@
 {
+  "result_source": "synthetic",
   "config": {
+    "contact_email": "",
     "seed": 42,
     "sample": {
       "start": "2023-01-01",
@@ -17,6 +19,42 @@
       "train_end": "2025-06-30",
       "valid_end": "2025-12-31"
     },
+    "text": {
+      "primary_lang": "en",
+      "sources": [
+        "gdelt",
+        "rss",
+        "sec"
+      ],
+      "vn_branch": true,
+      "dedup_threshold": 0.9,
+      "vn_source_tz": "Asia/Ho_Chi_Minh"
+    },
+    "nlp": {
+      "finbert_model": "ProsusAI/finbert",
+      "embed_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "narratives": [
+        "regulation",
+        "etf_institutional",
+        "security_hacks",
+        "stablecoins",
+        "defi",
+        "ai_tokens",
+        "macro_monetary",
+        "price_speculation"
+      ],
+      "llm": {
+        "enabled": false,
+        "provider": "gemini",
+        "fallback_provider": "claude",
+        "model_gemini": "gemini-3.5-flash-lite",
+        "model_claude": "claude-haiku-4-5",
+        "requests_per_minute": 10,
+        "max_total_calls": 2000,
+        "max_retries": 4,
+        "max_consecutive_failures": 3
+      }
+    },
     "model": {
       "horizons": [
         1,
@@ -26,24 +64,41 @@
       "hac_lags": 7,
       "var_maxlags": 7
     },
-    "narratives": [
-      "regulation",
-      "etf_institutional",
-      "security_hacks",
-      "stablecoins",
-      "defi",
-      "ai_tokens",
-      "macro_monetary",
-      "price_speculation"
-    ]
+    "event": {
+      "est_window": [
+        -150,
+        -11
+      ],
+      "min_est_obs": 80,
+      "windows": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          -1,
+          1
+        ]
+      ],
+      "main_window": [
+        0,
+        1
+      ],
+      "placebo_shift": -60,
+      "caar_path": [
+        -10,
+        10
+      ]
+    }
   },
-  "result_source": "synthetic fixture, except real market_coverage.csv",
   "refit_days": 30,
-  "pytest": "15 passed; offline",
-  "pipeline_commit": "c73a3c741ef86e7392cceb76589b8489043a6375",
   "sha256": {
-    "tests/fixtures/generated/market_daily.parquet": "c78b925eecaf56526814a8910b5a4dc3db83a7997b7236f210728555e8dd03ce",
-    "tests/fixtures/generated/text_daily.parquet": "1204cbce2e2697bfa3ecdc9ced34a21ec11973968e7376602236cd79a904506a",
-    "data/processed/market_daily.parquet": "c4d0d9c5826ebc29c7704bf150e337579a648f885b161e0044e01ec6cfab8abf"
-  }
+    "tests\\fixtures\\generated\\market_daily.parquet": "c78b925eecaf56526814a8910b5a4dc3db83a7997b7236f210728555e8dd03ce",
+    "tests\\fixtures\\generated\\text_daily.parquet": "1204cbce2e2697bfa3ecdc9ced34a21ec11973968e7376602236cd79a904506a"
+  },
+  "pipeline_commit": "d40bda666488ba21eaa778f8ad5e835e0a9b71a3"
 }

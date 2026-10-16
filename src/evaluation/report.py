@@ -135,6 +135,8 @@ def paper_figures(market, text, tables, directory, label):
         save(fig, 'sentiment_btc')
     forecasts = tables.get('forecasts', pd.DataFrame())
     if not forecasts.empty:
+        forecasts = forecasts.copy()
+        forecasts['date'] = pd.to_datetime(forecasts.date, utc=True)
         chosen = forecasts.loc[(forecasts.asset == 'BTC') & (forecasts.target == 'ret') & (forecasts.horizon == 1)]
         fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
         for ax, (model, group) in zip(axes, chosen.groupby('model')):
