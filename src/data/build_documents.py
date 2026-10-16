@@ -134,7 +134,7 @@ def load_meta() -> pd.DataFrame:
 def main():
     gd = pd.concat([news_gdelt.load("en"), news_gdelt.load("vi")], ignore_index=True)
     meta = load_meta().drop_duplicates("url").set_index("url").published_at_utc
-    gd["published_at_utc"] = gd.url.map(meta)
+    gd["published_at_utc"] = pd.to_datetime(gd.url.map(meta.astype(object)), utc=True)
     gd.loc[gd.published_at_utc.notna(), "ts_source"] = "html_meta"
     rss, sec = news_rss.load(), news_sec.load()
     df = build([gd, rss, sec.drop(columns="file_date")])

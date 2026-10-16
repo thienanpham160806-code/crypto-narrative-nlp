@@ -28,7 +28,7 @@ Mọi timestamp là **UTC**. Ngày `t` = [t 00:00, t+1 00:00) UTC. File đổi s
 `date, asset ('ALL' hoặc mã), n_docs, sent_finbert, sent_lm, sent_hv, pos_sent, neg_sent, attention_<narrative>… (8 cột), neg_accel`
 - Quy tắc cắt: tin vào ngày `t` ⇔ `public_ts_utc ∈ [t, t+1)`. Chỉ `is_canonical = True`.
 - `pos_sent = mean(max(sent,0))`, `neg_sent = mean(max(-sent,0))`; `attention_k = N_k,t / N_t`.
-- Chỉ tin `lang = en` (nhánh chính); w_d = 1. `date` = datetime UTC 00:00 (cùng kiểu market_daily).
+- Chỉ tin `lang = en` (nhánh chính), không gồm `sec` (văn bản pháp lý dài; SEC dùng cho event study); w_d = 1. `date` = datetime UTC 00:00 (cùng kiểu market_daily).
 - `ALL`: đủ mọi ngày của mẫu (ngày không tin: `n_docs = 0`, còn lại NaN). Từng mã: chỉ ngày có tin gắn mã.
 - `neg_accel_t = neg_sent_t − neg_sent_{t−1}` (ngày lịch liền trước; trống → NaN).
 

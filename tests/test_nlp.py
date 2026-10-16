@@ -92,13 +92,14 @@ def test_llm_classify_narrative_cached(tmp_path):
 
 def docs_frame():
     return pd.DataFrame(dict(
-        doc_id=list("abcdef"), lang=["en", "en", "en", "vi", "en", "en"], source="gdelt",
+        doc_id=list("abcdefg"), lang=["en", "en", "en", "vi", "en", "en", "en"], source=["gdelt"] * 6 + ["sec"],
         title=["Bitcoin soars to record", "SEC sues exchange over losses", "ETH fine", "Bitcoin sập sàn",
-               "dup of a", "Ether gains"],
-        body=None, is_canonical=[True, True, True, True, False, True],
+               "dup of a", "Ether gains", "S-1: Bitcoin Trust"],
+        body=None, is_canonical=[True, True, True, True, False, True, True],
         public_ts_utc=[UTC("2023-01-01 23:59:59"), UTC("2023-01-02 00:00"), UTC("2023-01-02 12:00"),
-                       UTC("2023-01-02 13:00"), UTC("2023-01-01 10:00"), UTC("2023-01-04 01:00")],
-        asset_tags=[["BTC"], [], ["ETH"], ["BTC"], ["BTC"], ["ETH"]]))
+                       UTC("2023-01-02 13:00"), UTC("2023-01-01 10:00"), UTC("2023-01-04 01:00"),
+                       UTC("2023-01-02 15:00")],
+        asset_tags=[["BTC"], [], ["ETH"], ["BTC"], ["BTC"], ["ETH"], ["BTC"]]))
 
 
 def test_lexicon_routes_by_language():
@@ -124,14 +125,15 @@ def test_assemble_llm_overrides_zeroshot():
 
 def test_text_daily_day_cut_canonical_en_and_accel():
     docs = docs_frame()
-    sc = pd.DataFrame(dict(doc_id=docs.doc_id, finbert_sentiment=[.5, -.8, .2, -1, .9, -.4], lm_net=0.0, hv_net=0.0,
-                           narrative=["price_speculation", "regulation", "defi", "regulation", "defi", "defi"]))
+    sc = pd.DataFrame(dict(doc_id=docs.doc_id, finbert_sentiment=[.5, -.8, .2, -1, .9, -.4, -1], lm_net=0.0,
+                           hv_net=0.0, narrative=["price_speculation", "regulation", "defi", "regulation", "defi",
+                                                  "defi", "etf_institutional"]))
     out = daily_index.build(docs, sc)
     al = out[out.asset.eq("ALL")].set_index("date")
     assert str(al.index.tz) == "UTC" and len(al) == 1369
     d1, d2 = al.loc[UTC("2023-01-01")], al.loc[UTC("2023-01-02")]
     assert d1.n_docs == 1 and d1.sent_finbert == .5                  # 23:59:59 ở lại ngày 1; bản trùng e bị loại
-    assert d2.n_docs == 2 and np.isclose(d2.neg_sent, .4) and d2.attention_regulation == .5   # tin vi không vào
+    assert d2.n_docs == 2 and np.isclose(d2.neg_sent, .4) and d2.attention_regulation == .5   # tin vi, SEC không vào
     assert np.isclose(d2.neg_accel, .4) and np.isnan(al.loc[UTC("2023-01-04")].neg_accel)     # 01-03 trống → NaN
     btc = out[out.asset.eq("BTC")]
     assert btc.date.tolist() == [UTC("2023-01-01")]                  # mã: chỉ ngày có tin

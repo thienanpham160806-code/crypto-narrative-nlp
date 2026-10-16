@@ -2,6 +2,8 @@
 
 Cắt ngày: tin thuộc ngày t ⇔ public_ts_utc ∈ [t, t+1) UTC; chỉ is_canonical. Nhánh chính tiếng Anh (lang = en);
 tin tiếng Việt chỉ báo cáo riêng, không trộn vào chỉ số. Trọng số w_d = 1 (equal).
+Chỉ tin báo (không SEC): hồ sơ S-1/19b-4 là văn bản pháp lý dài, giọng rủi ro → làm lệch sentiment ngày; SEC dùng cho
+event study và timeline.
 asset = 'ALL' (mọi tin, đủ lịch ngày của mẫu) + từng mã (chỉ ngày có tin gắn mã đó).
 neg_accel_t = neg_sent_t − neg_sent_{t−1} (ngày lịch liền kề; ngày trước không có tin → NaN). Chỉ dùng quá khứ.
 Chạy: python -m features.daily_index
@@ -29,7 +31,7 @@ def daily(g: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.DataFrame:
 
 
 def build(docs: pd.DataFrame, scores: pd.DataFrame) -> pd.DataFrame:
-    df = docs[docs.is_canonical & docs.lang.eq("en")].merge(scores, on="doc_id")
+    df = docs[docs.is_canonical & docs.lang.eq("en") & docs.source.ne("sec")].merge(scores, on="doc_id")
     df["date"] = df.public_ts_utc.dt.tz_convert("UTC").dt.floor("D")
     dates = pd.date_range(CFG["sample"]["start"], CFG["sample"]["end"], freq="D", tz="UTC")
     df = df[df.date.isin(dates)]
