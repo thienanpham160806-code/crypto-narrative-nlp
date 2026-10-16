@@ -21,6 +21,7 @@ text:
 
 nlp:
   finbert_model: ProsusAI/finbert
+  embed_model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2   # đa ngữ: zero-shot narrative + BERTopic
   narratives: [regulation, etf_institutional, security_hacks, stablecoins, defi, ai_tokens, macro_monetary, price_speculation]
   llm:                     # tái dùng src/utils/llm_client.py (zero-shot narrative) – key ở .env
     enabled: false

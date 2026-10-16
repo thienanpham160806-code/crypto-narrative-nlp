@@ -21,11 +21,16 @@ Mọi timestamp là **UTC**. Ngày `t` = [t 00:00, t+1 00:00) UTC. File đổi s
 
 ## 2. `data/interim/doc_scores.parquet` — owner: Claude
 `doc_id, lm_pos, lm_neg, lm_net, hv_net, finvn_net (chỉ vi), finbert_sentiment, positive_prob, negative_prob, neutral_prob, narrative, narrative_prob, narrative_method (lda|bertopic|zeroshot|llm)`
+- Chỉ tin canonical. `narrative` ∈ 8 narrative của config hoặc `other`; mặc định `zeroshot` (embedding đa ngữ), `llm` khi bật.
+- So sánh phương pháp ở `data/interim/narratives.parquet`: `doc_id, period (train|valid|test), zs_narr, zs_prob, lda_topic, lda_prob, lda_narr, bt_topic, bt_prob, bt_narr` (LDA/BERTopic chỉ tin en; fit chỉ trên train).
 
 ## 3. `data/processed/text_daily.parquet` — owner: Claude
 `date, asset ('ALL' hoặc mã), n_docs, sent_finbert, sent_lm, sent_hv, pos_sent, neg_sent, attention_<narrative>… (8 cột), neg_accel`
 - Quy tắc cắt: tin vào ngày `t` ⇔ `public_ts_utc ∈ [t, t+1)`. Chỉ `is_canonical = True`.
 - `pos_sent = mean(max(sent,0))`, `neg_sent = mean(max(-sent,0))`; `attention_k = N_k,t / N_t`.
+- Chỉ tin `lang = en` (nhánh chính); w_d = 1. `date` = datetime UTC 00:00 (cùng kiểu market_daily).
+- `ALL`: đủ mọi ngày của mẫu (ngày không tin: `n_docs = 0`, còn lại NaN). Từng mã: chỉ ngày có tin gắn mã.
+- `neg_accel_t = neg_sent_t − neg_sent_{t−1}` (ngày lịch liền trước; trống → NaN).
 
 ## 4. `data/processed/market_daily.parquet` — owner: Codex
 `date, asset, close, ret (log), rv (tổng bình phương log-return giờ), volume_usd, logvol, ret_lag1..7`

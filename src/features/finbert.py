@@ -21,30 +21,39 @@ def sentences(text: str, max_sentences: int) -> list[str]:
     return s[:max_sentences] or ([text] if text else [])
 
 
-def score(docs: pd.DataFrame, max_sentences: int = 20, batch_size: int = 32) -> pd.DataFrame:
-    from transformers import pipeline
-    clf = pipeline("text-classification", model=MODEL, top_k=None, truncation=True)
+def score(docs: pd.DataFrame, max_sentences: int = 20, batch_size: int = 32, chunk: int = 512, clf=None) -> pd.DataFrame:
+    """Gom câu của `chunk` tin vào một lần gọi model (tiêu đề tin chỉ 1 câu – gọi từng tin quá chậm)."""
+    if clf is None:
+        from transformers import pipeline
+        clf = pipeline("text-classification", model=MODEL, top_k=None, truncation=True)
     prog = D("interim", "finbert_progress.csv")
     done = pd.read_csv(prog) if prog.exists() else pd.DataFrame(columns=["doc_id", "sha"])
-    seen = {(r.doc_id, r.sha): r for r in done.itertuples()}
-    rows = []
-    for r in tqdm(docs.itertuples(), total=len(docs), desc="FinBERT"):
+    seen = {(r.doc_id, r.sha): r._asdict() for r in done.itertuples(index=False)}
+    rows, todo = [], []
+    for r in docs.itertuples():
         sents = sentences(r.text, max_sentences)
         if not sents:
             continue
         sha = hashlib.sha256("\n".join(sents).encode("utf-8")).hexdigest()[:16]
         if (r.doc_id, sha) in seen:
-            rows.append(seen[(r.doc_id, sha)]._asdict()); continue
-        sc = [{d["label"]: d["score"] for d in out} for out in clf(sents, batch_size=batch_size)]
-        n = len(sc)
-        row = dict(doc_id=r.doc_id, sha=sha, model=MODEL,
-                   positive_prob=sum(s["positive"] for s in sc) / n,
-                   negative_prob=sum(s["negative"] for s in sc) / n,
-                   neutral_prob=sum(s["neutral"] for s in sc) / n)
-        row["sentiment"] = row["positive_prob"] - row["negative_prob"]
-        rows.append(row)
-        pd.DataFrame([row]).to_csv(prog, mode="a", header=not prog.exists(), index=False)
-    return pd.DataFrame(rows).drop(columns=["Index"], errors="ignore")
+            rows.append(seen[(r.doc_id, sha)])
+        else:
+            todo.append((r.doc_id, sha, sents))
+    for i in tqdm(range(0, len(todo), chunk), desc="FinBERT"):
+        part = todo[i:i + chunk]
+        flat = clf([s for *_, ss in part for s in ss], batch_size=batch_size)
+        new, k = [], 0
+        for doc_id, sha, ss in part:
+            sc = [{d["label"]: d["score"] for d in out} for out in flat[k:k + len(ss)]]
+            k += len(ss)
+            row = dict(doc_id=doc_id, sha=sha, model=MODEL,
+                       **{f"{c}_prob": sum(s[c] for s in sc) / len(sc) for c in ("positive", "negative", "neutral")})
+            row["sentiment"] = row["positive_prob"] - row["negative_prob"]
+            new.append(row)
+        pd.DataFrame(new).to_csv(prog, mode="a", header=not prog.exists(), index=False)
+        rows += new
+    return pd.DataFrame(rows, columns=["doc_id", "sha", "model", "positive_prob", "negative_prob", "neutral_prob",
+                                       "sentiment"])
 
 
 if __name__ == "__main__":

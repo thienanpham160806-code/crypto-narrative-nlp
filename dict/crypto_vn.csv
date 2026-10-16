@@ -1,0 +1,88 @@
+word,category
+sập sàn,negative
+sập giá,negative
+rớt giá,negative
+giảm sâu,negative
+lao dốc mạnh,negative
+bốc hơi,negative
+bán tháo,negative
+xả hàng,negative
+thanh lý,negative
+cháy tài khoản,negative
+cháy ví,negative
+đu đỉnh,negative
+kẹp hàng,negative
+thị trường gấu,negative
+mùa đông tiền mã hóa,negative
+bong bóng,negative
+vỡ bong bóng,negative
+lừa đảo,negative
+đa cấp,negative
+rug pull,negative
+scam,negative
+bị hack,negative
+tin tặc,negative
+hacker,negative
+tấn công mạng,negative
+lỗ hổng,negative
+đánh cắp,negative
+bị đánh cắp,negative
+mất trắng,negative
+mất neo,negative
+rút tiền ồ ạt,negative
+tạm dừng rút tiền,negative
+đóng băng tài sản,negative
+vỡ nợ,negative
+rửa tiền,negative
+thao túng,negative
+thao túng giá,negative
+cấm,negative
+lệnh cấm,negative
+siết chặt,negative
+hoảng loạn,negative
+sợ hãi,negative
+tăng vọt,positive
+tăng phi mã,positive
+lập đỉnh,positive
+đỉnh mới,positive
+đỉnh lịch sử,positive
+thị trường bò,positive
+mùa altcoin,positive
+dòng tiền đổ vào,positive
+dòng vốn vào,positive
+tích lũy,positive
+gom hàng,positive
+phê duyệt,positive
+chấp thuận,positive
+được cấp phép,positive
+cấp phép,positive
+hợp pháp hóa,positive
+niêm yết,positive
+chấp nhận thanh toán,positive
+ứng dụng rộng rãi,positive
+hợp tác,positive
+bùng nổ,positive
+tăng giá,positive
+tham lam,positive
+khung pháp lý,uncertainty
+chưa có khung pháp lý,uncertainty
+vùng xám,uncertainty
+tin đồn,uncertainty
+đồn đoán,uncertainty
+đầu cơ,uncertainty
+biến động giá,uncertainty
+rủi ro cao,uncertainty
+chờ phê duyệt,uncertainty
+hoãn,uncertainty
+trì hoãn,uncertainty
+khởi tố,litigious
+truy tố,litigious
+bắt giữ,litigious
+bị bắt,litigious
+cáo buộc,litigious
+kiện,litigious
+dàn xếp,litigious
+nộp phạt,litigious
+lệnh trừng phạt,litigious
+ủy ban chứng khoán,litigious
+xét xử,litigious
