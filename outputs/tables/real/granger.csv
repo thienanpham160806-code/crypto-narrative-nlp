@@ -1,0 +1,11 @@
+asset,outcome,pvalue,nobs,conclusion,p_holm,p_bh
+BNB,ret,,9,VAR pending: fewer than 30 contiguous daily observations,,
+BNB,rv,,9,VAR pending: fewer than 30 contiguous daily observations,,
+BTC,ret,,9,VAR pending: fewer than 30 contiguous daily observations,,
+BTC,rv,,9,VAR pending: fewer than 30 contiguous daily observations,,
+ETH,ret,,9,VAR pending: fewer than 30 contiguous daily observations,,
+ETH,rv,,9,VAR pending: fewer than 30 contiguous daily observations,,
+SOL,ret,,9,VAR pending: fewer than 30 contiguous daily observations,,
+SOL,rv,,9,VAR pending: fewer than 30 contiguous daily observations,,
+XRP,ret,,9,VAR pending: fewer than 30 contiguous daily observations,,
+XRP,rv,,9,VAR pending: fewer than 30 contiguous daily observations,,
