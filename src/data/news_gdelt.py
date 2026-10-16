@@ -9,7 +9,7 @@ thêm 15/30/45 khi cần đủ. Cache: data/raw/gkg/<lang>/<YYYYMMDD>_<mm>.jsonl
 Chạy: python -m data.news_gdelt --lang en ; audit giờ đăng: python -m data.news_gdelt --audit 300
 """
 from __future__ import annotations
-import argparse, html, io, json, re, sys, pathlib, unicodedata, zipfile
+import argparse, html, io, json, re, sys, pathlib, threading, unicodedata, zipfile
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -63,6 +63,8 @@ def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> 
     get = get or Client(rps=workers).get
     days = pd.date_range(start, end, freq="D")
     todo = [(d, m) for d in days for m in minutes if not (cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl").exists()]
+    total, lock, log = len(days) * len(minutes), threading.Lock(), cache_dir(lang).parent / "progress.log"
+    done = [total - len(todo)]
 
     def day(dm):
         d, m = dm
@@ -70,7 +72,13 @@ def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> 
         f = cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl"
         f.with_suffix(".tmp").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
         f.with_suffix(".tmp").replace(f)
-        print(f"{lang} {d:%Y-%m-%d} :{m:02d} {len(rows)}", flush=True)
+        with lock:
+            done[0] += 1
+            msg = (f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} rows={len(rows)} "
+                   f"done={done[0]}/{total} ({100 * done[0] / total:.1f}%)")
+            print(msg, flush=True)
+            with open(log, "a", encoding="utf-8") as f:
+                f.write(msg + "\n")
         return len(rows)
 
     with ThreadPoolExecutor(workers) as ex:
