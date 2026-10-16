@@ -34,3 +34,11 @@ Mọi timestamp là **UTC**. Ngày `t` = [t 00:00, t+1 00:00) UTC. File đổi s
 `panel = text_daily(t) ⨝ market_daily(t)`; target `y_{t+h}` lấy từ market_daily dịch **−h**. Feature ngày t không bao giờ chứa thông tin sau `t+1 00:00 UTC`.
 
 Trước khi có dữ liệu thật, Codex dùng `tests/fixtures/make_fixtures.py` sinh `text_daily` giả đúng schema.
+
+## 6. X4 và event study — owner: Codex
+- Bảng fixture ở `outputs/tables/synthetic/`; bảng nghiên cứu thật ở `outputs/tables/real/`. `market_coverage.csv` là audit giá thật, giữ ở thư mục cha.
+- X4 chỉ dùng ngày feature và target không sau `split.valid_end`. Horizon là outcome một ngày tại t+h, không phải tổng h ngày.
+- `--source-weighted-text` và `--exclude-price-text` nhận parquet cùng schema `text_daily`, được upstream tổng hợp lại từ bài canonical theo `public_ts_utc`. Không thể suy ra trọng số hoặc sentiment sau khi bỏ narrative từ daily means.
+- Event input: `doc_id, asset, public_ts_utc` (UTC có timezone), mỗi hàng là một bài–asset. Prices: `date, asset, close`; `date` là thời điểm bắt đầu bar UTC, lịch liên tục theo `--frequency` (mặc định `1h`).
+- T0 là bar bắt đầu đầu tiên **sau** `public_ts_utc`; lợi suất đơn từ close bar đó đến close bar kế tiếp. Các cửa sổ config đo bằng số bar; thiếu bar giữ NaN, không nối qua khoảng trống. Asset trùng benchmark bị bỏ vì không có lợi suất tương đối độc lập.
+- Holm/BH dùng một bảng export làm một family; p-value thiếu không được kiểm định. ADF có H0 unit root; KPSS có H0 level stationarity.

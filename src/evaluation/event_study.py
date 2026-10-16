@@ -1,9 +1,6 @@
-# PORT từ disclosure-tone-car/src/analysis/a02_event.py – GIỮ: mm_fit, CAR/BHAR, tests() (t, Wilcoxon, sign, BMP),
-# placebo. ĐỔI (việc của agent): crypto giao dịch 24/7 → không có "after_close"; T0 = bar đầu tiên SAU published_at (UTC);
-# market = BTC hoặc chỉ số vốn hóa; main() cũ đọc docs.csv/prices.csv.gz theo thị trường → viết lại. Xem docs/PORTED.md.
-"""A2. Nghiên cứu sự kiện quanh ngày công bố – dùng chung US/VN.
+"""Crypto event study on a continuous UTC calendar, including weekends.
 
-T=0: phiên đầu tiên ≥ ngày công bố; nếu công bố sau 16:00 (10-K có acceptanceDateTime) → phiên kế tiếp.
+T=0: bar bắt đầu đầu tiên SAU public_ts_utc. Cửa sổ đo bằng số bar.
 Hai thước đo lợi suất bất thường (kết quả chính + đối chứng):
   • CAR theo market model  – ước lượng [-150,-11], ≥80 phiên có giao dịch (MacKinlay 1997)
   • BHAR[0,3] = Π(1+R_i) − Π(1+R_m) – đúng định nghĩa "excess return" của LM (2011), theo lm2011-replication
@@ -15,13 +12,13 @@ Kiểm định CAR ≠ 0: t, BMP (Boehmer–Musumeci–Poulsen 1991), Wilcoxon, 
 import argparse
 import numpy as np, pandas as pd, statsmodels.api as sm
 from scipy import stats
-from utils.common import CFG, D, O, K  # TODO(port): D/O đổi nghĩa, xem docs/PORTED.md
+from src.utils.common import CFG, K
 
 E = CFG["event"]
 
 
 def mm_fit(y, x):
-    ok = y.notna() & x.notna() & (y != 0)
+    ok = y.notna() & x.notna()
     if ok.sum() < E["min_est_obs"]:
         return None
     m = sm.OLS(y[ok], sm.add_constant(x[ok])).fit()
@@ -30,7 +27,7 @@ def mm_fit(y, x):
 
 def event_row(r, rm, i0):
     a, b = E["est_window"]
-    if i0 + a < 0 or i0 + max(w[1] for w in E["windows"]) >= len(r):
+    if i0 + min(a, min(w[0] for w in E['windows'])) < 0 or i0 + max(w[1] for w in E["windows"]) >= len(r):
         return None
     fit = mm_fit(r.iloc[i0 + a:i0 + b + 1], rm.iloc[i0 + a:i0 + b + 1])
     if fit is None:
@@ -43,10 +40,11 @@ def event_row(r, rm, i0):
         if ar.isna().any():
             continue
         out[K("car", lo, hi)] = ar.sum()
-        out[K("scar", lo, hi)] = ar.sum() / (sig * np.sqrt(hi - lo + 1))
+        out[K("scar", lo, hi)] = ar.sum() / (sig * np.sqrt(hi - lo + 1)) if sig > 0 else np.nan
         out[K("carma", lo, hi)] = (r.iloc[w] - rm.iloc[w]).sum()
     lo, hi = E["main_window"]; w = slice(i0 + lo, i0 + hi + 1)
-    out[K("bhar", lo, hi)] = np.prod(1 + r.iloc[w]) - np.prod(1 + rm.iloc[w])
+    if r.iloc[w].notna().all() and rm.iloc[w].notna().all():
+        out[K("bhar", lo, hi)] = np.prod(1 + r.iloc[w]) - np.prod(1 + rm.iloc[w])
     pre = slice(max(0, i0 - 30), i0 - 1)
     out["pre_ret"] = (r.iloc[pre] - rm.iloc[pre]).sum()
     pf = mm_fit(r.iloc[max(0, i0 - 252):i0 - 5], rm.iloc[max(0, i0 - 252):i0 - 5])
@@ -64,69 +62,82 @@ def tests(x, label):
         return None
     return dict(window=label, N=len(x), mean_pct=100 * x.mean(), median_pct=100 * x.median(),
                 t=stats.ttest_1samp(x, 0).statistic, p_t=stats.ttest_1samp(x, 0).pvalue,
-                p_wilcoxon=stats.wilcoxon(x).pvalue, pct_positive=100 * (x > 0).mean(),
+                p_wilcoxon=stats.wilcoxon(x).pvalue if (x != 0).any() else 1.0, pct_positive=100 * (x > 0).mean(),
                 p_sign=stats.binomtest(int((x > 0).sum()), len(x)).pvalue)
 
 
-def main(mkt):
-    C = CFG[mkt]
-    px = pd.read_csv(D(mkt, "processed", "prices.csv.gz"), parse_dates=["date"])
-    close = px.pivot_table(index="date", columns="ticker", values="close").sort_index()
-    vol = px.pivot_table(index="date", columns="ticker", values="volume").reindex(close.index)
-    # vốn hóa = giá CHỈ điều chỉnh chia tách × số CP quy về cùng gốc chia tách (Mỹ; CHANGELOG_RUN #8)
-    pxm = (px.pivot_table(index="date", columns="ticker", values="close_split").reindex(close.index)
-           if "close_split" in px else close)
-    ret = close.pct_change(fill_method=None); rm = ret[C["market_symbol"]]
-    docs = pd.read_csv(D(mkt, "processed", "docs.csv"), parse_dates=["event_date"])
-    docs = docs[docs.flag.eq("ok") & docs.event_date.notna()]
-    fund = D(mkt, "processed", "fundamentals.csv")
-    fund = pd.read_csv(fund).set_index("doc_id") if fund.exists() else None
+def event_study(documents, prices, benchmark='BTC', frequency='1h'):
+    """Prices use UTC bar START timestamps and simple returns over that bar."""
+    step = pd.Timedelta(frequency)
+    if step <= pd.Timedelta(0):
+        raise ValueError('frequency must be positive')
+    prices = prices.copy()
+    prices['date'] = pd.to_datetime(prices.date, utc=True)
+    if prices[['date', 'asset']].duplicated().any():
+        raise ValueError('Duplicate price bars')
+    close = prices.pivot(index='date', columns='asset', values='close').sort_index()
+    grid = pd.date_range(close.index.min(), close.index.max(), freq=step)
+    if not close.index.isin(grid).all():
+        raise ValueError('Price bars do not match frequency')
+    close = close.reindex(grid)
+    # Return belongs to interval starting at its timestamp, never the preceding bar.
+    returns = close.shift(-1).div(close).sub(1)
+    if benchmark not in returns:
+        raise ValueError('Missing benchmark')
     rows, paths = [], []
-    lo, hi = E["main_window"]
-    for d in docs.itertuples():
-        if d.ticker not in ret:
+    for doc in documents.itertuples():
+        ts = pd.Timestamp(doc.public_ts_utc)
+        if ts.tzinfo is None:
+            raise ValueError('public_ts_utc must be timezone-aware')
+        ts = ts.tz_convert('UTC')
+        i0 = grid.searchsorted(ts, side='right')
+        if doc.asset not in returns or doc.asset == benchmark or i0 >= len(grid):
             continue
-        i0 = close.index.searchsorted(d.event_date) + int(bool(d.after_close))
-        if i0 >= len(close):
+        result = event_row(returns[doc.asset], returns[benchmark], i0)
+        if result is None:
             continue
-        res = event_row(ret[d.ticker], rm, i0)
-        if res is None:
-            continue
-        p = res.pop("_path", None)
-        if p is not None:
-            paths.append(pd.Series(p, name=d.doc_id))
-        plc = event_row(ret[d.ticker], rm, i0 + E["placebo_shift"])
-        res[K("placebo_car", lo, hi)] = plc.get(K("car", lo, hi)) if plc else np.nan
-        pc, pv = close[d.ticker].iloc[max(0, i0 - 60):i0], vol[d.ticker].iloc[max(0, i0 - 60):i0]
-        tv = (pc * pv).mean()
-        res.update(doc_id=d.doc_id, day0=close.index[i0], log_tradeval=np.log(tv) if tv > 0 else np.nan)
-        if fund is not None and d.doc_id in fund.index:
-            sh, be = fund.loc[d.doc_id, ["shares_adj" if "shares_adj" in fund else "shares_out", "book_equity"]]
-            mcap = pxm[d.ticker].iloc[i0 - 1] * sh if pd.notna(sh) else np.nan
-            res["log_mcap"] = np.log(mcap) if mcap and mcap > 0 else np.nan
-            res["bm"] = be / mcap if pd.notna(be) and mcap and mcap > 0 and be > 0 else np.nan
-            v252 = vol[d.ticker].iloc[max(0, i0 - 252):i0 - 5]
-            res["turnover"] = v252.sum() / sh if pd.notna(sh) and sh > 0 else np.nan
-        rows.append(res)
+        path = result.pop('_path', None)
+        if path is not None:
+            paths.append(pd.Series(path, name=doc.doc_id))
+        lo, hi = E['main_window']
+        placebo = event_row(returns[doc.asset], returns[benchmark], i0 + E['placebo_shift'])
+        result[K('placebo_car', lo, hi)] = placebo.get(K('car', lo, hi), np.nan) if placebo else np.nan
+        result.update(doc_id=doc.doc_id, asset=doc.asset, public_ts_utc=ts, day0=grid[i0])
+        rows.append(result)
     car = pd.DataFrame(rows)
-    car.to_csv(D(mkt, "processed", "car.csv"), index=False)
-    if paths:
-        pd.DataFrame(paths).to_csv(D(mkt, "processed", "ar_path.csv.gz"))
+    summaries = []
+    for lo, hi in E['windows']:
+        for prefix in ['car', 'carma']:
+            column = K(prefix, lo, hi)
+            result = tests(car[column], column) if column in car else None
+            if result:
+                if prefix == 'car':
+                    scaled = car[K('scar', lo, hi)].dropna()
+                    result['t_BMP'] = scaled.mean() / (scaled.std(ddof=1) / np.sqrt(len(scaled)))
+                summaries.append(result)
+    for prefix in ['bhar', 'placebo_car']:
+        column = K(prefix, *E['main_window'])
+        result = tests(car[column], column) if column in car else None
+        if result:
+            summaries.append(result)
+    return {'events': car, 'event_tests': pd.DataFrame(summaries), 'ar_path': pd.DataFrame(paths)}
 
-    out = []
-    for a, b in E["windows"]:
-        t = tests(car.get(K("car", a, b)), f"CAR[{a},{b}]")
-        if t:
-            sc = car[K("scar", a, b)].dropna(); t["t_BMP"] = sc.mean() / (sc.std(ddof=1) / np.sqrt(len(sc)))
-            out.append(t)
-        out.append(tests(car.get(K("carma", a, b)), f"CAR market-adjusted[{a},{b}]"))
-    out += [tests(car[K("bhar", lo, hi)], f"BHAR[{lo},{hi}] (LM 2011)"),
-            tests(car[K("placebo_car", lo, hi)], f"PLACEBO CAR[{lo},{hi}]")]
-    tab = pd.DataFrame([x for x in out if x]).round(4)
-    tab.to_csv(O(mkt, "car_tests.csv"), index=False)
-    print(f"{len(car)} sự kiện\n", tab.to_string(index=False))
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--documents', required=True, help='Parquet: doc_id, asset, public_ts_utc')
+    parser.add_argument('--prices', required=True, help='Parquet: date (bar start), asset, close')
+    parser.add_argument('--benchmark', default='BTC')
+    parser.add_argument('--frequency', default='1h')
+    parser.add_argument('--output', required=True)
+    args = parser.parse_args()
+    from pathlib import Path
+    output = Path(args.output)
+    output.mkdir(parents=True, exist_ok=True)
+    for name, table in event_study(pd.read_parquet(args.documents), pd.read_parquet(args.prices),
+                                   args.benchmark, args.frequency).items():
+        table.to_csv(output / f'{name}.csv', index=False, encoding='utf-8')
 
 
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--market", choices=["us", "vn"], required=True)
-    main(ap.parse_args().market)
+if __name__ == '__main__':
+    main()
