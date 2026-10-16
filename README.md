@@ -38,7 +38,7 @@ pytest -q
 Tải **Loughran–McDonald Master Dictionary** (https://sraf.nd.edu/loughranmcdonald-master-dictionary/) vào `dict/`. Email liên hệ và API key đặt ở `config/config.local.yaml` / `.env` (không commit).
 
 ## Làm việc với 2 agent
-Claude Code và Codex chạy song song trên 2 worktree: [`docs/PLAN.md`](docs/PLAN.md) (phân công), [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md) (schema), [`docs/prompts/`](docs/prompts) (prompt từng phiên), [`docs/PROGRESS.md`](docs/PROGRESS.md) (nhật ký).
+**Bắt đầu: [`docs/prompts/START.md`](docs/prompts/START.md)** (clone → 2 prompt). Claude Code và Codex chạy song song trên 2 worktree: [`docs/PLAN.md`](docs/PLAN.md) (phân công), [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md) (schema), [`docs/prompts/`](docs/prompts) (prompt từng phiên), [`docs/PROGRESS.md`](docs/PROGRESS.md) (nhật ký).
 
 ## Cấu trúc
 ```
