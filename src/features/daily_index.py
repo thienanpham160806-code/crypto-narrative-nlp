@@ -6,24 +6,31 @@ Chỉ tin báo (không SEC): hồ sơ S-1/19b-4 là văn bản pháp lý dài, g
 event study và timeline.
 asset = 'ALL' (mọi tin, đủ lịch ngày của mẫu) + từng mã (chỉ ngày có tin gắn mã đó).
 neg_accel_t = neg_sent_t − neg_sent_{t−1} (ngày lịch liền kề; ngày trước không có tin → NaN). Chỉ dùng quá khứ.
+soft_attention_k = trung bình xác suất zero-shot nprob_k (không ép nhãn cứng; tổng 8 cột = 1).
+disagreement = √(1 − A²), A = (N⁺ − N⁻)/(N⁺ + N⁻) theo nhãn FinBERT (Antweiler & Frank 2004); N⁺ + N⁻ = 0 → NaN.
 Chạy: python -m features.daily_index
 """
 from __future__ import annotations
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import pandas as pd
+import numpy as np, pandas as pd
 from utils.common import CFG, D
 
 NARR = CFG["nlp"]["narratives"]
 
 
 def daily(g: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.DataFrame:
-    s = g.finbert_sentiment
-    g = g.assign(pos=s.clip(lower=0), neg=(-s).clip(lower=0),
-                 **{f"attention_{k}": g.narrative.eq(k).astype(float) for k in NARR})
+    s, probs = g.finbert_sentiment, g[["positive_prob", "negative_prob", "neutral_prob"]]
+    top = probs.fillna(-1).to_numpy().argmax(1)
+    g = g.assign(pos=s.clip(lower=0), neg=(-s).clip(lower=0), n_pos=(top == 0) & s.notna(),
+                 n_neg=(top == 1) & s.notna(), **{f"attention_{k}": g.narrative.eq(k).astype(float) for k in NARR})
     out = g.groupby("date").agg(n_docs=("doc_id", "size"), sent_finbert=("finbert_sentiment", "mean"),
                                 sent_lm=("lm_net", "mean"), sent_hv=("hv_net", "mean"), pos_sent=("pos", "mean"),
-                                neg_sent=("neg", "mean"), **{f"attention_{k}": (f"attention_{k}", "mean") for k in NARR})
+                                neg_sent=("neg", "mean"), n_pos=("n_pos", "sum"), n_neg=("n_neg", "sum"),
+                                **{f"attention_{k}": (f"attention_{k}", "mean") for k in NARR},
+                                **{f"soft_attention_{k}": (f"nprob_{k}", "mean") for k in NARR})
+    a = (out.n_pos - out.n_neg) / (out.n_pos + out.n_neg)
+    out["disagreement"] = np.sqrt(1 - a ** 2)
     out = out.reindex(dates)
     out["n_docs"] = out.n_docs.fillna(0).astype(int)
     out["neg_accel"] = out.neg_sent.diff()
@@ -41,7 +48,8 @@ def build(docs: pd.DataFrame, scores: pd.DataFrame) -> pd.DataFrame:
         parts.append(d[d.n_docs > 0])
     out = pd.concat(parts, ignore_index=True)
     cols = ["date", "asset", "n_docs", "sent_finbert", "sent_lm", "sent_hv", "pos_sent", "neg_sent"]
-    return out[cols + [f"attention_{k}" for k in NARR] + ["neg_accel"]]
+    return out[cols + [f"attention_{k}" for k in NARR] + ["neg_accel", "disagreement"]
+               + [f"soft_attention_{k}" for k in NARR]]
 
 
 def main():

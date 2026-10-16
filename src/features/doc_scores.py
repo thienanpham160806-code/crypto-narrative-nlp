@@ -13,8 +13,9 @@ from features.lexicon.dictionaries import load_fin_vn, load_harvard, load_lm
 from features.lexicon.scoring import EnglishScorer, VietScorer, indices
 from features.narrative import text_of
 
+NPROB = [f"nprob_{k}" for k in CFG["nlp"]["narratives"]]
 COLS = ["doc_id", "lm_pos", "lm_neg", "lm_net", "hv_net", "finvn_net", "finbert_sentiment", "positive_prob",
-        "negative_prob", "neutral_prob", "narrative", "narrative_prob", "narrative_method"]
+        "negative_prob", "neutral_prob", "narrative", "narrative_prob", "narrative_method"] + NPROB
 
 
 def lexicon(docs: pd.DataFrame, lm=None, hv=None, vn=None) -> pd.DataFrame:
@@ -55,7 +56,7 @@ def assemble(docs: pd.DataFrame, lex: pd.DataFrame, fb: pd.DataFrame, nar: pd.Da
     df = docs[["doc_id"]].merge(lex, on="doc_id", how="left")
     df = df.merge(fb.rename(columns={"sentiment": "finbert_sentiment"})[
         ["doc_id", "finbert_sentiment", "positive_prob", "negative_prob", "neutral_prob"]], on="doc_id", how="left")
-    df = df.merge(nar[["doc_id", "zs_narr", "zs_prob"]], on="doc_id", how="left")
+    df = df.merge(nar[["doc_id", "zs_narr", "zs_prob"] + [c for c in NPROB if c in nar]], on="doc_id", how="left")
     df["narrative"], df["narrative_prob"], df["narrative_method"] = df.zs_narr, df.zs_prob, "zeroshot"
     if llm is not None and len(llm):
         df = df.merge(llm[["doc_id", "llm_narr", "llm_conf"]], on="doc_id", how="left")

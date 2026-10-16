@@ -70,12 +70,13 @@ def embed(ids: pd.Series, texts: pd.Series, enc=None, cache=None) -> np.ndarray:
 
 
 def zeroshot(emb: np.ndarray, proto: np.ndarray, train: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Trả (nhãn, ma trận xác suất n×8). Xác suất dùng cho attention mềm; nhãn 'other' không đổi xác suất."""
     sim = emb @ proto.T
     p = np.exp((sim - sim.max(1, keepdims=True)) / TEMP)
     p /= p.sum(1, keepdims=True)
     lab = np.array(NARR, object)[sim.argmax(1)]
     lab[sim.max(1) < np.quantile(sim[train].max(1), OTHER_Q)] = "other"
-    return lab, p.max(1)
+    return lab, p
 
 
 def map_topics(words: dict[int, str], enc, proto: np.ndarray) -> dict[int, str]:
@@ -132,7 +133,9 @@ def run(docs: pd.DataFrame, enc=None, seed: int = CFG["seed"]) -> tuple[pd.DataF
     proto = np.asarray(enc.encode([PROTO[k] for k in NARR], normalize_embeddings=True))
     out = pd.DataFrame(dict(doc_id=docs.doc_id, period=per))
     news = docs.source.ne("sec").to_numpy()                              # SEC: văn bản pháp lý dài, lấn át topic
-    out["zs_narr"], out["zs_prob"] = zeroshot(emb, proto, per.eq("train").to_numpy() & news)
+    out["zs_narr"], prob = zeroshot(emb, proto, per.eq("train").to_numpy() & news)
+    out["zs_prob"] = prob.max(1)
+    out[[f"nprob_{k}" for k in NARR]] = prob
     en = docs.lang.eq("en").to_numpy() & news
     topics = []
     t, p, words, k, grid = lda(texts[en], per[en], seed)

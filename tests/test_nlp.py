@@ -125,9 +125,12 @@ def test_assemble_llm_overrides_zeroshot():
 
 def test_text_daily_day_cut_canonical_en_and_accel():
     docs = docs_frame()
-    sc = pd.DataFrame(dict(doc_id=docs.doc_id, finbert_sentiment=[.5, -.8, .2, -1, .9, -.4, -1], lm_net=0.0,
-                           hv_net=0.0, narrative=["price_speculation", "regulation", "defi", "regulation", "defi",
-                                                  "defi", "etf_institutional"]))
+    fb = np.array([.5, -.8, .2, -1, .9, -.4, -1])
+    sc = pd.DataFrame(dict(doc_id=docs.doc_id, finbert_sentiment=fb, lm_net=0.0, hv_net=0.0,
+                           positive_prob=(fb > 0) * .8, negative_prob=(fb < 0) * .8, neutral_prob=.1,
+                           narrative=["price_speculation", "regulation", "defi", "regulation", "defi", "defi",
+                                      "etf_institutional"], **{f"nprob_{k}": 1 / 8 for k in narrative.NARR}))
+    sc["nprob_defi"], sc["nprob_regulation"] = [.3, .1, .9, .1, .3, .9, 0], [.0, .8, .0, .8, .0, .0, 0]
     out = daily_index.build(docs, sc)
     al = out[out.asset.eq("ALL")].set_index("date")
     assert str(al.index.tz) == "UTC" and len(al) == 1369
@@ -135,6 +138,8 @@ def test_text_daily_day_cut_canonical_en_and_accel():
     assert d1.n_docs == 1 and d1.sent_finbert == .5                  # 23:59:59 ở lại ngày 1; bản trùng e bị loại
     assert d2.n_docs == 2 and np.isclose(d2.neg_sent, .4) and d2.attention_regulation == .5   # tin vi, SEC không vào
     assert np.isclose(d2.neg_accel, .4) and np.isnan(al.loc[UTC("2023-01-04")].neg_accel)     # 01-03 trống → NaN
+    assert np.isclose(d2.disagreement, 1) and d1.disagreement == 0       # 1 dương + 1 âm → bất đồng tối đa
+    assert np.isclose(d2.soft_attention_defi, .5) and np.isclose(d2.soft_attention_regulation, .4)
     btc = out[out.asset.eq("BTC")]
     assert btc.date.tolist() == [UTC("2023-01-01")]                  # mã: chỉ ngày có tin
 
@@ -171,3 +176,14 @@ def test_run_topic_models_skip_sec_and_vi(tmp_path, monkeypatch):
     out, topics = narrative.run(docs_frame(), enc=Enc())
     assert seen["lda"] == ["Bitcoin soars to record", "SEC sues exchange over losses", "ETH fine", "dup of a", "Ether gains"]
     assert out.set_index("doc_id").loc[["d", "g"], "lda_narr"].isna().all() and out.zs_narr.notna().all()
+
+
+def test_ucry_available_day_after_week_end_and_not_stale():
+    from data import news_ucry
+    raw = pd.DataFrame({"Timeline": ["26/12/2022 - 01/01/2023", "02/01/2023 - 08/01/2023"],
+                        "UCRY Policy Index": [100.0, 110.0], "UCRY Price Index": [90.0, 95.0]})
+    out = news_ucry.daily(raw, "2023-01-01", "2023-01-20").set_index("date")
+    assert np.isnan(out.loc[UTC("2023-01-01"), "ucry_policy"])                  # tuần kết thúc 01-01 → dùng từ 01-02
+    assert out.loc[UTC("2023-01-02"), "ucry_policy"] == 100 and out.loc[UTC("2023-01-08"), "ucry_policy"] == 100
+    assert out.loc[UTC("2023-01-09"), "ucry_price"] == 95 and out.loc[UTC("2023-01-16"), "ucry_price"] == 95
+    assert np.isnan(out.loc[UTC("2023-01-17"), "ucry_price"])                    # quá 7 ngày → NaN
