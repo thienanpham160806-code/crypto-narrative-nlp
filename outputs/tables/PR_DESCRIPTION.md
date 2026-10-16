@@ -1,4 +1,4 @@
-﻿# Implement X1–X3 market data, econometrics and walk-forward ML
+# Implement X1–X3 market data, econometrics and walk-forward ML
 
 Adds Binance ccxt daily/hourly ingestion and UTC market features; seeded contract-compatible fixtures; predictive HAC regressions, Wald asymmetry and AIC-selected bidirectional VAR/Granger; expanding Elastic Net/XGBoost/LightGBM market-only versus text comparisons with DM, SHAP and fee-adjusted long/flat diagnostics.
 
@@ -21,4 +21,4 @@ No Claude-owned source paths changed. Raw candles, generated parquet and credent
 
 Full fixture run completed: 180 metric rows and 48,660 forecasts. BTC h=1 text RMSE is lower for all three models, but all DM p-values exceed 0.05; this does not establish significant OOS improvement. Artifacts include economic interpretations, SHAP CSV/SVG, configuration/input hashes and dependency versions.
 
-PR creation blocker: GitHub connector returns 403; no browser session is available. Automatic approval review rejected extracting a local Git credential without specific authorization; credentials were not read.
+PR: https://github.com/thienanpham160806-code/crypto-narrative-nlp/pull/1
