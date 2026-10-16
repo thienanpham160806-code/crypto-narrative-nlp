@@ -6,7 +6,10 @@ RQ1 transformer vs từ điển · RQ2 bất đối xứng âm/dương · RQ3 na
 Mức đọc (để không suy diễn quá dữ liệu):
 - Đọc full text: Araci (2019) (bản arXiv), Kraaijeveld & De Smedt (2020) (accepted manuscript R2, kho Edinburgh), Walker (2024) (bản in, CC BY, kho QUB).
 - Đọc bản luận văn thay cho bản in: Khaksar et al. (2026), qua luận văn thạc sĩ Brock University 2023 của tác giả đầu. Bản in CC BY có trên ScienceDirect nhưng bị chặn truy cập tự động.
-- Chỉ đọc abstract + metadata: Chou et al. (2023) và Kao et al. (2024) (bản đóng, không thấy preprint); Gür & Ünal (2026) (OA trên Wiley nhưng trang PDF bị captcha).
+- **Giữ mức abstract-only (quyết định 2026-10-16):** Chou et al. (2023), Kao et al. (2024), Gür & Ünal (2026). Lý do:
+  - Chou và Kao: bản đóng (Elsevier), OpenAlex/Unpaywall báo closed, không có preprint hay bản tác giả công khai.
+  - Gür & Ünal: Wiley ghi OA nhưng trang PDF chặn bằng captcha, không tải tự động được.
+  - Cả ba chỉ dùng làm bằng chứng định tính (hướng tác động, loại mô hình). Không lấy con số của họ làm mốc so sánh định lượng. Kết luận của đề tài không phụ thuộc vào chi tiết chưa đọc.
 - Chi tiết không tìm được ghi rõ là **[không tìm được]**. Không có con số nào được ước đoán.
 - Tài liệu bổ sung (13 bài open access) ở cuối file; chi tiết từng bài trong `docs/research/PAPERS.md`.
 
@@ -149,4 +152,4 @@ Chi tiết dưới đây lấy từ **luận văn thạc sĩ** của Khaksar (Br
 - Khaksar et al. (2026): highlights ScienceDirect; luận văn thạc sĩ toàn văn, Brock University 2023, https://brocku.scholaris.ca/handle/10464/17762.
 - DOI, số trang và tên tác giả của 7 bài lõi đã đối chiếu với Crossref API (`api.crossref.org/works/<DOI>`) ngày 2026-10-16. Gür & Ünal: Crossref ghi ngày online 20/11/2025, in vol. 45(3) năm 2026.
 
-Việc cần làm: điền các ô **[không tìm được]** còn lại (Chou, Kao, Gür & Ünal; bản in Khaksar). Cách làm: tải PDF thủ công vào `paper/sources/` (đã gitignore), rồi đọc lại.
+Các ô **[không tìm được]** của Chou, Kao, Gür & Ünal được giữ nguyên có chủ đích (xem mục "Mức đọc"). Còn mở: đối chiếu Khaksar với bản in.
