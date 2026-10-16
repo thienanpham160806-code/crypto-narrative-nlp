@@ -14,6 +14,15 @@ Phân công: `docs/PLAN.md`. Schema: `docs/DATA_CONTRACT.md`. Đã tái dùng g�
 8. Cuối mỗi phiên: append 1 dòng vào `docs/PROGRESS.md`.
 9. Kết luận kinh tế, không chỉ metric: mỗi bảng kèm 1–2 câu "nghĩa là gì".
 
+## Làm chung 1 folder
+Claude và Codex cùng làm trong `crypto-narrative-nlp/`, cùng nhánh `dev` (không worktree, không nhánh riêng).
+- Chỉ `git add <đường dẫn của mình>` (vùng sở hữu ở `docs/PLAN.md`).
+- Cấm: `git add -A`/`git add .`, `git stash`, `git checkout .`/`git restore .`, `git reset --hard`, đổi nhánh, chạy formatter toàn repo.
+- `git pull --rebase` trước mỗi push.
+- `docs/PROGRESS.md`: chỉ append, commit + push ngay sau khi append.
+- `/codex:review` dùng `--base main`.
+- Cuối mỗi giai đoạn: merge `dev` → `main` qua PR.
+
 ## Lệnh
 ```bash
 pip install -r requirements.txt

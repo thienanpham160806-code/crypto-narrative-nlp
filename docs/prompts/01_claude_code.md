@@ -1,11 +1,11 @@
-# Prompt phiên Claude Code (dán vào `../cnn-claude`)
+# Prompt phiên Claude Code (dán vào `crypto-narrative-nlp`, nhánh dev)
 
 ```text
 /caveman full
 /ponytail full
 
 Repo: crypto-narrative-nlp (Blueprint 10 – Crypto Narrative & NLP Sentiment). Bạn là owner phần TEXT + NLP + DASHBOARD + PAPER.
-Codex đang chạy SONG SONG ở worktree khác, owner phần MARKET DATA + ECONOMETRICS + ML. Không sửa thư mục của Codex.
+Codex đang chạy SONG SONG trong cùng folder (nhánh dev), owner phần MARKET DATA + ECONOMETRICS + ML. Không sửa thư mục của Codex.
 
 Đầu phiên:
 1. Tra claude-mem xem các phiên trước đã làm gì; đọc CLAUDE.md, AGENTS.md, docs/PLAN.md, docs/DATA_CONTRACT.md, docs/PORTED.md, docs/PROGRESS.md, docs/blueprint.md.
@@ -33,7 +33,7 @@ Quy tắc:
 - Test cho mọi module (pytest -q chạy không cần mạng; mock HTTP). Commit nhỏ, message tiếng Anh, theo từng mục.
 - Cuối C1 và cuối C2: chạy `/codex:review --base main --background`, sau đó `/codex:result`; sửa lỗi hợp lệ, ghi lỗi bác bỏ + lý do vào docs/PROGRESS.md.
 - Trước khi báo xong C2: chạy `/codex:adversarial-review --background` với trọng tâm "look-ahead bias / text leakage / timezone / dedup giữ bản muộn".
-- Cuối phiên: append 1 dòng vào docs/PROGRESS.md, push nhánh claude/phase1, mở PR vào main.
+- Cuối phiên: append 1 dòng vào docs/PROGRESS.md, `git pull --rebase`, push dev, mở PR dev → main.
 
 Chỉ báo lại tôi: (a) file đã tạo/sửa, (b) số liệu corpus, (c) việc cần tôi làm tay (gán nhãn 300 tiêu đề, API key).
 ```

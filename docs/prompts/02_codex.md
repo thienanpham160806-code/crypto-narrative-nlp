@@ -1,4 +1,4 @@
-# Prompt phiên Codex CLI (dán vào `../cnn-codex`, chạy cùng lúc với Claude)
+# Prompt phiên Codex CLI (dán vào `crypto-narrative-nlp`, nhánh dev, chạy cùng lúc với Claude)
 
 ```text
 $caveman full
@@ -27,6 +27,6 @@ X3 – ML out-of-sample (src/models/ml.py, src/evaluation/oos.py)
 
 X4 (khi Claude đã có text thật) – robustness: horizon, trọng số w_d (equal/source), bỏ narrative price_speculation, chia sub-period; viết lại main() của src/evaluation/event_study.py (đã port) cho 24/7: T0 = bar 1h đầu tiên sau public_ts_utc, market = BTC.
 
-Quy tắc: pytest -q không cần mạng; commit nhỏ message tiếng Anh; code tối giản theo ponytail; mỗi bảng output kèm 1–2 dòng diễn giải kinh tế trong outputs/tables/README.md. Cuối phiên append docs/PROGRESS.md, push nhánh codex/phase1, mở PR vào main.
+Quy tắc: pytest -q không cần mạng; commit nhỏ message tiếng Anh; code tối giản theo ponytail; mỗi bảng output kèm 1–2 dòng diễn giải kinh tế trong outputs/tables/README.md. Cuối phiên append docs/PROGRESS.md, `git pull --rebase`, push dev.
 Báo lại: file đã đổi, bảng kết quả chính, rủi ro leakage còn nghi ngờ.
 ```
