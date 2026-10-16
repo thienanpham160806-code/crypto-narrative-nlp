@@ -27,7 +27,7 @@ def download() -> pathlib.Path:
 def daily(raw: pd.DataFrame, start: str, end: str) -> pd.DataFrame:
     raw = raw.dropna(subset=["Timeline"])
     w = pd.DataFrame(dict(
-        week_end=pd.to_datetime(raw.Timeline.str.split(" - ").str[1], format="%d/%m/%Y").dt.tz_localize("UTC"),
+        week_end=pd.to_datetime(raw.Timeline.str.split("-").str[1].str.strip(), format="%d/%m/%Y").dt.tz_localize("UTC"),
         ucry_policy=raw["UCRY Policy Index"].astype(float), ucry_price=raw["UCRY Price Index"].astype(float)))
     w["available"] = w.week_end + pd.Timedelta(days=1)
     dates = pd.DataFrame(dict(date=pd.date_range(start, end, freq="D", tz="UTC")))
