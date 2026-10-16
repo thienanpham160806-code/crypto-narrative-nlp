@@ -8,13 +8,14 @@ from src.models.panel import MARKET, make_panel
 
 
 def attach_ucry(text, ucry):
-    """Join released weekly controls without extending their seven-day availability."""
+    """Join released weekly controls within upstream's seven-day release tolerance."""
     ucry = ucry.copy()
     ucry['date'] = pd.to_datetime(ucry.date, utc=True)
     week_end = pd.to_datetime(ucry.week_end, utc=True)
     if ucry.date.duplicated().any() or not ucry.date.eq(ucry.date.dt.floor('D')).all():
         raise ValueError('UCRY needs unique UTC daily keys')
-    available = (ucry.date >= week_end+pd.Timedelta(days=1)) & (ucry.date <= week_end+pd.Timedelta(days=7))
+    release = week_end + pd.Timedelta(days=1)
+    available = (ucry.date >= release) & (ucry.date <= release+pd.Timedelta(days=7))
     if ucry.loc[~available, ['ucry_policy', 'ucry_price']].notna().any().any():
         raise ValueError('UCRY values violate weekly release availability')
     text = text.copy()
@@ -45,7 +46,9 @@ def run_econometrics(market, text, config):
             for target in ['ret', 'rv', 'logvol']:
                 common = frame.replace([np.inf, -np.inf], np.nan).dropna(subset=[
                     f'y_{target}', *MARKET, 'log_n_docs', 'sent_lm', 'sent_hv', 'sent_finbert', *attention, *optional])
-                specifications = [('market', 'none', MARKET), ('attention', 'none', [*MARKET, 'log_n_docs'])]
+                controls = [c for c in optional if c.startswith('ucry_')]
+                specifications = [('market', 'none', [*MARKET, *controls]),
+                                  ('attention', 'none', [*MARKET, 'log_n_docs', *controls])]
                 specifications += [('text', sent, [*MARKET, 'log_n_docs', sent, *attention, *optional])
                                    for sent in ['sent_lm', 'sent_hv', 'sent_finbert']]
                 for version, sent, features in specifications:

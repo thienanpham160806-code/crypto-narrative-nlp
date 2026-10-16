@@ -81,6 +81,8 @@ def run_ml(market, text, config, refit_days=30):
                 frame = asset_frame.rename(columns={f'y_{target}': 'y'}).dropna(subset=[*features_text, 'y', 'target_date']).copy()
                 valid = frame.loc[(frame.target_date > train_end) & (frame.target_date <= valid_end) & (frame.date >= train_end)]
                 test = frame.loc[(frame.target_date > valid_end) & (frame.date >= valid_end)]
+                valid = valid.loc[valid.date.map(lambda date: len(training_rows(frame, date, horizon, embargo)) >= 30)]
+                test = test.loc[test.date.map(lambda date: len(training_rows(frame, date, horizon, embargo)) >= 30)]
                 if len(valid) < 10 or len(test) < 10:
                     status.append(dict(asset=asset, target=target, horizon=horizon, status='insufficient validation/test coverage',
                                        n_valid=len(valid), n_test=len(test)))

@@ -1,14 +1,55 @@
 """Run X2-X3 against explicit parquet paths, or reproducible synthetic fixtures."""
 import argparse
+import hashlib
+import json
+import subprocess
+import time
 from pathlib import Path
 
 import pandas as pd
 import yaml
 
-from src.models.econometrics import run_econometrics
+from src.models.econometrics import run_econometrics, attach_ucry
 from src.models.ml import run_ml
 from src.models.robustness import run_robustness, adjust_pvalues
+from src.models.quantile import run_quantiles
+from src.evaluation.report import write_report
 from src.utils.common import ROOT
+
+
+def correct_tests(table):
+    for column in list(table):
+        if column == 'pvalue':
+            table = adjust_pvalues(table)
+        elif column.endswith('_pvalue'):
+            prefix = column[:-7]
+            adjusted = adjust_pvalues(pd.DataFrame({'pvalue': table[column]}))
+            table[f'{prefix}_p_holm'] = adjusted.p_holm
+            table[f'{prefix}_p_bh'] = adjusted.p_bh
+    return table
+
+
+def run_analysis(market, text, config, output, figures, real=False, refit_days=30, variants=None, ucry=None):
+    """Shared offline entry point for CLI and notebook; return all research tables."""
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=True)
+    tables = {}
+    for label, call in [
+        ('econometrics', lambda: run_econometrics(market, text, config)),
+        ('robustness', lambda: run_robustness(market, text, config, variants)),
+        ('quantiles', lambda: run_quantiles(market, text, config)),
+        ('expanding forecasts', lambda: run_ml(market, text, config, refit_days))]:
+        print(f'Running {label}', flush=True)
+        for name, table in call().items():
+            table = correct_tests(table)
+            tables[name] = table
+            table.to_csv(output/f'{name}.csv', index=False, encoding='utf-8')
+    if ucry is not None:
+        controlled = run_econometrics(market, attach_ucry(text, ucry), config)
+        for name in ['regressions', 'wald']:
+            tables[f'ucry_{name}'] = correct_tests(controlled[name])
+    write_report(market, text, config, tables, output, figures, real)
+    return tables
 
 
 def main(real=False):
@@ -20,39 +61,52 @@ def main(real=False):
     parser.add_argument('--source-weighted-text')
     parser.add_argument('--exclude-price-text')
     parser.add_argument('--refit-days', type=int, default=30)
+    parser.add_argument('--figures')
+    parser.add_argument('--ucry', default=str(ROOT/'data/processed/ucry_daily.parquet') if real else None)
+    parser.add_argument('--watch', action='store_true', help='Real runner: recheck input changes every 30 minutes')
+    parser.add_argument('--poll-seconds', type=int, default=1800)
     args = parser.parse_args()
     if args.refit_days < 1:
         parser.error('--refit-days must be positive')
+    if args.watch and (not real or args.poll_seconds < 1):
+        parser.error('--watch requires real mode and a positive poll interval')
     config = yaml.safe_load(Path(args.config).read_text(encoding='utf-8'))
-    if real and not Path(args.text).is_file():
-        print(f'Waiting for real text_daily: {args.text}', flush=True)
-        return
-    market, text = pd.read_parquet(args.market), pd.read_parquet(args.text)
-    variants = {name: pd.read_parquet(path) for name, path in [
-        ('source_weighted', args.source_weighted_text), ('exclude_price_speculation', args.exclude_price_text)] if path}
-    output = Path(args.output)
-    output.mkdir(parents=True, exist_ok=True)
-    print('Running econometrics', flush=True)
-    for name, table in run_econometrics(market, text, config).items():
-        adjust_pvalues(table).to_csv(output / f'{name}.csv', index=False, encoding='utf-8')
-    for name, table in run_robustness(market, text, config, variants).items():
-        table.to_csv(output / f'{name}.csv', index=False, encoding='utf-8')
-    print('Running expanding forecasts', flush=True)
-    for name, table in run_ml(market, text, config, args.refit_days).items():
-        if 'dm_pvalue' in table:
-            corrected = adjust_pvalues(table.rename(columns={'dm_pvalue': 'pvalue'}))
-            table = corrected.rename(columns={'pvalue': 'dm_pvalue', 'p_holm': 'dm_p_holm', 'p_bh': 'dm_p_bh'})
-        table.to_csv(output / f'{name}.csv', index=False, encoding='utf-8')
-    (output / 'INTERPRETATION.md').write_text(
-        ('Real inputs supplied; provenance and NLP validation require upstream audit.\n' if real else
-         'Synthetic inputs: these tables validate code, not economic predictability.\n') +
-        'Regression coefficients describe conditional predictive associations, not causal effects.\n'
-        'ADF rejects a unit root; KPSS rejects level stationarity. Conflicting tests require caution.\n'
-        'Holm controls family-wise error; BH controls false discoveries within each exported table.\n'
-        'Robustness compares horizons and periods with momentum and raw document-count controls.\n'
-        'Wald compares negative and positive effects; Granger tests predictive direction only.\n'
-        'OOS and strategy tables measure incremental forecast value and returns after stated fees.\n'
-        'SHAP explains fitted predictions; tuning tables record development-only choices.\n', encoding='utf-8')
+    fingerprint = None
+    while True:
+        try:
+            if not Path(args.text).is_file():
+                print(f'Waiting for real text_daily: {args.text}', flush=True)
+            else:
+                inputs = [Path(args.market), Path(args.text)]
+                optional_inputs = [Path(p) for p in [args.ucry, args.source_weighted_text, args.exclude_price_text] if p and Path(p).is_file()]
+                current = tuple((p.stat().st_mtime_ns, p.stat().st_size) for p in [*inputs, *optional_inputs])
+                if current != fingerprint:
+                    market, text = (pd.read_parquet(p) for p in inputs)
+                    variants = {name: pd.read_parquet(path) for name, path in [
+                        ('source_weighted', args.source_weighted_text), ('exclude_price_speculation', args.exclude_price_text)] if path}
+                    figures = args.figures or str(ROOT/'outputs/figures'/('real' if real else 'synthetic'))
+                    ucry = pd.read_parquet(args.ucry) if args.ucry and Path(args.ucry).is_file() else None
+                    run_analysis(market, text, config, args.output, figures, real, args.refit_days, variants, ucry)
+                    metadata = dict(result_source='real' if real else 'synthetic', config=config, refit_days=args.refit_days,
+                                    sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs},
+                                    pipeline_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip())
+                    (Path(args.output)/'run_metadata.json').write_text(json.dumps(metadata, indent=2)+'\n', encoding='utf-8')
+                    fingerprint = current
+        except Exception:
+            if not args.watch:
+                raise
+            import traceback
+            traceback.print_exc()
+            print('Input run failed; retrying at the next poll without replacing missing data', flush=True)
+        if not args.watch:
+            return
+        print(f'Next input check in {args.poll_seconds} seconds', flush=True)
+        # Short sleeps let process interruption remain responsive.
+        remaining = args.poll_seconds
+        while remaining:
+            pause = min(30, remaining)
+            time.sleep(pause)
+            remaining -= pause
 
 
 if __name__ == '__main__':
