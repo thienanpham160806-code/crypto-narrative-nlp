@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.data.market import daily_market, fetch_bars
 from src.models.panel import make_panel, MARKET
 from src.models.econometrics import run_econometrics
-from src.models.ml import expanding, run_ml, estimator
+from src.models.ml import expanding, run_ml, estimator, training_rows
 from src.evaluation.oos import diebold_mariano, strategy, metrics
 from src.utils.common import CFG
 
@@ -140,12 +140,15 @@ def test_expanding_uses_only_matured_labels(config):
 def test_ml_all_models_and_outputs(config):
     market, text = make_fixtures(config)
     result = run_ml(market, text, config)
-    assert len(result['oos']) == 12
+    assert len(result['oos']) == 18
+    assert set(result['oos'].version) == {'market', 'attention', 'text'}
+    audit = result['refit_audit']
+    assert (audit.train_target_max + pd.to_timedelta(audit.horizon + audit.embargo, unit='D') < audit.origin).all()
     assert set(result['oos'].model) == {'EN', 'XGB', 'LGBM'}
     assert set(result['shap']['sample']) == {'development'}
     assert result['oos'].rmse.notna().all()
     assert (result['forecasts'].target_date > pd.Timestamp(config['split']['valid_end'], tz='UTC')).all()
-    assert len(result['strategy']) == 6
+    assert len(result['strategy']) == 9
     assert (result['strategy'].fee_bps == 10).all()
     cutoff = pd.Timestamp(config['split']['valid_end'], tz='UTC')
     market.loc[market.date > cutoff, ['ret', 'rv']] *= 2
@@ -174,7 +177,7 @@ def test_batched_forecasts_match_daily_calls(config):
         expected, historical = [], []
         fitted, last_fit = None, None
         for row in rows.itertuples():
-            train = frame.loc[frame.target_date <= row.date]
+            train = training_rows(frame, row.date, horizon=3)
             if fitted is None or (row.date-last_fit).days >= 7:
                 fitted = estimator(name, setting, config['seed'])
                 scale = train.y.std()
@@ -182,6 +185,6 @@ def test_batched_forecasts_match_daily_calls(config):
                 last_fit = row.date
             expected.append(fitted.predict(frame.loc[[row.Index], MARKET])[0]*scale)
             historical.append(train.y.mean())
-        actual, baseline = expanding(frame, rows, MARKET, name, setting, config['seed'], refit_days=7)
+        actual, baseline = expanding(frame, rows, MARKET, name, setting, config['seed'], refit_days=7, horizon=3)
         np.testing.assert_allclose(actual, expected, rtol=1e-7, atol=1e-12)
         np.testing.assert_array_equal(baseline, historical)

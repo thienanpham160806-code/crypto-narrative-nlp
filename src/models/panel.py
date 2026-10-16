@@ -1,5 +1,6 @@
 """One place for calendar target alignment; forecasts are made at the end of day t."""
 import pandas as pd
+from src.utils.common import CFG
 
 MARKET = ['ret', 'rv', 'logvol', *[f'ret_lag{i}' for i in range(1, 8)]]
 TEXT = ['n_docs', 'sent_finbert', 'sent_lm', 'sent_hv', 'pos_sent', 'neg_sent', 'neg_accel']
@@ -13,8 +14,8 @@ def make_panel(market, text, horizon=1):
         frame['date'] = pd.to_datetime(frame.date, utc=True)
         if frame[['date', 'asset']].duplicated().any() or not (frame.date == frame.date.dt.floor('D')).all():
             raise ValueError('Expected unique UTC daily keys')
-    attention = [c for c in text if c.startswith('attention_')]
-    if len(attention) != 8 or not set(TEXT).issubset(text):
+    attention = [f'attention_{name}' for name in CFG['nlp']['narratives']]
+    if not set([*attention, *TEXT]).issubset(text):
         raise ValueError('text_daily does not match the contract')
     # ALL is a fallback only; never duplicate an asset-specific observation.
     keys = market[['date', 'asset']].reset_index(drop=True)
