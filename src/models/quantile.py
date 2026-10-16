@@ -25,6 +25,7 @@ def quantile_fit(frame, features, tau, inference=True):
         return None
     sample = dict(tau=tau, nobs=len(data), sample_start=frame.loc[data.index].date.min(),
                   sample_end=frame.loc[data.index].date.max(), target_max=frame.loc[data.index].target_date.max())
+    sample['identified'] = np.linalg.matrix_rank(sm.add_constant((x-x.mean())/sd)) == len(x.columns)+1
     if not inference:
         fit = QuantileRegressor(quantile=tau, alpha=0, solver='highs').fit((x-x.mean())/sd, y/scale)
         coefficients = pd.Series(fit.coef_*scale/sd, index=x.columns)
@@ -38,11 +39,12 @@ def quantile_fit(frame, features, tau, inference=True):
     for term, sign in [('neg_sent', 1), ('pos_sent', -1)]:
         restriction[0, fit.params.index.get_loc(term)] = sign*scale/sd[term]
     covariance = fit.cov_params().to_numpy()
-    valid_covariance = np.isfinite(covariance).all() and float((restriction@covariance@restriction.T)[0, 0]) > 0
+    valid_covariance = sample['identified'] and np.isfinite(covariance).all() and float((restriction@covariance@restriction.T)[0, 0]) > 0
     test = fit.wald_test(restriction, scalar=True) if valid_covariance else None
     return dict(**sample,
                 beta_neg=fit.params.neg_sent*scale/sd.neg_sent, beta_pos=fit.params.pos_sent*scale/sd.pos_sent,
-                se_neg=fit.bse.neg_sent*scale/sd.neg_sent, se_pos=fit.bse.pos_sent*scale/sd.pos_sent,
+                se_neg=fit.bse.neg_sent*scale/sd.neg_sent if valid_covariance else np.nan,
+                se_pos=fit.bse.pos_sent*scale/sd.pos_sent if valid_covariance else np.nan,
                 statistic=float(test.statistic) if test else np.nan, pvalue=float(test.pvalue) if test else np.nan,
                 converged=not any(isinstance(w.message, IterationLimitWarning) for w in caught),
                 inference='heteroskedastic robust; serial dependence not corrected' if valid_covariance else
@@ -56,7 +58,7 @@ def run_quantiles(market, text, config):
     for horizon in config['model']['horizons']:
         panel = make_panel(market, text, horizon)
         panel = panel.loc[panel.target_date <= cutoff].copy()
-        panel['log_n_docs'] = np.log1p(panel.n_docs)
+        panel['log_n_docs'] = np.log(panel.n_docs.where(panel.n_docs > 0))
         optional = [c for c in panel if c.startswith(('disagreement', 'soft_attention_', 'attention_soft_', 'ucry_'))
                     and not c.endswith('price_speculation')]
         features = [*MARKET, 'log_n_docs', 'neg_sent', 'pos_sent', *optional]

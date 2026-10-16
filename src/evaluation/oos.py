@@ -87,7 +87,7 @@ def model_confidence_set(losses, seed, alpha=.1, bootstrap=999, block_length=10)
     n, m = losses.shape
     if n < 10 or m < 2 or not np.isfinite(losses.to_numpy()).all():
         raise ValueError('MCS needs finite losses for at least ten observations and two models')
-    if not 0 < alpha < 1 or bootstrap < 99 or not 1 <= block_length <= n:
+    if not 0 < alpha < 1 or bootstrap < 99 or not 1 <= block_length < n:
         raise ValueError('Invalid MCS bootstrap settings')
     rng = np.random.default_rng(seed)
     starts = rng.integers(n, size=(bootstrap, int(np.ceil(n/block_length))))

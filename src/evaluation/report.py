@@ -37,14 +37,18 @@ def preliminary_findings(tables, real):
              'Every result below is synthetic code validation; none establishes a real-market effect.']
     regression = tables.get('regressions', pd.DataFrame())
     if not regression.empty:
+        if real and 'resid_df' in regression:
+            lines.append(f'Regression samples contain {regression.nobs.min():g}–{regression.nobs.max():g} observations; '
+                         f'minimum residual degrees of freedom={regression.resid_df.min():g}. '
+                         'Tiny samples and many parameters make all significance findings exploratory.')
         selected = regression.loc[(regression.asset == 'BTC') & (regression.horizon == 1) &
                                   (regression.target == 'ret') & (regression.term == 'sent_finbert')]
         if not selected.empty:
             row = selected.iloc[0]
             lines.append(f'RQ1: BTC h=1 FinBERT return slope {row.coef:.6g}, Holm p={row.p_holm:.4g}; '
-                         'this is predictive association, not independent sentiment-label accuracy.')
+                         f'identified={getattr(row, "identified", True)}; this does not validate sentiment-label accuracy.')
         narrative = regression.loc[regression.term.str.startswith('attention_')]
-        lines.append(f'RQ3: {int(narrative.p_holm.lt(.05).sum())}/{len(narrative)} hard-narrative coefficients '
+        lines.append(f'RQ3: {int(narrative.p_holm.lt(.05).sum())}/{int(narrative.p_holm.notna().sum())} estimable hard-narrative coefficients '
                      'survive table-family Holm at 5%; evaluate against momentum and raw attention.')
     wald = tables.get('wald', pd.DataFrame())
     if not wald.empty:
@@ -183,6 +187,7 @@ def write_report(market, text, config, tables, output, figures, real=False):
     paths = paper_figures(market, text, tables, figures, label)
     lines = [f'# {label}', '', 'Daily forecast horizon is the single outcome at t+h, not a cumulative h-day return.',
              'Missing news/scores remain missing. No interpolation, fabricated labels or split changes.',
+             'Rows with identified=False have rank-deficient design: coefficients are not unique and p-values/standard errors are withheld.',
              'Holm/BH uses each unique comparison table as one family. MCS is evaluation, not test-set model selection.', '',
              '## Actual coverage', '']
     for row in tables['coverage'].itertuples():

@@ -71,7 +71,7 @@ def run_ml(market, text, config, refit_days=30):
     grids = {'EN': [.01, .1], 'XGB': [2, 3], 'LGBM': [7, 15]}
     for horizon in config['model']['horizons']:
         panel = make_panel(market, text, horizon)
-        panel['log_n_docs'] = np.log1p(panel.n_docs)
+        panel['log_n_docs'] = np.log(panel.n_docs.where(panel.n_docs > 0))
         features_text = [*MARKET, *TEXT, *[f'attention_{k}' for k in config['nlp']['narratives']]]
         features_text += ['log_n_docs', *[c for c in panel if c.startswith(('disagreement', 'soft_attention_', 'attention_soft_', 'ucry_'))]]
         versions = [('market', MARKET), ('attention', [*MARKET, 'log_n_docs']), ('text', features_text)]
@@ -181,13 +181,22 @@ def run_ml(market, text, config, refit_days=30):
             actual = group.drop_duplicates('date').set_index('date').actual.reindex(wide.index)
             groups = wide.index.to_series().diff().ne(pd.Timedelta(days=1)).cumsum()
             segment = max((part for _, part in wide.groupby(groups)), key=len)
-            if len(segment) >= 10:
+            if len(segment) >= max(20, 2*keys[2]):
                 losses = segment.sub(actual.reindex(segment.index), axis=0).pow(2)
-                result = model_confidence_set(losses, config['seed'], block_length=min(len(segment), max(10, keys[2])))
+                result = model_confidence_set(losses, config['seed'], block_length=min(len(segment)//2, max(10, keys[2])))
                 mcs.extend(dict(asset=keys[0], target=keys[1], horizon=keys[2], version=keys[3],
                                 nobs=len(segment), sample_start=segment.index.min(), sample_end=segment.index.max(), **row)
                            for row in result.to_dict('records'))
-    return {'oos': pd.DataFrame(comparisons), 'forecasts': pd.DataFrame(forecasts),
-            'strategy': pd.DataFrame(economic), 'shap': pd.DataFrame(importance), 'tuning': pd.DataFrame(tuning),
-            'refit_audit': pd.DataFrame(audit), 'ml_status': pd.DataFrame(status),
-            'gw': pd.DataFrame(gw), 'mcs': pd.DataFrame(mcs)}
+    schemas = {
+        'oos': ['asset', 'target', 'horizon', 'model', 'version', 'nobs', 'rmse', 'r2_oos_ct'],
+        'forecasts': ['asset', 'target', 'horizon', 'model', 'version', 'date', 'target_date', 'actual', 'prediction', 'baseline'],
+        'strategy': ['asset', 'model', 'version', 'net_return', 'fee_bps'],
+        'shap': ['asset', 'target', 'horizon', 'model', 'feature', 'mean_abs_shap', 'sample'],
+        'tuning': ['asset', 'target', 'horizon', 'model', 'version', 'setting', 'validation_mse'],
+        'refit_audit': ['asset', 'target', 'horizon', 'model', 'version', 'phase', 'origin', 'train_target_max', 'embargo'],
+        'ml_status': ['asset', 'target', 'horizon', 'status'],
+        'gw': ['asset', 'target', 'horizon', 'model', 'gw', 'gw_pvalue', 'nobs'],
+        'mcs': ['asset', 'target', 'horizon', 'version', 'model', 'mcs_pvalue', 'included']}
+    return {name: pd.DataFrame(rows) if rows else pd.DataFrame(columns=schemas[name]) for name, rows in [
+        ('oos', comparisons), ('forecasts', forecasts), ('strategy', economic), ('shap', importance),
+        ('tuning', tuning), ('refit_audit', audit), ('ml_status', status), ('gw', gw), ('mcs', mcs)]}

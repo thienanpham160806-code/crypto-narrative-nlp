@@ -27,8 +27,10 @@ def regress(frame, target, features, lags):
     data = frame[[target, *features]].replace([np.inf, -np.inf], np.nan).dropna()
     if len(data) <= len(features) + 2:
         raise ValueError('Insufficient regression observations')
-    return sm.OLS(data[target], sm.add_constant(data[features], has_constant='add')).fit(
+    fit = sm.OLS(data[target], sm.add_constant(data[features], has_constant='add')).fit(
         cov_type='HAC', cov_kwds={'maxlags': lags})
+    fit.identified = fit.model.rank == len(fit.params)
+    return fit
 
 
 def run_econometrics(market, text, config):
@@ -37,7 +39,7 @@ def run_econometrics(market, text, config):
     for h in config['model']['horizons']:
         panel = make_panel(market, text, h)
         panel = panel.loc[panel.target_date <= cutoff]
-        panel['log_n_docs'] = np.log1p(panel.n_docs)
+        panel['log_n_docs'] = np.log(panel.n_docs.where(panel.n_docs > 0))
         for asset, frame in panel.groupby('asset'):
             # Shares sum to one: price_speculation is the omitted reference category.
             attention = [f'attention_{k}' for k in config['nlp']['narratives'] if k != 'price_speculation']
@@ -57,15 +59,21 @@ def run_econometrics(market, text, config):
                     fit = regress(common, f'y_{target}', features, max(h-1, config['model']['hac_lags']))
                     for term in fit.params.index:
                         tables.append(dict(asset=asset, horizon=h, target=target, sentiment=sent, version=version,
-                                           term=term, coef=fit.params[term], se=fit.bse[term], pvalue=fit.pvalues[term],
-                                           nobs=fit.nobs, r2=fit.rsquared))
+                                           term=term, coef=fit.params[term], se=fit.bse[term] if fit.identified else np.nan,
+                                           pvalue=fit.pvalues[term] if fit.identified else np.nan, identified=fit.identified,
+                                           nobs=fit.nobs, resid_df=fit.df_resid, r2=fit.rsquared,
+                                           sample_start=common.date.min(), sample_end=common.date.max(),
+                                           target_max=common.target_date.max()))
             features = [*MARKET, 'log_n_docs', 'neg_sent', 'pos_sent', *optional]
             if len(frame[['y_rv', *features]].dropna()) <= len(features)+2:
                 continue
             fit = regress(frame, 'y_rv', features, max(h-1, config['model']['hac_lags']))
-            test = fit.wald_test('neg_sent = pos_sent', scalar=True)
+            test = fit.wald_test('neg_sent = pos_sent', scalar=True) if fit.identified else None
+            used = frame.loc[fit.model.data.row_labels]
             wald.append(dict(asset=asset, horizon=h, beta_neg=fit.params.neg_sent,
-                             beta_pos=fit.params.pos_sent, statistic=float(test.statistic), pvalue=float(test.pvalue)))
+                             beta_pos=fit.params.pos_sent, identified=fit.identified,
+                             nobs=fit.nobs, resid_df=fit.df_resid, sample_start=used.date.min(), sample_end=used.date.max(),
+                             statistic=float(test.statistic) if test else np.nan, pvalue=float(test.pvalue) if test else np.nan))
     panel = make_panel(market, text)
     for asset, frame in panel.loc[panel.date <= cutoff].groupby('asset'):
         for outcome in ['ret', 'rv']:

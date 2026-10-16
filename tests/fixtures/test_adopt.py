@@ -10,7 +10,7 @@ from src.models.ml import expanding, training_rows
 from src.models.run import run_analysis
 from src.models.panel import MARKET, make_panel
 from src.models.quantile import run_quantiles
-from src.models.econometrics import attach_ucry
+from src.models.econometrics import attach_ucry, run_econometrics
 from src.evaluation.report import write_report
 from src.utils.common import CFG
 from test_pipeline import make_fixtures
@@ -45,6 +45,8 @@ def test_cw_gw_mcs_and_ct():
     assert mcs.set_index('model').included.to_dict() == {'EN': True, 'XGB': False, 'LGBM': False}
     equal = model_confidence_set(pd.DataFrame({'a': y**2, 'b': y**2}), 42, bootstrap=99)
     assert equal.included.all()
+    with pytest.raises(ValueError, match='bootstrap'):
+        model_confidence_set(losses.head(10), 42, block_length=10)
     baseline = np.array([0., .5, 1.])
     result = metrics([1, 2, 3], [1, 1, 2], baseline, 'ret')
     assert result['r2_oos_ct'] == pytest.approx(1-2/7.25)
@@ -128,3 +130,17 @@ def test_partial_real_sample_produces_pending_tables(tmp_path, monkeypatch):
     assert tables['ml_status'].status.str.contains('insufficient').all()
     assert 'REAL' in (tmp_path/'README.md').read_text(encoding='utf-8')
     assert (tmp_path/'regressions.csv').exists()
+    assert pd.read_csv(tmp_path/'oos.csv').empty
+
+
+def test_unidentified_regressions_withhold_significance():
+    config = copy.deepcopy(CFG)
+    config['sample'].update(start='2023-01-01', end='2023-12-31', assets=['BTC'])
+    config['model']['horizons'] = [1]
+    market, text = make_fixtures(config)
+    text['n_docs'] = 1
+    tables = run_econometrics(market, text, config)
+    unidentifiable = tables['regressions'].loc[~tables['regressions'].identified]
+    assert not unidentifiable.empty
+    assert unidentifiable.pvalue.isna().all() and unidentifiable.se.isna().all()
+    assert tables['wald'].pvalue.isna().all()

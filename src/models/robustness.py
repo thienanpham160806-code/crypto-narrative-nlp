@@ -68,10 +68,15 @@ def run_robustness(market, text, config, text_variants=None):
                         fit = regress(sample, f'y_{target}', features, max(horizon-1, config['model']['hac_lags']))
                         for term in fit.params.index:
                             rows.append(dict(variant=variant, asset=asset, horizon=horizon, period=period,
-                                             target=target, term=term, coef=fit.params[term], se=fit.bse[term],
-                                             pvalue=fit.pvalues[term], nobs=fit.nobs))
+                                             target=target, term=term, coef=fit.params[term],
+                                             se=fit.bse[term] if fit.identified else np.nan,
+                                             pvalue=fit.pvalues[term] if fit.identified else np.nan,
+                                             identified=fit.identified, nobs=fit.nobs, resid_df=fit.df_resid,
+                                             sample_start=sample.loc[fit.model.data.row_labels].date.min(),
+                                             sample_end=sample.loc[fit.model.data.row_labels].date.max()))
     return {'stationarity': adjust_pvalues(pd.DataFrame(diagnostics, columns=[
                 'asset', 'term', 'test', 'statistic', 'pvalue', 'nobs', 'sample_start', 'sample_end'])),
             'robustness': adjust_pvalues(pd.DataFrame(rows, columns=[
-                'variant', 'asset', 'horizon', 'period', 'target', 'term', 'coef', 'se', 'pvalue', 'nobs'])),
+                'variant', 'asset', 'horizon', 'period', 'target', 'term', 'coef', 'se', 'pvalue', 'identified', 'nobs',
+                'resid_df', 'sample_start', 'sample_end'])),
             'robustness_status': pd.DataFrame(status)}
