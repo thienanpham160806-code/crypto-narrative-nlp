@@ -9,7 +9,7 @@ thêm 15/30/45 khi cần đủ. Cache: data/raw/gkg/<lang>/<YYYYMMDD>_<mm>.jsonl
 Chạy: python -m data.news_gdelt --lang en ; audit giờ đăng: python -m data.news_gdelt --audit 300
 """
 from __future__ import annotations
-import argparse, html, io, json, re, sys, pathlib, threading, unicodedata, zipfile
+import argparse, html, io, json, re, sys, pathlib, threading, time, unicodedata, zipfile
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -60,6 +60,7 @@ def cache_dir(lang: str) -> pathlib.Path:
 
 
 def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> int:
+    """Ngày lỗi mạng: ghi ERR vào progress.log, không ghi cache → lần chạy sau làm lại. Trả số dòng thu được."""
     from utils.http import Client
     get = get or Client(rps=workers).get
     days = pd.date_range(start, end, freq="D")
@@ -68,19 +69,26 @@ def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> 
     total, lock, log = len(days) * len(minutes), threading.Lock(), cache_dir(lang).parent / "progress.log"
     done = [total - len(todo)]
 
+    def note(msg):
+        print(msg, flush=True)
+        with open(log, "a", encoding="utf-8") as f:
+            f.write(msg + "\n")
+
     def day(dm):
         d, m = dm
-        rows = [r for h in range(24) for r in fetch(f"{d:%Y%m%d}{h:02d}{m:02d}00", lang, get)]
+        try:
+            rows = [r for h in range(24) for r in fetch(f"{d:%Y%m%d}{h:02d}{m:02d}00", lang, get)]
+        except Exception as e:
+            with lock:
+                note(f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} ERR {type(e).__name__}")
+            return 0
         f = cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl"
         f.with_suffix(".tmp").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
         f.with_suffix(".tmp").replace(f)
         with lock:
             done[0] += 1
-            msg = (f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} rows={len(rows)} "
-                   f"done={done[0]}/{total} ({100 * done[0] / total:.1f}%)")
-            print(msg, flush=True)
-            with open(log, "a", encoding="utf-8") as f:
-                f.write(msg + "\n")
+            note(f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} rows={len(rows)} "
+                 f"done={done[0]}/{total} ({100 * done[0] / total:.1f}%)")
         return len(rows)
 
     with ThreadPoolExecutor(workers) as ex:
@@ -161,4 +169,10 @@ if __name__ == "__main__":
     if a.audit:
         print(audit(a.lang, a.audit), "urls có giờ đăng")
     else:
-        collect(a.lang, a.start, a.end, a.minutes, a.workers)
+        while True:                                   # chạy lại các ngày lỗi cho tới khi đủ
+            collect(a.lang, a.start, a.end, a.minutes, a.workers)
+            left = [d for d in pd.date_range(a.start, a.end) for m in a.minutes
+                    if not (cache_dir(a.lang) / f"{d:%Y%m%d}_{m:02d}.jsonl").exists()]
+            if not left:
+                break
+            time.sleep(120)

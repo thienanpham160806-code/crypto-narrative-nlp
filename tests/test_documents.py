@@ -132,3 +132,13 @@ def test_timestamp_table_gdelt_vs_rss_and_sec_shift():
     r = t.loc["rss pubDate vs gdelt seendate (cùng URL)"]
     assert r.n_pairs == 1 and r.median_lag_min == 60 and r.pct_abs_gt_1h == 0 and r.pct_day_shift == 0
     assert t.loc["accepted (UTC) vs file_date"].pct_day_shift == 50
+
+
+def test_gkg_network_error_skips_day_without_cache(tmp_path, monkeypatch):
+    monkeypatch.setattr(news_gdelt, "cache_dir", lambda lang: tmp_path / lang)
+    (tmp_path / "en").mkdir()
+
+    def get(url, **kw):
+        raise ConnectionError("dns")
+    assert news_gdelt.collect("en", "2024-03-01", "2024-03-02", get=get, workers=2) == 0
+    assert not list((tmp_path / "en").glob("*.jsonl")) and "ERR ConnectionError" in (tmp_path / "progress.log").read_text()

@@ -1,6 +1,6 @@
 """Điểm từng tin → data/interim/doc_scores.parquet (DATA_CONTRACT §2).
 
-en: LM (tài chính) + Harvard IV-4 (tổng quát) + FinBERT. vi: fin_vn + crypto_vn qua VietScorer (không dịch).
+en: LM (tài chính) + Harvard IV-4 (tổng quát) + FinBERT (tin báo; SEC chỉ LM/Harvard). vi: fin_vn + crypto_vn qua VietScorer (không dịch).
 Narrative chính = zero-shot embedding (features.narrative); LLM thay thế khi config.nlp.llm.enabled và có cache/key.
 Chạy (sau features.narrative): python -m features.doc_scores
 """
@@ -73,7 +73,7 @@ def main():
     from features import finbert
     docs = pd.read_parquet(D("interim", "documents.parquet"))
     docs = docs[docs.is_canonical].reset_index(drop=True)
-    en = docs[docs.lang.eq("en")]
+    en = docs[docs.lang.eq("en") & docs.source.ne("sec")]     # SEC: 20 câu đầu là trang bìa pháp lý → chỉ LM/Harvard
     fb = finbert.score(pd.DataFrame(dict(doc_id=en.doc_id, text=text_of(en, body_chars=20_000))))
     nar = pd.read_parquet(D("interim", "narratives.parquet"))
     llm = llm_labels(en) if CFG["nlp"]["llm"]["enabled"] else None
