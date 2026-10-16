@@ -88,7 +88,7 @@ def main(real=False):
                     ucry = pd.read_parquet(args.ucry) if args.ucry and Path(args.ucry).is_file() else None
                     run_analysis(market, text, config, args.output, figures, real, args.refit_days, variants, ucry)
                     metadata = dict(result_source='real' if real else 'synthetic', config=config, refit_days=args.refit_days,
-                                    sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs},
+                                    sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in [*inputs, *optional_inputs]},
                                     pipeline_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip())
                     (Path(args.output)/'run_metadata.json').write_text(json.dumps(metadata, indent=2)+'\n', encoding='utf-8')
                     fingerprint = current

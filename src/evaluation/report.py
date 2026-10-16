@@ -111,6 +111,7 @@ def paper_figures(market, text, tables, directory, label):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     paths = []
+    mode = 'REAL: partial corpus' if label.startswith('REAL') else 'SYNTHETIC: code validation'
 
     def save(fig, name):
         fig.tight_layout()
@@ -124,12 +125,13 @@ def paper_figures(market, text, tables, directory, label):
     btc = panel.loc[panel.asset.eq('BTC')].set_index('date')
     if not btc.empty:
         fig, ax = plt.subplots(figsize=(10, 4))
-        btc.sent_finbert.plot(ax=ax, color='teal', label='FinBERT daily')
+        btc.sent_finbert.plot(ax=ax, color='teal', label='FinBERT daily',
+                             marker='o' if label.startswith('REAL') else None, markersize=3)
         ax.set_ylabel('Sentiment'); ax.legend(loc='upper left')
         other = ax.twinx()
         btc.close.plot(ax=other, color='grey', alpha=.6, label='BTC close')
         other.set_ylabel('BTC close'); other.legend(loc='upper right')
-        ax.set_title(f'{label}: sentiment index and BTC price')
+        ax.set_title(f'{mode}\nSentiment index and BTC price')
         save(fig, 'sentiment_btc')
     forecasts = tables.get('forecasts', pd.DataFrame())
     if not forecasts.empty:
@@ -141,7 +143,7 @@ def paper_figures(market, text, tables, directory, label):
                 loss = (part.actual-part.prediction).pow(2).rolling(30, min_periods=10).mean()
                 ax.plot(loss.index, loss, label=version)
             ax.set_title(model); ax.set_ylabel('30-observation MSE'); ax.legend()
-        fig.suptitle(f'{label}: BTC one-day OOS loss (no model selected on test)')
+        fig.suptitle(f'{mode}: BTC one-day OOS loss\nNo model selected on test')
         save(fig, 'oos_loss')
         fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
         for ax, (model, group) in zip(axes, chosen.groupby('model')):
@@ -155,7 +157,7 @@ def paper_figures(market, text, tables, directory, label):
                 net = pos*np.expm1(part.actual.to_numpy())-.001*turnover
                 ax.plot(dates, np.cumprod(1+net), label=version)
             ax.set_title(model); ax.set_ylabel('Net wealth (start=1)'); ax.legend()
-        fig.suptitle(f'{label}: economic-value test only; 10 bps fees, no extra slippage')
+        fig.suptitle(f'{mode}: economic-value test only\n10 bps fees; no extra slippage')
         save(fig, 'cumulative_strategy')
     quantiles = tables.get('quantiles', pd.DataFrame())
     if not quantiles.empty:
@@ -164,14 +166,14 @@ def paper_figures(market, text, tables, directory, label):
         for term in ['neg', 'pos']:
             ax.errorbar(chosen.tau, chosen[f'beta_{term}'], yerr=1.96*chosen[f'se_{term}'], marker='o', label=term)
         ax.axhline(0, color='grey', linewidth=.8); ax.legend(); ax.set_xlabel('RV quantile')
-        ax.set_title(f'{label}: BTC predictive RV slopes; intervals ignore serial dependence')
+        ax.set_title(f'{mode}: BTC predictive RV slopes\nIntervals ignore serial dependence')
         save(fig, 'quantile_coefficients')
     shap = tables.get('shap', pd.DataFrame())
     if not shap.empty:
         chosen = shap.loc[(shap.asset == 'BTC') & (shap.target == 'ret') & (shap.horizon == 1)].nlargest(15, 'mean_abs_shap')
         fig, ax = plt.subplots(figsize=(8, 5))
         ax.barh(chosen.feature[::-1], chosen.mean_abs_shap[::-1], color='teal')
-        ax.set_title(f'{label}: development-only SHAP, BTC one-day return')
+        ax.set_title(f'{mode}\nDevelopment-only SHAP: BTC one-day return')
         ax.set_xlabel('Mean absolute SHAP (return units)')
         save(fig, 'shap_btc')
     return paths
