@@ -1,0 +1,13 @@
+method,topic,narrative,top_words,k_selected
+lda,0,etf_institutional,bitcoin crypto year token ethereum announces investment digital new altcoins,8.0
+lda,1,etf_institutional,bitcoin etf sec xrp grayscale trading btc spot volume price,8.0
+lda,2,security_hacks,blockchain coinbase global nasdaq years gold finance lawsuit security pepe,8.0
+lda,3,etf_institutional,crypto bitcoin week mining etfs cryptocurrencies investors ai new assets,8.0
+lda,4,etf_institutional,price bitcoin crypto ethereum billion defi solana eth exchanges news,8.0
+lda,5,security_hacks,crypto binance big report sec asset industry world record new,8.0
+lda,6,etf_institutional,crypto says bitcoin ftx ethereum amid launches analyst bullish ceo,8.0
+lda,7,security_hacks,crypto market exchange cryptocurrency million new bitcoin network scam coinbase,8.0
+bertopic,0,etf_institutional,crypto binance exchange sec new 2023 market ceo trading investors,
+bertopic,1,etf_institutional,bitcoin price market million trading hits sec week volume reaches,
+bertopic,2,price_speculation,global network tech launches market 2023 new report joins news,
+bertopic,3,price_speculation,xrp price sec community volume billion 10 token hits new,

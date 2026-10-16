@@ -19,7 +19,7 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 node_modules/
-dashboard/frontend/dist/
+dashboard/web/dist/
 # bộ nhớ cục bộ của agent
 .claude/settings.local.json
 # PDF tài liệu tham khảo tải tay (bản quyền nhà xuất bản)

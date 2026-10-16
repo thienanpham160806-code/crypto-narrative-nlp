@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g0:#F6F7F5;--g1:#ECEEEB;--g2:#DDE0DD;--g4:#A9AEAB;--g6:#6E7471;--g9:#1B1E22;--blue:#1F4E9E;--red:#B3261E;--green:#2F6B3A;--orange:#E07B24;--yellow:#E3B505}
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;background:var(--g0);color:var(--g9);font:14px/1.4 "Public Sans",system-ui;font-variant-numeric:tabular-nums}
+.app{display:grid;grid-template-columns:216px 1fr;height:900px}
+nav{background:var(--g9);color:var(--g1);padding:20px 0}
+.brand{padding:0 20px 24px;font-weight:700;font-size:15px;letter-spacing:.02em}
+.brand small{display:block;font-weight:400;color:var(--g4);font-size:12px;margin-top:2px}
+nav a{display:flex;justify-content:space-between;padding:9px 20px;color:var(--g2);text-decoration:none;font-size:14px}
+nav a.on{background:#2A2E33;color:#fff;box-shadow:inset 3px 0 0 var(--blue)}
+nav a span{color:var(--g6);font-size:12px}
+main{display:grid;grid-template-rows:56px 104px 1fr;min-width:0}
+header{display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid var(--g2);background:#fff}
+header h1{font-size:18px;font-weight:600;margin-right:auto}
+.chip{border:1px solid var(--g2);border-radius:4px;padding:5px 10px;font-size:13px;color:var(--g6)}
+.chip b{color:var(--g9);font-weight:600}
+.seg{display:flex;border:1px solid var(--g4);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:6px 12px;font:600 13px "Public Sans"}
+.seg button.on{background:var(--blue);color:#fff}
+.bulletin{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--g2);background:#fff}
+.m{padding:16px 24px;border-right:1px solid var(--g2)}
+.m:last-child{border-right:0}
+.m label{font-size:12px;color:var(--g6);text-transform:uppercase;letter-spacing:.06em}
+.m .v{font-size:28px;font-weight:600;margin-top:6px;line-height:1.1}
+.m .d{font-size:12px;color:var(--g6);margin-top:4px}
+.alert{display:inline-flex;align-items:center;gap:8px}
+.alert i{width:14px;height:14px;background:var(--orange);display:inline-block}
+.body{display:grid;grid-template-columns:1fr 360px;min-height:0}
+.heli{padding:20px 24px;min-width:0;border-right:1px solid var(--g2)}
+.heli h2,.feed h2{font-size:15px;font-weight:600}
+.heli p.sub{font-size:13px;color:var(--g6);margin:2px 0 12px}
+.drum{position:relative;background:#fff;border:1px solid var(--g2);height:560px;
+ background-image:repeating-linear-gradient(90deg,transparent 0 39px,var(--g1) 39px 40px)}
+.row{position:absolute;left:56px;right:12px;height:44px}
+.row b{position:absolute;left:-50px;top:14px;font-size:11px;color:var(--g6);font-weight:500}
+svg{position:absolute;inset:0;width:100%;height:100%}
+.pick{position:absolute;width:2px;height:22px;top:11px}
+.mag{position:absolute;border-radius:50%;border:2px solid var(--g9);background:#fff}
+.axis{position:absolute;bottom:-20px;left:56px;right:12px;display:flex;justify-content:space-between;font-size:11px;color:var(--g6)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--g6);margin-top:28px}
+.legend i{display:inline-block;width:18px;height:2px;vertical-align:middle;margin-right:6px}
+.feed{padding:20px;background:#fff;overflow:hidden}
+.item{padding:12px 0;border-bottom:1px solid var(--g1)}
+.item time{font-size:12px;color:var(--g6);font-weight:500}
+.item a{display:block;color:var(--g9);font-weight:500;margin:3px 0;text-decoration:none}
+.tag{font-size:11px;border:1px solid var(--g2);padding:1px 6px;border-radius:3px;color:var(--g6)}
+.neg{color:var(--red);font-weight:600;font-size:12px;margin-left:6px}
+.pos{color:var(--green);font-weight:600;font-size:12px;margin-left:6px}
+</style></head><body><div class="app">
+<nav><div class="brand">Crypto Narrative<small>Intelligence · 2023–2026</small></div>
+<a class="on" href="#">Tổng quan</a><a href="#">Narratives</a><a href="#">Sentiment vs BTC</a><a href="#">Attention theo coin</a><a href="#">Dự báo volatility</a><a href="#">Timing accuracy</a><a href="#">Validation</a><a href="#">Live <span>RSS</span></a></nav>
+<main>
+<header><h1>Tổng quan · 2024-03-24 (UTC)</h1>
+<span class="chip">Độ phủ GDELT <b>31 / 1369 ngày</b></span><span class="chip">Kỳ <b>Train</b></span>
+<div class="seg"><button class="on">VI</button><button>EN</button></div><div class="seg"><button class="on">Sáng</button><button>Tối</button></div></header>
+<section class="bulletin">
+<div class="m"><label>Dominant narrative</label><div class="v">ETF / institutional</div><div class="d">23,4% tin · 7 ngày</div></div>
+<div class="m"><label>Narrative intensity</label><div class="v">Cao</div><div class="d">z = +1,8 so với 90 ngày</div></div>
+<div class="m"><label>Overall sentiment</label><div class="v">−0,03</div><div class="d">FinBERT, 3.064 tin</div></div>
+<div class="m"><label>Neg-news acceleration</label><div class="v">+35%</div><div class="d">neg_sent so với hôm trước</div></div>
+<div class="m"><label>BTC volatility risk</label><div class="v alert"><i></i>Elevated</div><div class="d">RV dự báo h=1, phân vị 82</div></div>
+</section>
+<div class="body">
+<section class="heli"><h2>Helicorder narrative · 12 ngày gần nhất</h2><p class="sub">Mỗi hàng là một ngày UTC, biên độ = số tin theo giờ; vạch đứng = tin đến lúc public_ts_utc; vòng tròn = cú sốc tin theo thang magnitude.</p>
+<div class="drum">
+<div class="row" style="top:8px"><b>03-13</b></div><div class="row" style="top:54px"><b>03-14</b></div><div class="row" style="top:100px"><b>03-15</b></div><div class="row" style="top:146px"><b>03-16</b></div><div class="row" style="top:192px"><b>03-17</b></div><div class="row" style="top:238px"><b>03-18</b></div><div class="row" style="top:284px"><b>03-19</b></div><div class="row" style="top:330px"><b>03-20</b></div><div class="row" style="top:376px"><b>03-21</b></div><div class="row" style="top:422px"><b>03-22</b></div><div class="row" style="top:468px"><b>03-23</b></div><div class="row" style="top:514px"><b>03-24</b></div>
+<svg viewBox="0 0 900 560" preserveAspectRatio="none">
+<g fill="none" stroke-width="1.4">
+<path stroke="#1B1E22" d="M56 30 L120 28 140 22 160 34 200 30 260 26 280 36 300 18 330 32 400 30 470 27 520 33 600 29 680 31 760 26 890 30"/>
+<path stroke="#B3261E" d="M56 76 L130 74 150 64 170 86 210 76 300 72 330 80 360 70 420 77 520 75 560 60 580 92 620 76 760 74 890 77"/>
+<path stroke="#1F4E9E" d="M56 122 L160 120 200 116 260 126 300 120 420 118 470 106 500 136 540 122 700 120 890 121"/>
+<path stroke="#2F6B3A" d="M56 168 L200 166 260 160 300 172 380 168 500 166 640 162 700 172 890 167"/>
+<path stroke="#1B1E22" d="M56 214 L140 212 180 204 220 222 300 214 420 210 520 218 600 212 890 214"/>
+<path stroke="#B3261E" d="M56 260 L120 258 150 250 170 270 260 260 330 256 360 236 380 286 410 262 600 258 890 260"/>
+<path stroke="#1F4E9E" d="M56 306 L210 304 260 296 300 316 420 306 520 302 560 312 890 306"/>
+<path stroke="#2F6B3A" d="M56 352 L160 350 220 342 260 360 360 352 480 348 540 356 890 352"/>
+<path stroke="#1B1E22" d="M56 398 L240 396 300 388 330 410 400 398 600 394 660 404 890 398"/>
+<path stroke="#B3261E" d="M56 444 L130 442 170 432 210 456 300 444 420 440 450 412 480 476 520 446 890 444"/>
+<path stroke="#1F4E9E" d="M56 490 L200 488 260 480 300 498 400 490 560 486 620 496 890 490"/>
+<path stroke="#2F6B3A" d="M56 536 L170 534 230 526 260 544 400 536 520 532 560 540 890 536"/>
+</g></svg>
+<span class="pick" style="left:372px;top:236px;background:#B3261E"></span>
+<span class="mag" style="left:442px;top:428px;width:30px;height:30px"></span>
+<span class="mag" style="left:554px;top:62px;width:18px;height:18px"></span>
+<span class="mag" style="left:466px;top:108px;width:14px;height:14px"></span>
+<div class="axis"><span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>24:00 UTC</span></div>
+</div>
+<div class="legend"><span><i style="background:#1B1E22"></i>Mực ghi đổi theo hàng</span><span>○ magnitude: 10 · 30 · 100 tin/giờ</span><span>Bấm một vạch để mở tin</span></div>
+</section>
+<aside class="feed"><h2>Tin đến gần nhất</h2>
+<div class="item"><time>2024-03-24 22:00 UTC · gdelt</time><a href="#">Bitcoin ETF inflows slow as BlackRock fund nears $15 billion</a><span class="tag">etf_institutional</span><span class="neg">−0,41</span></div>
+<div class="item"><time>2024-03-24 19:00 UTC · gdelt</time><a href="#">Exchange halts withdrawals after $62M exploit on bridge</a><span class="tag">security_hacks</span><span class="neg">−0,88</span></div>
+<div class="item"><time>2024-03-24 15:00 UTC · gdelt</time><a href="#">Solana memecoin frenzy pushes network fees to record</a><span class="tag">price_speculation</span><span class="pos">+0,52</span></div>
+<div class="item"><time>2024-03-24 11:00 UTC · gdelt</time><a href="#">SEC delays decision on spot Ethereum ETF applications</a><span class="tag">regulation</span><span class="neg">−0,36</span></div>
+<div class="item"><time>2024-03-24 08:00 UTC · gdelt</time><a href="#">Fed minutes keep rate-cut timing open, crypto traders wait</a><span class="tag">macro_monetary</span><span class="pos">+0,04</span></div>
+</aside></div></main></div></body></html>
