@@ -143,7 +143,7 @@ export default function TimeChart({ rows, series, stacked = false, height = 240,
         <line className="baseline" x1={M.left} x2={right} y1={M.top + ih} y2={M.top + ih} />
         {bandPath && <path d={bandPath} fill={band.color} opacity="0.18" />}
         {stacks.map(({ s, lo, hi }) => (
-          <path key={s.key} d={area(lo, hi)} fill={s.color} stroke="var(--surface)" strokeWidth="1" />
+          <path key={s.key} d={area(lo, hi)} fill={s.color} stroke="var(--surface)" strokeWidth={rows.length > iw / 4 ? 0 : 1} />
         ))}
         {!stacked && series.map((s) => (
           <path key={s.key} d={path(s.key)} fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
