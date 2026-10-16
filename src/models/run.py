@@ -24,7 +24,11 @@ def main():
     market, text = pd.read_parquet(args.market), pd.read_parquet(args.text)
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
-    for name, table in {**run_econometrics(market, text, config), **run_ml(market, text, config, args.refit_days)}.items():
+    print('Running econometrics', flush=True)
+    for name, table in run_econometrics(market, text, config).items():
+        table.to_csv(output / f'{name}.csv', index=False)
+    print('Running expanding forecasts', flush=True)
+    for name, table in run_ml(market, text, config, args.refit_days).items():
         table.to_csv(output / f'{name}.csv', index=False)
 
 

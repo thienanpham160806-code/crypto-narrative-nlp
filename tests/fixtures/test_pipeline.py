@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.data.market import daily_market, fetch_bars
 from src.models.panel import make_panel, MARKET
 from src.models.econometrics import run_econometrics
-from src.models.ml import expanding, run_ml
+from src.models.ml import expanding, run_ml, estimator
 from src.evaluation.oos import diebold_mariano, strategy, metrics
 from src.utils.common import CFG
 
@@ -164,3 +164,24 @@ def test_dm_metrics_and_costs():
     costs = strategy(np.zeros(3), [1, -1, 1])
     assert costs['turnover'] == 4
     assert costs['net_return'] < 0
+
+
+def test_batched_forecasts_match_daily_calls(config):
+    market, text = make_fixtures(config)
+    frame = make_panel(market, text, 3).rename(columns={'y_ret': 'y'}).dropna()
+    rows = frame.tail(20)
+    for name, setting in [('EN', .01), ('XGB', 2), ('LGBM', 7)]:
+        expected, historical = [], []
+        fitted, last_fit = None, None
+        for row in rows.itertuples():
+            train = frame.loc[frame.target_date <= row.date]
+            if fitted is None or (row.date-last_fit).days >= 7:
+                fitted = estimator(name, setting, config['seed'])
+                scale = train.y.std()
+                fitted.fit(train[MARKET], train.y/scale)
+                last_fit = row.date
+            expected.append(fitted.predict(frame.loc[[row.Index], MARKET])[0]*scale)
+            historical.append(train.y.mean())
+        actual, baseline = expanding(frame, rows, MARKET, name, setting, config['seed'], refit_days=7)
+        np.testing.assert_allclose(actual, expected, rtol=1e-7, atol=1e-12)
+        np.testing.assert_array_equal(baseline, historical)

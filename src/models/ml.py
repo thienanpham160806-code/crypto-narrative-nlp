@@ -24,22 +24,25 @@ def estimator(name, setting, seed):
 
 
 def expanding(frame, forecast_rows, features, name, setting, seed, refit_days=30):
-    predictions, baselines, fitted = [], [], None
-    last_fit = None
-    for row in forecast_rows.itertuples():
+    if refit_days < 1 or not forecast_rows.date.is_monotonic_increasing:
+        raise ValueError('Need positive refit interval and chronological forecast origins')
+    predictions, baselines, cursor = [], [], 0
+    while cursor < len(forecast_rows):
+        origin = forecast_rows.iloc[cursor].date
         # A target dated t is observable at the end of t, exactly our forecast origin.
-        train = frame.loc[frame.target_date <= row.date]
+        train = frame.loc[frame.target_date <= origin]
         if len(train) < 30:
             raise ValueError('Need at least 30 matured training labels')
-        if fitted is None or (row.date-last_fit).days >= refit_days:
-            fitted = estimator(name, setting, seed)
-            scale = train.y.std()
-            if not np.isfinite(scale) or scale <= 0:
-                raise ValueError('Constant or invalid training target')
-            fitted.fit(train[features], train.y / scale)
-            last_fit = row.date
-        predictions.append(float(fitted.predict(frame.loc[[row.Index], features])[0]) * scale)
-        baselines.append(train.y.mean())
+        scale = train.y.std()
+        if not np.isfinite(scale) or scale <= 0:
+            raise ValueError('Constant or invalid training target')
+        fitted = estimator(name, setting, seed)
+        fitted.fit(train[features], train.y / scale)
+        stop = forecast_rows.date.searchsorted(origin + pd.Timedelta(days=refit_days))
+        block = forecast_rows.iloc[cursor:stop]
+        predictions.extend(fitted.predict(block[features]) * scale)
+        baselines.extend(frame.loc[frame.target_date <= date, 'y'].mean() for date in block.date)
+        cursor = stop
     return np.array(predictions), np.array(baselines)
 
 
@@ -55,6 +58,7 @@ def run_ml(market, text, config, refit_days=30):
         features_text = [*MARKET, *TEXT, *[c for c in panel if c.startswith('attention_')]]
         for asset, asset_frame in panel.groupby('asset'):
             for target in ['ret', 'rv']:
+                print(f'ML: {asset}, h={horizon}, target={target}', flush=True)
                 frame = asset_frame.rename(columns={f'y_{target}': 'y'}).dropna(subset=[*features_text, 'y', 'target_date']).copy()
                 valid = frame.loc[(frame.target_date > train_end) & (frame.target_date <= valid_end) & (frame.date >= train_end)]
                 test = frame.loc[(frame.target_date > valid_end) & (frame.date >= valid_end)]
