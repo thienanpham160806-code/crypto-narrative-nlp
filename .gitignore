@@ -1,0 +1,24 @@
+# dữ liệu thô / lớn
+data/raw/*
+!data/raw/.gitkeep
+*.parquet
+!data/processed/sample_*.parquet
+data/interim/llm_cache/
+# từ điển tải ngoài (giấy phép riêng, không phân phối lại)
+dict/Loughran-McDonald_*.csv
+dict/LoughranMcDonald_*.csv
+dict/VietSentiWordnet_*.txt
+dict/HIV-4.csv
+# bí mật
+.env
+config/config.local.yaml
+# môi trường
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+node_modules/
+dashboard/frontend/dist/
+# bộ nhớ cục bộ của agent
+.claude/settings.local.json

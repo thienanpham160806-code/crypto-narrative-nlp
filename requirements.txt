@@ -1,0 +1,33 @@
+# lõi
+pandas>=2.0
+numpy>=1.24
+scipy>=1.11
+statsmodels>=0.14
+pyyaml>=6.0
+tqdm>=4.66
+requests>=2.31
+tenacity>=8.2
+pyarrow>=15.0
+python-dotenv>=1.0
+rapidfuzz>=3.0         # dedup tiêu đề gần trùng
+pytest>=8.0
+# NLP
+pysentiment2>=0.1.1    # Harvard IV-4 (từ điển tổng quát đối chứng)
+transformers>=4.40     # FinBERT
+torch>=2.2             # CPU: pip install torch --index-url https://download.pytorch.org/whl/cpu
+sentence-transformers>=3.0
+bertopic>=0.16
+scikit-learn>=1.4
+# ML
+xgboost>=2.0
+lightgbm>=4.3
+shap>=0.45
+# dữ liệu
+feedparser>=6.0        # RSS
+ccxt>=4.3              # Binance OHLCV
+# LLM (tùy chọn – zero-shot narrative)
+google-genai>=2.0
+anthropic>=1.0
+# dashboard backend
+fastapi>=0.110
+uvicorn>=0.29
