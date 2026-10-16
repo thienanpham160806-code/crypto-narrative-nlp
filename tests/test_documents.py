@@ -142,3 +142,18 @@ def test_gkg_network_error_skips_day_without_cache(tmp_path, monkeypatch):
         raise ConnectionError("dns")
     assert news_gdelt.collect("en", "2024-03-01", "2024-03-02", get=get, workers=2) == 0
     assert not list((tmp_path / "en").glob("*.jsonl")) and "ERR ConnectionError" in (tmp_path / "progress.log").read_text()
+
+
+def test_sec_missing_accepted_stays_null(tmp_path, monkeypatch):
+    monkeypatch.setattr(news_sec, "D", lambda *a: tmp_path / a[-1])
+    hit = {"_id": "0001-23-1:d.htm", "_source": {"ciks": ["1"], "form": "S-1", "file_date": "2023-01-26",
+                                                 "display_names": ["X Trust"]}}
+    pages = {news_sec.FTS: R(200, json.dumps({"hits": {"hits": [hit]}})),
+             news_sec.archive("1", "0001-23-1", "0001-23-1-index.htm"): R(200, "<p>no accepted line</p>"),
+             news_sec.archive("1", "0001-23-1", "d.htm"): R(200, "<p>text</p>")}
+    news_sec.collect("2023-01-01", "2023-01-31", get=lambda u, **k: pages[u])
+    assert '"accepted": null' in (tmp_path / "filings.jsonl").read_text()
+    with open(tmp_path / "filings.jsonl", "a") as f:                        # dòng cũ ghi chuỗi "None"
+        f.write(json.dumps(dict(id="old", url="u", form="8-K", file_date="2023-01-02", company="Y", accepted="None",
+                                body=None)) + "\n")
+    assert news_sec.load().published_at_utc.isna().all()

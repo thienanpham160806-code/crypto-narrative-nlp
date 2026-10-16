@@ -50,7 +50,7 @@ export default function TimeChart({ rows, series, stacked = false, height = 240,
   const iw = w - M.left - M.right, ih = height - M.top - M.bottom
 
   const geo = useMemo(() => {
-    if (!rows.length) return null
+    if (!rows.length || !series.length) return null
     const t0 = rows[0].t, t1 = rows[rows.length - 1].t
     const span = Math.max(1, t1 - t0)
     const x = (d) => M.left + ((d - t0) / span) * iw

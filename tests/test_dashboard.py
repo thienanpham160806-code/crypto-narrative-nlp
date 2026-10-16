@@ -35,10 +35,13 @@ def test_summary_is_point_in_time():
     assert s["vol_risk"]["level"] == "high"                                         # RV cuối là cao nhất 365 ngày
 
 
-def test_summary_prefers_forecast_up_to_as_of():
-    fc = pd.DataFrame(dict(asset="BTC", target="rv", horizon=1, date=["2023-02-04", "2023-02-20"], prediction=[1.0, 50.0]))
+def test_summary_uses_designated_forecast_made_on_as_of():
+    fc = pd.DataFrame(dict(asset="BTC", target="rv", horizon=1, model=["EN", "EN", "XGB"], version="text",
+                           date=["2023-02-05", "2023-02-04", "2023-02-05"], prediction=[1.0, 50.0, 99.0]))
     s = export.summary(text_frame(), market_frame(), fc)
     assert s["vol_risk"]["source"] == "forecast" and s["vol_risk"]["value"] == 1.0
+    stale = export.summary(text_frame(), market_frame(), fc[fc.date < "2023-02-05"])
+    assert stale["vol_risk"]["source"] == "realized"
 
 
 def test_helicorder_and_snippets_skip_sec_and_duplicates():

@@ -5,7 +5,7 @@
 Thẻ tóm tắt tính tại ngày cuối có tin, chỉ dùng dữ liệu ≤ ngày đó (point-in-time):
   dominant = argmax trung bình soft_attention 7 ngày; intensity = z của n_docs 7 ngày so với 90 ngày trước;
   sentiment = trung bình sent_finbert 7 ngày; neg_accel = neg_sent 7 ngày / 7 ngày trước − 1;
-  vol risk = phân vị của RV dự báo (Codex, BTC h=1) – chưa có thì RV thực hiện – trong 365 ngày RV trước.
+  vol risk = phân vị của RV dự báo lập đúng ngày đó (Codex, FORECAST) – không có thì RV thực hiện – trong 365 ngày RV.
 Chạy: python dashboard/export.py
 """
 from __future__ import annotations
@@ -19,6 +19,7 @@ NARR = CFG["nlp"]["narratives"]
 OUT = ROOT / "dashboard" / "web" / "public" / "data"
 RISK = [(0.5, "low"), (0.8, "normal"), (0.95, "elevated"), (1.01, "high")]
 SNIPPETS_PER_DAY = 6
+FORECAST = ("EN", "text")       # mô hình chỉ định cho thẻ rủi ro: Elastic Net market+text, BTC RV h=1
 
 
 def read(path: pathlib.Path, **kw) -> pd.DataFrame:
@@ -52,10 +53,12 @@ def summary(text: pd.DataFrame, market: pd.DataFrame, forecasts: pd.DataFrame) -
     z = (w7.n_docs.mean() - base.mean()) / base.std() if base.std() > 0 else np.nan
     neg = w7.neg_sent.mean() / prev7.neg_sent.mean() - 1 if prev7.neg_sent.mean() > 0 else np.nan
     btc = market[market.asset.eq("BTC")].set_index("date").sort_index().rv.loc[:t]
-    fc = forecasts[(forecasts.get("asset") == "BTC") & (forecasts.get("target") == "rv") & (forecasts.get("horizon") == 1)] \
-        if len(forecasts) else forecasts
-    fc = fc[pd.to_datetime(fc.date, utc=True) <= t] if len(fc) else fc
-    vol, vol_src = (float(fc.sort_values("date").prediction.iloc[-1]), "forecast") if len(fc) else \
+    fc = forecasts
+    if len(fc):
+        m, v = FORECAST
+        fc = fc[(fc.asset == "BTC") & (fc.target == "rv") & (fc.horizon == 1) & (fc.model == m) & (fc.version == v)
+                & (pd.to_datetime(fc.date, utc=True) == t)]                # chỉ dự báo lập đúng ngày t
+    vol, vol_src = (float(fc.prediction.iloc[0]), "forecast") if len(fc) else \
         (float(btc.iloc[-1]) if len(btc) else np.nan, "realized")
     hist = btc.loc[t - pd.Timedelta(days=365):t]
     pct = float((hist < vol).mean()) if len(hist) and not np.isnan(vol) else np.nan
