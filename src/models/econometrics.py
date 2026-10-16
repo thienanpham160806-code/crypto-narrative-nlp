@@ -39,20 +39,25 @@ def run_econometrics(market, text, config):
     for asset, frame in panel.loc[panel.date <= cutoff].groupby('asset'):
         for outcome in ['ret', 'rv']:
             data = frame.set_index('date')[['sent_finbert', outcome]].dropna()
-            if len(data) < 30 or not data.index.to_series().diff().dropna().eq(pd.Timedelta(days=1)).all():
+            total = len(data)
+            segments = data.index.to_series().diff().ne(pd.Timedelta(days=1)).cumsum()
+            data = max((part for _, part in data.groupby(segments)), key=len)
+            if len(data) < 30:
                 raise ValueError('VAR requires a contiguous daily series with at least 30 observations')
             data = data.asfreq('D')
+            sample = dict(nobs=len(data), sample_start=data.index.min(), sample_end=data.index.max(),
+                          discarded_observations=total-len(data))
             maximum = min(config['model']['var_maxlags'], (len(data)-5)//3)
             lag = int(VAR(data).select_order(maxlags=maximum).selected_orders['aic'])
             if lag == 0:
                 for caused, causing in [(outcome, 'sent_finbert'), ('sent_finbert', outcome)]:
                     granger.append(dict(asset=asset, outcome=outcome, causing=causing, caused=caused,
-                                        lag=0, statistic=np.nan, pvalue=np.nan, conclusion='AIC selects no lags; no Granger test'))
+                                        lag=0, statistic=np.nan, pvalue=np.nan, conclusion='AIC selects no lags; no Granger test', **sample))
                 continue
             fit = VAR(data).fit(lag)
             for caused, causing in [(outcome, 'sent_finbert'), ('sent_finbert', outcome)]:
                 test = fit.test_causality(caused, [causing], kind='f')
                 granger.append(dict(asset=asset, outcome=outcome, causing=causing, caused=caused,
                                     lag=lag, statistic=test.test_statistic, pvalue=test.pvalue,
-                                    conclusion='Predictive lead (not structural causality)' if test.pvalue < .05 else 'No predictive lead at 5%'))
+                                    conclusion='Predictive lead (not structural causality)' if test.pvalue < .05 else 'No predictive lead at 5%', **sample))
     return {'regressions': pd.DataFrame(tables), 'wald': pd.DataFrame(wald), 'granger': pd.DataFrame(granger)}

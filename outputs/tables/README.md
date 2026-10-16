@@ -19,7 +19,7 @@ For real data, run `python -m src.data.market`, then pass `--market data/process
 |---|---|
 | `regressions.csv` | Development-only predictive OLS with Newey–West HAC. Sentiment coefficients describe next-h-day return or RV associations conditional on market controls; shares are relative to omitted price/speculation attention. Differences across sentiment regressions are not a labeled sentiment validation. |
 | `wald.csv` | Tests equality of negative and positive sentiment coefficients for future RV. A rejection indicates asymmetric conditional associations, not proof that news causes volatility. |
-| `granger.csv` | AIC-selected bivariate VAR, both directions. A significant text→market test indicates a predictive lead; market→text suggests feedback. AIC zero lags yields an explicit untested result. |
+| `granger.csv` | AIC-selected bivariate VAR, both directions, on the longest contiguous development segment (sample boundaries and discarded count reported). A significant text→market test indicates a predictive lead; market→text suggests feedback. AIC zero lags yields an explicit untested result. |
 | `oos.csv` | Paired market-only and text-augmented expanding forecasts. Positive OOS R² beats the expanding historical mean; lower RMSE/MAE/QLIKE is better. Positive DM favors text; p-values are unadjusted exploratory tests. |
 | `forecasts.csv` | Auditable forecast origins, target dates, observations, predictions and historical mean. This is the basis for economic-value comparisons, not an executable trading feed. |
 | `tuning.csv` | Validation losses and candidate settings. Settings and the SHAP winner are selected here before the test pass; these numbers are not final performance claims. |

@@ -119,6 +119,11 @@ def test_econometrics_ignores_test_labels(config):
     assert len(original['granger']) == 4
     coef = original['regressions'].query("term == 'sent_finbert' and target == 'ret'").coef.iloc[0]
     assert coef > 0
+    market.loc[market.date == pd.Timestamp('2023-03-24', tz='UTC'), 'rv'] = np.nan
+    with_gap = run_econometrics(market, text, config)['granger']
+    rv_tests = with_gap.loc[with_gap.outcome == 'rv']
+    assert (rv_tests.sample_start == pd.Timestamp('2023-03-25', tz='UTC')).all()
+    assert (rv_tests.discarded_observations > 0).all()
 
 
 def test_expanding_uses_only_matured_labels(config):
