@@ -26,6 +26,7 @@ KEEP = {
                      r"stablecoin|blockchain|binance|\busdt\b", re.I),
 }
 TITLE = re.compile(r"<PAGE_TITLE>(.*?)</PAGE_TITLE>")
+STRIDE = 16
 
 
 def title_of(extras: str) -> str:
@@ -63,6 +64,7 @@ def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> 
     get = get or Client(rps=workers).get
     days = pd.date_range(start, end, freq="D")
     todo = [(d, m) for d in days for m in minutes if not (cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl").exists()]
+    todo.sort(key=lambda dm: ((dm[0] - days[0]).days % STRIDE, dm[0]))   # rải đều mẫu: dừng giữa chừng vẫn phủ đủ kỳ
     total, lock, log = len(days) * len(minutes), threading.Lock(), cache_dir(lang).parent / "progress.log"
     done = [total - len(todo)]
 
