@@ -152,3 +152,22 @@ def test_validation_sample_excludes_test_and_scores():
     r = validation.evaluate(lab, sc, nar).set_index(["task", "method"])
     assert r.loc[("sentiment", "LM"), "accuracy"] == .5 and r.loc[("sentiment", "FinBERT"), "accuracy"] == 1
     assert r.loc[("sentiment", "FinBERT"), "n"] == 2 and r.loc[("narrative", "BERTopic"), "accuracy"] == 0
+
+
+def test_run_topic_models_skip_sec_and_vi(tmp_path, monkeypatch):
+    monkeypatch.setattr(narrative, "D", lambda *a: tmp_path / a[-1])
+    monkeypatch.setattr(narrative, "O", lambda *a: tmp_path / a[-1])
+    seen = {}
+
+    class Enc:
+        def encode(self, texts, **kw):
+            return np.array([np.eye(8)[hash(t) % 8] for t in texts], dtype=np.float32)
+
+    def fake_lda(texts, per, seed):
+        seen["lda"] = list(texts)
+        return np.zeros(len(texts), int), np.ones(len(texts)), {0: "bitcoin"}, 8, pd.DataFrame(dict(k=[8]))
+    monkeypatch.setattr(narrative, "lda", fake_lda)
+    monkeypatch.setattr(narrative, "bertopic", lambda t, e, p, s: (np.zeros(len(t), int), np.ones(len(t)), {0: "x"}))
+    out, topics = narrative.run(docs_frame(), enc=Enc())
+    assert seen["lda"] == ["Bitcoin soars to record", "SEC sues exchange over losses", "ETH fine", "dup of a", "Ether gains"]
+    assert out.set_index("doc_id").loc[["d", "g"], "lda_narr"].isna().all() and out.zs_narr.notna().all()

@@ -5,6 +5,7 @@ Point-in-time: mọi thứ cần "fit" (vectorizer, LDA, chọn K, BERTopic, ng�
 Topic của LDA/BERTopic → narrative: embedding của top-10 từ gần mô tả narrative nào nhất.
 Zero-shot: cosine(embedding tin, embedding mô tả) → softmax; max cosine < quantile 20% của train → 'other'.
 Model embedding đa ngữ → tin tiếng Việt dùng chung mô tả tiếng Anh (không dịch văn bản).
+LDA/BERTopic chỉ trên tin báo tiếng Anh (không SEC); zero-shot cho mọi tin.
 Ra: data/interim/narratives.parquet, outputs/tables/narrative_topics.csv, outputs/tables/narrative_taxonomy.csv
 Chạy: python -m features.narrative
 """
@@ -116,6 +117,12 @@ def bertopic(texts: pd.Series, emb: np.ndarray, per: pd.Series, seed: int):
     return np.asarray(topic), np.asarray(prob, dtype=float), words
 
 
+def fill(mask: np.ndarray, vals, dtype=float) -> np.ndarray:
+    a = np.full(len(mask), None if dtype is object else np.nan, dtype=dtype)
+    a[mask] = vals
+    return a
+
+
 def run(docs: pd.DataFrame, enc=None, seed: int = CFG["seed"]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """docs: doc_id, lang, title, body, public_ts_utc (chỉ canonical). Trả (narratives theo doc, bảng topic)."""
     enc = enc or encoder()
@@ -124,25 +131,25 @@ def run(docs: pd.DataFrame, enc=None, seed: int = CFG["seed"]) -> tuple[pd.DataF
     emb = embed(docs.doc_id, texts, enc)
     proto = np.asarray(enc.encode([PROTO[k] for k in NARR], normalize_embeddings=True))
     out = pd.DataFrame(dict(doc_id=docs.doc_id, period=per))
-    out["zs_narr"], out["zs_prob"] = zeroshot(emb, proto, per.eq("train").to_numpy())
-    en = docs.lang.eq("en").to_numpy()
+    news = docs.source.ne("sec").to_numpy()                              # SEC: văn bản pháp lý dài, lấn át topic
+    out["zs_narr"], out["zs_prob"] = zeroshot(emb, proto, per.eq("train").to_numpy() & news)
+    en = docs.lang.eq("en").to_numpy() & news
     topics = []
     t, p, words, k, grid = lda(texts[en], per[en], seed)
     names = map_topics(words, enc, proto)
-    out.loc[en, "lda_topic"], out.loc[en, "lda_prob"] = t, p
-    out.loc[en, "lda_narr"] = [names[i] for i in t]
+    out["lda_topic"], out["lda_prob"], out["lda_narr"] = fill(en, t), fill(en, p), fill(en, [names[i] for i in t], object)
     topics += [dict(method="lda", topic=i, narrative=names[i], top_words=w, k_selected=k) for i, w in words.items()]
     grid.to_csv(O("tables", "lda_k_selection.csv"), index=False)
     t, p, words = bertopic(texts[en], emb[en], per[en], seed)
     names = {**map_topics(words, enc, proto), -1: "other"}
-    out.loc[en, "bt_topic"], out.loc[en, "bt_prob"] = t, p
-    out.loc[en, "bt_narr"] = [names.get(i, "other") for i in t]
+    out["bt_topic"], out["bt_prob"] = fill(en, t), fill(en, p)
+    out["bt_narr"] = fill(en, [names.get(i, "other") for i in t], object)
     topics += [dict(method="bertopic", topic=i, narrative=names[i], top_words=w) for i, w in words.items()]
     return out, pd.DataFrame(topics)
 
 
 def taxonomy(nar: pd.DataFrame) -> pd.DataFrame:
-    """Bảng 2: tỷ trọng tin theo narrative × phương pháp + độ đồng thuận với zero-shot (chỉ tin en)."""
+    """Bảng 2: tỷ trọng tin theo narrative × phương pháp + độ đồng thuận với zero-shot (tin báo en)."""
     en = nar[nar.lda_narr.notna()]
     rows = []
     for k in NARR + ["other"]:
