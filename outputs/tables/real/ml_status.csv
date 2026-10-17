@@ -1,31 +1,145 @@
-asset,target,horizon,status,n_valid,n_test
-BNB,ret,1,insufficient validation/test coverage,0,0
-BNB,rv,1,insufficient validation/test coverage,0,0
-BTC,ret,1,insufficient validation/test coverage,0,0
-BTC,rv,1,insufficient validation/test coverage,0,0
-ETH,ret,1,insufficient validation/test coverage,0,0
-ETH,rv,1,insufficient validation/test coverage,0,0
-SOL,ret,1,insufficient validation/test coverage,0,0
-SOL,rv,1,insufficient validation/test coverage,0,0
-XRP,ret,1,insufficient validation/test coverage,0,0
-XRP,rv,1,insufficient validation/test coverage,0,0
-BNB,ret,3,insufficient validation/test coverage,0,0
-BNB,rv,3,insufficient validation/test coverage,0,0
-BTC,ret,3,insufficient validation/test coverage,0,0
-BTC,rv,3,insufficient validation/test coverage,0,0
-ETH,ret,3,insufficient validation/test coverage,0,0
-ETH,rv,3,insufficient validation/test coverage,0,0
-SOL,ret,3,insufficient validation/test coverage,0,0
-SOL,rv,3,insufficient validation/test coverage,0,0
-XRP,ret,3,insufficient validation/test coverage,0,0
-XRP,rv,3,insufficient validation/test coverage,0,0
-BNB,ret,7,insufficient validation/test coverage,0,0
-BNB,rv,7,insufficient validation/test coverage,0,0
-BTC,ret,7,insufficient validation/test coverage,0,0
-BTC,rv,7,insufficient validation/test coverage,0,0
-ETH,ret,7,insufficient validation/test coverage,0,0
-ETH,rv,7,insufficient validation/test coverage,0,0
-SOL,ret,7,insufficient validation/test coverage,0,0
-SOL,rv,7,insufficient validation/test coverage,0,0
-XRP,ret,7,insufficient validation/test coverage,0,0
-XRP,rv,7,insufficient validation/test coverage,0,0
+asset,target,horizon,status,n_train,n_valid,n_test,valid_start,valid_end,test_start,test_end,model
+BNB,ret,1,coverage,101.0,10.0,27.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,GW pending: needs 500 training rows,,,,,,,,EN
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,GW pending: needs 500 training rows,,,,,,,,XGB
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BNB,ret,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+BNB,rv,1,coverage,101.0,10.0,27.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BNB,rv,1,GW pending: needs 500 training rows,,,,,,,,EN
+BNB,rv,1,GW pending: needs 500 training rows,,,,,,,,XGB
+BNB,rv,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+BTC,ret,1,coverage,131.0,12.0,34.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,GW pending: needs 500 training rows,,,,,,,,EN
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,GW pending: needs 500 training rows,,,,,,,,XGB
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,,
+BTC,ret,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+BTC,rv,1,coverage,130.0,12.0,34.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BTC,rv,1,GW pending: needs 500 training rows,,,,,,,,EN
+BTC,rv,1,GW pending: needs 500 training rows,,,,,,,,XGB
+BTC,rv,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+ETH,ret,1,coverage,128.0,12.0,30.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,GW pending: needs 500 training rows,,,,,,,,EN
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,GW pending: needs 500 training rows,,,,,,,,XGB
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,,
+ETH,ret,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+ETH,rv,1,coverage,127.0,12.0,30.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+ETH,rv,1,GW pending: needs 500 training rows,,,,,,,,EN
+ETH,rv,1,GW pending: needs 500 training rows,,,,,,,,XGB
+ETH,rv,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+SOL,ret,1,coverage,112.0,9.0,24.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-25 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+SOL,ret,1,insufficient validation/test coverage,,9.0,24.0,,,,,
+SOL,rv,1,coverage,111.0,9.0,24.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-25 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+SOL,rv,1,insufficient validation/test coverage,,9.0,24.0,,,,,
+XRP,ret,1,coverage,111.0,12.0,29.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,GW pending: needs 500 training rows,,,,,,,,EN
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,GW pending: needs 500 training rows,,,,,,,,XGB
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,,
+XRP,ret,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+XRP,rv,1,coverage,110.0,12.0,29.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+XRP,rv,1,GW pending: needs 500 training rows,,,,,,,,EN
+XRP,rv,1,GW pending: needs 500 training rows,,,,,,,,XGB
+XRP,rv,1,GW pending: needs 500 training rows,,,,,,,,LGBM
+BNB,ret,3,coverage,101.0,10.0,27.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BNB,ret,3,GW pending: needs 500 training rows,,,,,,,,EN
+BNB,ret,3,GW pending: needs 500 training rows,,,,,,,,XGB
+BNB,ret,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+BNB,rv,3,coverage,100.0,10.0,27.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BNB,rv,3,GW pending: needs 500 training rows,,,,,,,,EN
+BNB,rv,3,GW pending: needs 500 training rows,,,,,,,,XGB
+BNB,rv,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+BTC,ret,3,coverage,131.0,12.0,34.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BTC,ret,3,GW pending: needs 500 training rows,,,,,,,,EN
+BTC,ret,3,GW pending: needs 500 training rows,,,,,,,,XGB
+BTC,ret,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+BTC,rv,3,coverage,130.0,12.0,34.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BTC,rv,3,GW pending: needs 500 training rows,,,,,,,,EN
+BTC,rv,3,GW pending: needs 500 training rows,,,,,,,,XGB
+BTC,rv,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+ETH,ret,3,coverage,128.0,12.0,30.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+ETH,ret,3,GW pending: needs 500 training rows,,,,,,,,EN
+ETH,ret,3,GW pending: needs 500 training rows,,,,,,,,XGB
+ETH,ret,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+ETH,rv,3,coverage,127.0,12.0,30.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+ETH,rv,3,GW pending: needs 500 training rows,,,,,,,,EN
+ETH,rv,3,GW pending: needs 500 training rows,,,,,,,,XGB
+ETH,rv,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+SOL,ret,3,coverage,112.0,9.0,24.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-25 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+SOL,ret,3,insufficient validation/test coverage,,9.0,24.0,,,,,
+SOL,rv,3,coverage,111.0,9.0,24.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-25 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+SOL,rv,3,insufficient validation/test coverage,,9.0,24.0,,,,,
+XRP,ret,3,coverage,111.0,12.0,29.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+XRP,ret,3,GW pending: needs 500 training rows,,,,,,,,EN
+XRP,ret,3,GW pending: needs 500 training rows,,,,,,,,XGB
+XRP,ret,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+XRP,rv,3,coverage,110.0,12.0,29.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+XRP,rv,3,GW pending: needs 500 training rows,,,,,,,,EN
+XRP,rv,3,GW pending: needs 500 training rows,,,,,,,,XGB
+XRP,rv,3,GW pending: needs 500 training rows,,,,,,,,LGBM
+BNB,ret,7,coverage,101.0,10.0,27.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BNB,ret,7,GW pending: needs 500 training rows,,,,,,,,EN
+BNB,ret,7,GW pending: needs 500 training rows,,,,,,,,XGB
+BNB,ret,7,GW pending: needs 500 training rows,,,,,,,,LGBM
+BNB,rv,7,coverage,101.0,10.0,27.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BNB,rv,7,GW pending: needs 500 training rows,,,,,,,,EN
+BNB,rv,7,GW pending: needs 500 training rows,,,,,,,,XGB
+BNB,rv,7,GW pending: needs 500 training rows,,,,,,,,LGBM
+BTC,ret,7,coverage,131.0,12.0,34.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BTC,ret,7,GW pending: needs 500 training rows,,,,,,,,EN
+BTC,ret,7,GW pending: needs 500 training rows,,,,,,,,XGB
+BTC,ret,7,GW pending: needs 500 training rows,,,,,,,,LGBM
+BTC,rv,7,coverage,131.0,12.0,34.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+BTC,rv,7,GW pending: needs 500 training rows,,,,,,,,EN
+BTC,rv,7,GW pending: needs 500 training rows,,,,,,,,XGB
+BTC,rv,7,GW pending: needs 500 training rows,,,,,,,,LGBM
+ETH,ret,7,coverage,128.0,12.0,30.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+ETH,ret,7,GW pending: needs 500 training rows,,,,,,,,EN
+ETH,ret,7,GW pending: needs 500 training rows,,,,,,,,XGB
+ETH,ret,7,GW pending: needs 500 training rows,,,,,,,,LGBM
+ETH,rv,7,coverage,128.0,12.0,30.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+ETH,rv,7,GW pending: needs 500 training rows,,,,,,,,EN
+ETH,rv,7,GW pending: needs 500 training rows,,,,,,,,XGB
+ETH,rv,7,GW pending: needs 500 training rows,,,,,,,,LGBM
+SOL,ret,7,coverage,112.0,9.0,24.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-25 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+SOL,ret,7,insufficient validation/test coverage,,9.0,24.0,,,,,
+SOL,rv,7,coverage,112.0,9.0,24.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-25 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+SOL,rv,7,insufficient validation/test coverage,,9.0,24.0,,,,,
+XRP,ret,7,coverage,111.0,12.0,29.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+XRP,ret,7,GW pending: needs 500 training rows,,,,,,,,EN
+XRP,ret,7,GW pending: needs 500 training rows,,,,,,,,XGB
+XRP,ret,7,GW pending: needs 500 training rows,,,,,,,,LGBM
+XRP,rv,7,coverage,111.0,12.0,29.0,2025-07-17 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-09 00:00:00+00:00,2026-09-23 00:00:00+00:00,
+XRP,rv,7,GW pending: needs 500 training rows,,,,,,,,EN
+XRP,rv,7,GW pending: needs 500 training rows,,,,,,,,XGB
+XRP,rv,7,GW pending: needs 500 training rows,,,,,,,,LGBM
