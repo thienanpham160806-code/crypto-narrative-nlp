@@ -187,3 +187,26 @@ def test_ucry_available_day_after_week_end_and_not_stale():
     assert out.loc[UTC("2023-01-02"), "ucry_policy"] == 100 and out.loc[UTC("2023-01-08"), "ucry_policy"] == 100
     assert out.loc[UTC("2023-01-09"), "ucry_price"] == 95 and out.loc[UTC("2023-01-16"), "ucry_price"] == 95
     assert np.isnan(out.loc[UTC("2023-01-17"), "ucry_price"])                    # quá 7 ngày → NaN
+
+
+def test_cryptopanic_load_utc_window_and_weak_labels(tmp_path):
+    from data import news_cryptopanic_ds as cp
+    f = tmp_path / "cp.csv"
+    f.write_text('"id","title","sourceDomain","newsDatetime","currencies","positive","negative","important"\n'
+                 '"1","ETF approved","a.com","2023-05-01 10:00:00","BTC","5","0","1"\n'
+                 '"2","Exchange hacked","b.com","2023-05-02 23:30:00",NULL,"0","4","0"\n'
+                 '"3","Mixed","c.com","2023-05-03 00:00:00",NULL,"2","2","0"\n'
+                 '"4","Old","d.com","2019-01-01 00:00:00",NULL,"9","0","0"\n', encoding="utf-8")
+    df = cp.load(f)
+    assert df.doc_id.tolist() == ["cp:1", "cp:2", "cp:3"] and str(df.ts_utc.dt.tz) == "UTC"
+    assert df.ts_utc.iloc[1] == UTC("2023-05-02 23:30")
+    w = cp.weak_labels(df)
+    assert w.label.tolist() == ["positive", "negative"]
+
+
+def test_weak_validation_scores_sign_auc_and_undecided():
+    lab = pd.DataFrame(dict(doc_id=list("abcd"), label=["positive", "positive", "negative", "negative"]))
+    sc = pd.DataFrame(dict(doc_id=list("abcd"), lm_net=[1.0, 0.0, -1.0, 0.0], finbert_sentiment=[.9, .2, -.5, -.1]))
+    r = validation.weak(lab, sc).set_index("method")
+    assert r.loc["LM", "accuracy"] == .5 and r.loc["LM", "pct_decided"] == 50      # điểm 0 = không chọn phía = sai
+    assert r.loc["FinBERT", "accuracy"] == 1 and r.loc["FinBERT", "auc"] == 1 and "CryptoBERT" not in r.index

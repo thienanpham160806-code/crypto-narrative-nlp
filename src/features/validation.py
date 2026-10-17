@@ -5,7 +5,7 @@ sample : 300 tiêu đề en canonical ngẫu nhiên (seed), chỉ lấy tin ≤ 
          (8 narrative | other) để trống cho người gán.
 evaluate: so nhãn tay với LM, Harvard, FinBERT, LLM zero-shot (nếu có) → outputs/tables/sentiment_validation.csv.
           Điểm liên tục → 3 lớp: > 0 positive, < 0 negative, = 0 neutral. FinBERT: lớp xác suất lớn nhất.
-Chạy: python -m features.validation sample | evaluate
+Chạy: python -m features.validation sample | evaluate | weak (nhãn yếu CryptoPanic, + CryptoBERT, AUC)
 """
 from __future__ import annotations
 import sys, pathlib
@@ -37,6 +37,39 @@ def scores(y: pd.Series, p: pd.Series) -> dict:
                 macro_f1=f1_score(y[m], p[m], average="macro", zero_division=0))
 
 
+def auc(y: pd.Series, s: pd.Series) -> float:
+    """AUC positive vs negative trên điểm liên tục (bỏ nhãn neutral); không phụ thuộc mất cân bằng lớp."""
+    from sklearn.metrics import roc_auc_score
+    m = y.isin(["positive", "negative"]) & s.notna()
+    return roc_auc_score(y[m].eq("positive"), s[m]) if y[m].nunique() == 2 else np.nan
+
+
+def bull_bear(texts: list[str], clf=None) -> np.ndarray:
+    """CryptoBERT (ElKulako/cryptobert, MIT): P(Bullish) − P(Bearish). Chỉ dùng trong validation."""
+    if clf is None:
+        from transformers import pipeline
+        clf = pipeline("text-classification", model=CFG["nlp"]["cryptobert_model"], top_k=None, truncation=True,
+                       max_length=128)
+    out = [{d["label"]: d["score"] for d in o} for o in clf(texts, batch_size=32)]
+    return np.array([o.get("Bullish", 0) - o.get("Bearish", 0) for o in out])
+
+
+def weak(lab: pd.DataFrame, sc: pd.DataFrame) -> pd.DataFrame:
+    """Nhãn yếu CryptoPanic (positive/negative): dự đoán = dấu của điểm; điểm 0 tính là sai (không chọn phía)."""
+    df = lab[["doc_id", "label"]].merge(sc, on="doc_id", how="left")
+    methods = {"LM": "lm_net", "Harvard IV-4": "hv_net", "FinBERT": "finbert_sentiment", "CryptoBERT": "cryptobert_sentiment"}
+    rows = []
+    for name, col in methods.items():
+        if col not in df:
+            continue
+        s = df[col]
+        pred = pd.Series(np.select([s > 0, s < 0], ["positive", "negative"], "neutral"), index=df.index).where(s.notna())
+        rows.append(dict(task="sentiment (weak, CryptoPanic votes)", method=name, **scores(df.label, pred),
+                         auc=auc(df.label, s), pct_decided=100 * (s.fillna(0) != 0).mean(),
+                         pct_positive_labels=100 * df.label.eq("positive").mean()))
+    return pd.DataFrame(rows)
+
+
 def evaluate(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = None,
              llm: pd.DataFrame | None = None) -> pd.DataFrame:
     df = lab.merge(sc, on="doc_id", how="left")
@@ -48,7 +81,10 @@ def evaluate(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = Non
     probs = df[["positive_prob", "negative_prob", "neutral_prob"]]
     fb = probs.idxmax(axis=1, skipna=True).str.replace("_prob", "").where(probs.notna().all(axis=1))
     sent = {"LM": sign3(df.lm_net), "Harvard IV-4": sign3(df.hv_net), "FinBERT": fb, "LLM zero-shot": df.get("llm_sent")}
-    rows = [dict(task="sentiment", method=k, **scores(y, v)) for k, v in sent.items() if v is not None]
+    cont = {"LM": df.lm_net, "Harvard IV-4": df.hv_net, "FinBERT": df.positive_prob - df.negative_prob}
+    rows = [dict(task="sentiment", method=k, **scores(y, v), auc=auc(y, cont[k]) if k in cont else np.nan,
+                 pct_positive_labels=100 * y.eq("positive").sum() / max(y.notna().sum(), 1))
+            for k, v in sent.items() if v is not None]
     yn = df.label_narrative.replace("", np.nan).str.strip().str.lower()
     narr = {"LDA": df.get("lda_narr"), "BERTopic": df.get("bt_narr"), "zero-shot embedding": df.get("zs_narr"),
             "LLM zero-shot": df.get("llm_narr")}
@@ -62,6 +98,18 @@ def main(cmd: str):
             raise SystemExit(f"{FILE} đã có (có thể đã gán nhãn) – xóa tay nếu muốn sinh lại")
         sample(pd.read_parquet(D("interim", "documents.parquet"))).to_csv(FILE, index=False, encoding="utf-8-sig")
         print("ghi", FILE)
+    elif cmd == "weak":
+        from data import news_cryptopanic_ds as cp
+        from features import finbert
+        from features.doc_scores import lexicon
+        lab = cp.weak_labels(cp.load(cp.download()))
+        sc = lexicon(lab.assign(lang="en", body=None))
+        fb = finbert.score(pd.DataFrame(dict(doc_id=lab.doc_id, text=lab.title)))
+        sc = sc.merge(fb[["doc_id", "sentiment"]].rename(columns={"sentiment": "finbert_sentiment"}), on="doc_id", how="left")
+        sc["cryptobert_sentiment"] = bull_bear(lab.title.tolist())
+        out = weak(lab, sc)
+        out.to_csv(O("tables", "sentiment_validation_weak.csv"), index=False)
+        print(out.round(3).to_string())
     else:
         lab = pd.read_csv(FILE, keep_default_na=False)
         nar = D("interim", "narratives.parquet")
