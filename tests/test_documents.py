@@ -175,3 +175,10 @@ def test_gkg_partial_hours_survive_network_error(tmp_path, monkeypatch):
     fail["on"] = False
     assert news_gdelt.collect("en", "2024-03-01", "2024-03-01", get=object(), workers=1) == 24
     assert len(calls) == 11 + 14 and not (tmp_path / "en" / "20240301_00.part").exists()   # chỉ tải lại giờ 10–23
+
+
+def test_keep_awake_reports_power_and_is_noop_off_windows(monkeypatch):
+    from utils import awake
+    assert isinstance(awake.on_ac(), bool) if sys.platform == "win32" else True
+    monkeypatch.setattr(awake.sys, "platform", "linux")
+    assert awake.keep_awake_on_ac() is None

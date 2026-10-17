@@ -182,6 +182,8 @@ if __name__ == "__main__":
     if a.audit:
         print(audit(a.lang, a.audit), "urls with published time")
     else:
+        from utils.awake import keep_awake_on_ac
+        keep_awake_on_ac()                            # cắm sạc: máy không tự ngủ khi đang thu
         while True:                                   # chạy lại các ngày lỗi cho tới khi đủ
             collect(a.lang, a.start, a.end, a.minutes, a.workers)
             left = [d for d in pd.date_range(a.start, a.end) for m in a.minutes
