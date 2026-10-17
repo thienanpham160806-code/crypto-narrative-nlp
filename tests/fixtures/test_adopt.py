@@ -153,7 +153,7 @@ def test_sparse_core_uses_same_day_text_and_missing_dm_columns():
     config['split'].update(train_end='2023-06-30', valid_end='2023-09-30')
     config['model']['horizons'] = [1]
     market, text = make_fixtures(config)
-    text['neg_accel'] = np.nan
+    text = text.drop(columns='neg_accel')
     text.loc[text.date.dt.day.mod(3).eq(0), 'sent_finbert'] = np.nan
     counted = coverage(market, text, config).iloc[0]
     assert counted.usable_model_days > 100

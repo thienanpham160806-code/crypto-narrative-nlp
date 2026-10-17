@@ -156,6 +156,7 @@ def paper_figures(market, text, tables, directory, label):
         fig.suptitle(f'{mode}: BTC one-day OOS loss\nNo model selected on test')
         save(fig, 'oos_loss')
         fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+        plotted = False
         for ax, (model, group) in zip(axes, chosen.groupby('model')):
             for version, part in group.groupby('version'):
                 part = part.sort_values('target_date')
@@ -166,9 +167,17 @@ def paper_figures(market, text, tables, directory, label):
                 turnover = np.abs(np.diff(np.r_[0, pos])); turnover[-1] += pos[-1]
                 net = pos*np.expm1(part.actual.to_numpy())-.001*turnover
                 ax.plot(dates, np.cumprod(1+net), label=version)
-            ax.set_title(model); ax.set_ylabel('Net wealth (start=1)'); ax.legend()
-        fig.suptitle(f'{mode}: economic-value test only\n10 bps fees; no extra slippage')
-        save(fig, 'cumulative_strategy')
+                plotted = True
+            ax.set_title(model); ax.set_ylabel('Net wealth (start=1)')
+            if ax.lines:
+                ax.legend()
+        if plotted:
+            fig.suptitle(f'{mode}: economic-value test only\n10 bps fees; no extra slippage')
+            save(fig, 'cumulative_strategy')
+        else:
+            plt.close(fig)
+            for extension in ('svg', 'png'):
+                (directory/f'cumulative_strategy.{extension}').unlink(missing_ok=True)
     quantiles = tables.get('quantiles', pd.DataFrame())
     if not quantiles.empty:
         chosen = quantiles.loc[(quantiles.asset == 'BTC') & (quantiles.horizon == 1)].sort_values('tau')
@@ -257,6 +266,16 @@ def write_results(tables, output):
                   f'{row.scored_finbert_articles} tin có FinBERT. Mẫu {row.first_event} đến {row.last_event}.', '']
         lines += [f'Bản documents hiện phủ {row.gdelt_article_days} ngày GKG và {row.sec_article_days} ngày SEC; '
                   'text_daily có thể chưa được build lại trên cùng ảnh chụp dữ liệu.', '']
+    if not tests.empty:
+        for metric, unit in [('car', '%'), ('absret', '%'), ('volume', 'log điểm')]:
+            row = tests.loc[(tests.grouping == 'all') & (tests.window == '[0,4]') & (tests.metric == metric)]
+            if not row.empty:
+                item = row.iloc[0]
+                amount = item['mean']*100 if metric != 'volume' else item['mean']
+                lines.append(f'Phản ứng chung [0,4]h {metric}: {number(amount)} {unit}, '
+                             f'{item.n_days} ngày, p t Holm={number(item.p_t_holm)}.')
+        lines.append('Abnormal volume là chênh log(1+USD volume) so với 144 giờ ước lượng trước tin; '
+                     'abnormal |return| là chênh tổng độ lớn lợi suất log.\n')
     lines += ['## RQ1: FinBERT và từ điển', '']
     selected = regression.loc[(regression.asset == 'BTC') & (regression.target == 'ret') &
                               (regression.horizon == 1) & (regression.term.isin(['sent_finbert', 'sent_lm', 'sent_hv']))] if not regression.empty else pd.DataFrame()
@@ -315,9 +334,18 @@ def write_results(tables, output):
     lines += [f'Chưa đủ: {available} kiểm định Granger dùng được; VAR chỉ chạy trên đoạn ngày liên tục ≥30.',
               'Nghĩa kinh tế: CAR trước T0 gợi ý giá đã phản ánh thông tin sớm hoặc sai số giờ công bố; không chứng minh rò rỉ.', '',
               '## RQ5: dự báo ngoài mẫu', '']
-    lines.append(f'Đã có: {len(forecasts)} hàng dự báo ngoài mẫu; '
-                 f'{len(forecasts.loc[(forecasts.asset == "BTC") & (forecasts.target == "rv") & (forecasts.horizon == 1) & (forecasts.model == "EN") & (forecasts.version == "text")]) if not forecasts.empty else 0} '
+    fan_input = forecasts.loc[(forecasts.asset == 'BTC') & (forecasts.target == 'rv') &
+                              (forecasts.horizon == 1) & (forecasts.model == 'EN') &
+                              (forecasts.version == 'text')] if not forecasts.empty else pd.DataFrame()
+    lines.append(f'Đã có: {len(forecasts)} hàng dự báo ngoài mẫu; {len(fan_input)} '
                  'hàng BTC EN/text RV h=1 đúng schema dashboard/export.py.')
+    if not fan_input.empty:
+        latest = fan_input.loc[fan_input.date.idxmax()]
+        matured = int((pd.to_datetime(fan_input.target_date, utc=True) < pd.Timestamp(latest.date)).sum())
+        lines.append(f'As-of {latest.date}: RV dự báo={number(latest.prediction)}, '
+                     f'{matured} sai số quá khứ đã biết; fan chart đủ ngưỡng 30.' if matured >= 30 else
+                     f'As-of {latest.date}: RV dự báo={number(latest.prediction)}, '
+                     f'{matured} sai số quá khứ đã biết; fan chart chưa đủ ngưỡng 30.')
     oos = tables.get('oos', pd.DataFrame())
     row = oos.loc[(oos.asset == 'BTC') & (oos.target == 'rv') & (oos.horizon == 1) &
                   (oos.model == 'EN') & (oos.version == 'text')] if not oos.empty else pd.DataFrame()
@@ -325,7 +353,7 @@ def write_results(tables, output):
         item = row.iloc[0]
         lines.append(f'EN/text BTC RV h=1: R² CT={number(item.r2_oos_ct)}, RMSE={number(item.rmse)}; '
                      f'DM Holm p={number(getattr(item, "dm_p_holm", np.nan))}.')
-    lines += ['Chưa đủ: ngày test có tin rời rạc; DM/GW/MCS cần đoạn liên tục, dải fan cần ≥30 sai số đã biết.',
+    lines += ['Chưa đủ: ngày test có tin rời rạc; DM/GW/MCS cần đoạn liên tục. Dải fan theo sai số có thể xuống dưới RV=0.',
               'Nghĩa kinh tế: dự báo thật có thể xuất cho dashboard; lợi ích của text chỉ đáng tin nếu kiểm định ghép cặp có đủ đoạn liên tục.', '',
               'Giới hạn chung: GDELT đang thu tiếp; seendate trễ trung vị khoảng 142 phút trong 42 cặp audit. '
               'Các p-value chưa giải quyết lựa chọn mẫu tin và nhiều sự kiện trùng ngày.', '']

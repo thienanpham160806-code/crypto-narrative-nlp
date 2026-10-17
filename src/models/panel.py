@@ -16,7 +16,7 @@ def make_panel(market, text, horizon=1):
         if frame[['date', 'asset']].duplicated().any() or not (frame.date == frame.date.dt.floor('D')).all():
             raise ValueError('Expected unique UTC daily keys')
     attention = [f'attention_{name}' for name in CFG['nlp']['narratives']]
-    if not set([*attention, *TEXT]).issubset(text):
+    if not set([*attention, *TEXT_CORE]).issubset(text):
         raise ValueError('text_daily does not match the contract')
     # ALL is a fallback only; never duplicate an asset-specific observation.
     keys = market[['date', 'asset']].reset_index(drop=True)
