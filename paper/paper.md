@@ -1,293 +1,250 @@
-# Narrative và sentiment tin tức trên thị trường tiền mã hóa: Tín hiệu văn bản theo thời điểm công bố cho lợi suất, biến động và khối lượng giao dịch
+# Narrative và cảm xúc tin tức trên thị trường tiền mã hóa: Bằng chứng theo thời điểm công bố về lợi suất, biến động và hoạt động giao dịch
 
-*Nhóm nghiên cứu Fintech, Trường Đại học Kinh tế – Luật (UEL), ĐHQG-HCM.*
+Crypto news narratives and sentiment: Publication-time evidence on returns, volatility and trading activity
 
-*Phiên bản làm việc ngày 18/10/2026.*
+Phạm Ngọc Thiên An
 
-> **Trạng thái dữ liệu.** Bộ thu GDELT mới phủ một phần mẫu (xem mục 4.5). Các con số ở mục 6 chỉ dùng dữ liệu đã thu tới ngày lập bản này và được ghi "sơ bộ". Kết quả RQ2–RQ5 lấy từ `outputs/tables/real/RESULTS.md` (bản chụp 180 ngày có tin) và sẽ được tính lại trên toàn mẫu. Không có con số nào trong bài được ước đoán.
+Trường Đại học Kinh tế - Luật, Đại học Quốc gia Thành phố Hồ Chí Minh, Việt Nam
 
-## Tóm tắt
+Tác giả liên hệ, Email: ____________________
 
-Nghiên cứu xây dựng chỉ số sentiment, attention và narrative từ tin tức tiếng Anh về tiền mã hóa giai đoạn 01/2023–09/2026. Mục tiêu là kiểm định các chỉ số này có mang thông tin gia tăng cho lợi suất, biến động thực hiện và khối lượng của BTC, ETH, SOL, BNB, XRP hay không, ngoài các biến thị trường.
+| THÔNG TIN | |
+|---|---|
+| DOI | ____________________ |
+| Ngày nhận | ____________________ |
+| Ngày nhận lại | ____________________ |
+| Duyệt đăng | ____________________ |
+| Mã phân loại JEL | G12; G14; G41; C53 |
+| Từ khóa | tiền mã hóa; cảm xúc tin tức; câu chuyện thị trường; thời điểm công bố; dự báo ngoài mẫu |
+| Keywords | cryptocurrency; news sentiment; narratives; publication time; out-of-sample forecasting |
 
-Đóng góp chính là phương pháp. Mỗi tin được gán ngày theo thời điểm ra công chúng có kiểm chứng. Độ lệch giữa các đồng hồ dữ liệu được đo theo nguồn. Mọi mô hình văn bản chỉ được ước lượng trên kỳ huấn luyện.
+## TÓM TẮT
 
-Kết quả về đo lường cho thấy:
-- Đồng hồ "thấy tin" của GDELT trễ trung vị 142 phút so với giờ đăng trong trang. 16,7% tin sẽ bị gán sang ngày UTC khác nếu dùng đồng hồ này.
-- Ngày nộp hồ sơ (`file_date`) của SEC lệch ngày so với giờ chấp nhận ở 6,4% hồ sơ.
-- Trên 6.995 tiêu đề có nhãn yếu từ phiếu bình chọn của người dùng CryptoPanic, FinBERT phân biệt tin tốt và tin xấu tốt nhất (AUC 0,712). Từ điển Loughran–McDonald đạt 0,612, CryptoBERT 0,591, Harvard IV-4 0,571.
+Nghiên cứu kiểm tra liệu cảm xúc và câu chuyện trong tin tức có bổ sung thông tin cho lợi suất, biến động và khối lượng của 05 tài sản tiền mã hóa ngoài các biến thị trường quá khứ. Dữ liệu gồm tin tiếng Anh và nến Binance giai đoạn 01/2023–09/2026; tin được gán theo thời điểm ra công chúng, còn bước hiệu chỉnh văn bản chỉ dùng kỳ huấn luyện. Phương pháp kết hợp từ điển, FinBERT, hồi quy dự báo, hồi quy phân vị, nghiên cứu sự kiện theo giờ và dự báo ngoài mẫu. Bản dữ liệu thật hiện phủ 339/1.369 ngày; đặc tả Bitcoin có 229 ngày huấn luyện, 47 ngày xác thực và 59 ngày kiểm tra. Chênh lệch phản ứng giá bốn giờ giữa tin xấu và tin tốt không có ý nghĩa sau hiệu chỉnh kiểm định bội, trong khi khối lượng quanh tin tốt lớn hơn. Với 39 cặp tin–tài sản có hai đồng hồ, lựa chọn giờ làm đổi trạng thái ý nghĩa của phản ứng 24 giờ, nhưng chênh lệch ghép cặp chưa có ý nghĩa. Văn bản giảm nhẹ sai số dự báo biến động Bitcoin; đoạn kiểm định liên tục vẫn quá ngắn để kết luận lợi ích gia tăng. Kết quả nhấn mạnh vai trò của đồng hồ công bố và giới hạn suy luận từ dữ liệu tin còn thưa.
 
-Kết quả sơ bộ về tác động tới giá (180 ngày có tin) cho thấy:
-- Chưa có phản ứng giá có ý nghĩa sau hiệu chỉnh kiểm định bội theo sắc thái hay narrative.
-- Kết luận về phản ứng trong 24 giờ đổi theo đồng hồ dùng để gán thời điểm.
-- Văn bản chưa cải thiện dự báo biến động BTC ngoài mẫu (R² ngoài mẫu −0,008).
+## ABSTRACT
 
-**Từ khóa:** tiền mã hóa, phân tích văn bản, FinBERT, narrative economics, look-ahead bias, dự báo ngoài mẫu.
+This study asks whether news sentiment and narratives add information about returns, realized volatility, and trading volume for five cryptocurrencies beyond lagged market variables. English-language news is matched to Binance candles from January 2023 to September 2026. Each article is assigned a verified public timestamp, and text models are fitted only on the training period. We compare financial dictionaries with FinBERT, estimate predictive and quantile regressions, examine hourly publication events, and evaluate Elastic Net, XGBoost, and LightGBM out of sample. The current real-data snapshot contains news on 339 of 1,369 calendar days; the Bitcoin core specification uses 229 training, 47 validation, and 59 test days. The four-hour price-response difference between negative and positive news is not significant after multiple-testing adjustment, whereas positive news is associated with a larger abnormal volume response. Among 39 article–asset pairs with two timestamps, the choice of clock changes the significance status of the 24-hour response, although the paired difference is not significant. Text slightly lowers Bitcoin volatility forecast error, but the continuous test segment is too short for a reliable incremental-value test. The findings emphasize publication-time discipline and cautious interpretation under sparse news coverage.
 
 ## 1. Giới thiệu
 
-Thị trường tiền mã hóa không có dòng tiền cơ bản như cổ tức hay lợi nhuận doanh nghiệp. Vì vậy giá phụ thuộc nhiều vào câu chuyện mà nhà đầu tư cùng chia sẻ. Đó là các narrative về quy định pháp lý, quỹ ETF, dòng tiền tổ chức, các vụ tấn công sàn, stablecoin, DeFi, token trí tuệ nhân tạo và chính sách tiền tệ (Shiller, 2017; Walker, 2024). Tin tức là kênh chính để các narrative này lan truyền.
+Thị trường tiền mã hóa giao dịch liên tục, chịu ảnh hưởng của thông tin công khai và kỳ vọng về công nghệ, quy định cũng như mức độ chấp nhận của tổ chức. Cảm xúc thị trường (market sentiment) biểu thị sắc thái tích cực hoặc tiêu cực trong thông tin; câu chuyện thị trường (narrative) là cách người tham gia gắn các sự kiện riêng lẻ vào một chủ đề có khả năng lan truyền. Shiller (2017) đặt narrative vào cơ chế hình thành kỳ vọng, còn Walker (2024) ghi nhận các chủ đề khác nhau trong báo chí về Bitcoin có quan hệ khác nhau với lợi suất. Khi tin được đăng vào bất kỳ giờ nào, ngày ghi trong kho dữ liệu có thể khác ngày nhà đầu tư thực sự nhìn thấy nội dung. Do đó, xác định đúng thời điểm công bố là điều kiện trước khi diễn giải một tín hiệu văn bản như thông tin dẫn dắt thị trường.
 
-Câu hỏi thực nghiệm là: thông tin trích từ văn bản có giúp giải thích và dự báo lợi suất, biến động và khối lượng không, khi đã kiểm soát những gì giá và khối lượng quá khứ chứa đựng?
+Lợi suất quá khứ, biến động và sự chú ý của nhà đầu tư cũng chứa thông tin dự báo đối với tiền mã hóa (Liu & Tsyvinski, 2021). Các nghiên cứu về Twitter cho thấy ở một số tài sản giá còn dẫn trước hoạt động thảo luận (Kraaijeveld & De Smedt, 2020). Từ góc độ tin tức, Chou và cộng sự (2023) và Kao và cộng sự (2024) nêu bằng chứng định tính trong phần tóm tắt về cơ chế khác nhau giữa tin tiêu cực và tích cực; Gür và Ünal (2026) nêu khả năng sử dụng FinBERT trong dự báo giá Bitcoin. Ba công trình sau chỉ được viện dẫn trong phạm vi thông tin ở tóm tắt, không dùng hệ số chưa đối chiếu từ toàn văn.
 
-Tài liệu hiện có trả lời câu hỏi này theo từng mảnh. Có nghiên cứu dùng sentiment tổng hợp từ mạng xã hội (Kraaijeveld & De Smedt, 2020) hoặc từ tin tức (Chou et al., 2023; Kao et al., 2024; Gür & Ünal, 2026). Có nghiên cứu dùng chủ đề trên diễn đàn (Khaksar et al., 2026) hoặc narrative trên báo in (Walker, 2024). Ba vấn đề thường bị bỏ qua:
-1. Thời điểm một tin thực sự ra công chúng ít khi được kiểm chứng. Vì vậy chỉ số ngày t có thể chứa tin xuất hiện sau khi giá đã phản ứng.
-2. Mô hình văn bản thường được ước lượng trên toàn mẫu, kể cả kỳ dùng để đánh giá.
-3. Từ điển và transformer hiếm khi được so trên cùng corpus crypto và cùng biến mục tiêu.
+Vấn đề liệu tín hiệu văn bản thực sự có giá trị gia tăng vẫn còn bỏ ngỏ khi mô hình đối chứng thiếu biến thị trường mạnh, đồng hồ công bố không được kiểm tra và bộ chấm cảm xúc được đánh giá trên tập tin khác với tập tin dùng dự báo. Đặc biệt, một hệ số có ý nghĩa trong mẫu không đồng nghĩa với lợi ích ngoài mẫu; việc ghép tin được nhìn thấy sau nửa đêm vào ngày hôm trước còn có thể tạo ra sai lệch nhìn trước. Bên cạnh đó, dữ liệu tin thu theo giờ có thể thưa, khiến các kiểm định chuỗi thời gian đòi hỏi đoạn quan sát liên tục trở nên không xác định.
 
-Nghiên cứu đặt năm câu hỏi:
-- **RQ1:** Sentiment từ transformer có đo giọng điệu tin crypto tốt hơn từ điển không?
-- **RQ2:** Tin xấu có tác động khác tin tốt không?
-- **RQ3:** Narrative nào liên hệ mạnh nhất với lợi suất, biến động và khối lượng?
-- **RQ4:** Văn bản dẫn dắt giá, hay giá dẫn dắt văn bản?
-- **RQ5:** Văn bản có cải thiện dự báo ngoài mẫu so với mô hình chỉ có biến thị trường không?
+Nghiên cứu này trả lời 05 câu hỏi. RQ1 so sánh FinBERT với từ điển tài chính trong đo cảm xúc tin tiền mã hóa. RQ2 kiểm tra bất đối xứng giữa tin xấu và tin tốt. RQ3 tìm quan hệ giữa sự chú ý tới từng narrative với lợi suất, biến động và khối lượng. RQ4 xem tín hiệu tin dẫn thị trường hay chỉ phản ứng với giá. RQ5 kiểm tra liệu thêm văn bản cải thiện dự báo ngoài mẫu so với mô hình chỉ có biến thị trường. Nghiên cứu đóng góp vào tài liệu học thuật hiện có bằng việc giữ nguyên văn bản tiếng Anh, kiểm tra nhiều đồng hồ thời gian, khóa kỳ kiểm tra khỏi mọi bước chọn mô hình, đối chiếu cả kết quả theo ngày lẫn phản ứng theo giờ và công bố rõ các phép kiểm định chưa đủ điều kiện thực hiện.
 
-## 2. Cơ sở lý thuyết
+Bài nghiên cứu được cấu tạo gồm 05 phần. Sau phần giới thiệu, phần 2 trình bày nền tảng lý thuyết và bằng chứng trước đây; phần 3 mô tả dữ liệu và phương pháp; phần 4 báo cáo các kết quả thật đang có và giới hạn suy luận; phần 5 kết luận và nêu hàm ý.
 
-### 2.1. Thông tin, hiệu quả thị trường và sentiment nhà đầu tư
+## 2. Cơ sở lý thuyết và tổng quan các nghiên cứu trước đây
 
-Theo giả thuyết thị trường hiệu quả (Fama, 1970), thông tin công khai được phản ánh nhanh vào giá. Khi đó, chỉ số văn bản dựng từ tin đã công bố không thể dự báo lợi suất tương lai một cách có hệ thống. Ngược lại, tài chính hành vi cho rằng sentiment nhà đầu tư, tức niềm tin không hoàn toàn dựa trên dữ kiện cơ bản, có thể đẩy giá lệch khỏi giá trị nội tại rồi đảo chiều (Baker & Wurgler, 2007).
+Theo giả thuyết thị trường hiệu quả, giá phản ánh nhanh thông tin công khai, nên tin đã phát hành khó mang lại lợi nhuận dự báo ổn định sau khi tính rủi ro và chi phí (Fama, 1970). Trong khi đó, Baker và Wurgler (2007) lập luận rằng cảm xúc của nhà đầu tư có thể làm giá lệch khỏi giá trị gắn với yếu tố cơ bản. Tetlock (2007) cho thấy sắc thái bi quan trong báo tài chính liên hệ với áp lực giá ngắn hạn; Antweiler và Frank (2004) chỉ ra cả mức bất đồng giữa người viết cũng liên quan đến hoạt động giao dịch. Đối với tiền mã hóa, sự chú ý có thể khuếch đại các tác động này vì nhiều tài sản không tạo dòng tiền cổ tức và nhà đầu tư thường suy luận giá trị từ mức độ chấp nhận trong tương lai.
 
-Tetlock (2007) cho thấy mức độ bi quan của một chuyên mục báo tài chính dự báo áp lực giảm giá cổ phiếu Mỹ, sau đó giá hồi lại. Đây là dấu hiệu của sentiment hơn là thông tin cơ bản. Antweiler và Frank (2004) đo mức bất đồng giữa các bài đăng trên diễn đàn và thấy nó gắn với khối lượng giao dịch. Như vậy, không chỉ mức sentiment mà cả độ phân tán của nó cũng mang thông tin.
+Lý thuyết kinh tế học narrative của Shiller (2017) gợi ý rằng một thông tin về quỹ ETF, quy định hoặc vụ tấn công có thể đổi kỳ vọng khi được đặt trong một câu chuyện có khả năng lan truyền. Da và cộng sự (2011) cho thấy sự chú ý cũng là biến kinh tế cần tách khỏi sắc thái tin. Bybee và cộng sự (2024) cho thấy tỷ trọng chủ đề trong tin kinh doanh có thể đo sự chú ý ở cấp tổng hợp. Khaksar và cộng sự (2026) đo cảm xúc, bất đồng và mức chú ý theo chủ đề trên diễn đàn Bitcoin; nghiên cứu này dùng tin báo có giờ công bố và đặt các chỉ số ở ngày t trước kết quả ngày t+h. Lucey và cộng sự (2022) xây chỉ số bất định tiền mã hóa từ tin tức, gợi ý cần kiểm soát sự bất định chung khi so sánh sức giải thích của từng narrative. Chuỗi UCRY hồi cứu không có bản công bố theo thời gian thực nên chỉ được dùng như kiểm tra độ vững trong phần dữ liệu có sẵn, không được xem là biến dự báo point-in-time chính.
 
-### 2.2. Sự chú ý và narrative
+Giả thuyết phân phối hỗn hợp dự đoán tin, biến động và khối lượng phản ứng cùng thời điểm; giả thuyết thông tin đến tuần tự dự đoán phản ứng lan dần. Chou và cộng sự (2023) cùng Kao và cộng sự (2024) mô tả hai cơ chế này đối với tin Bitcoin trong các tóm tắt công bố. Kraaijeveld và De Smedt (2020) và Kristoufek (2013) nhấn mạnh quan hệ hai chiều giữa sự chú ý và giá. Vì thế, hồi quy một chiều không đủ để khẳng định tin dẫn giá: cần kiểm tra cả phản ứng trước thời điểm công bố và quan hệ dự báo ngược, đồng thời nhớ rằng kiểm định Granger chỉ nói về khả năng dự báo có điều kiện (Granger, 1969).
 
-Nhà đầu tư có giới hạn về sự chú ý. Tài sản được chú ý nhiều hơn sẽ có áp lực mua ngắn hạn rồi đảo chiều (Da et al., 2011). Với tiền mã hóa, Liu và Tsyvinski (2021) cho thấy momentum và sự chú ý của nhà đầu tư dự báo lợi suất. Kristoufek (2013) ghi nhận quan hệ hai chiều giữa lượt tìm kiếm và giá Bitcoin.
+Việc đo sắc thái phụ thuộc ngữ cảnh ngôn ngữ. Loughran và McDonald (2011) chỉ ra từ điển tổng quát Harvard IV-4 có thể gán sai nghĩa nhiều từ tài chính; FinBERT sử dụng biểu diễn theo ngữ cảnh thay cho việc đếm từ rời rạc (Araci, 2019). Nasekin và Chen (2020) cùng Ider và Lessmann (2022) cho thấy xây tín hiệu tiền mã hóa từ văn bản đòi hỏi xử lý đặc thù miền. Tuy nhiên, độ chính xác phân loại trên nhãn yếu và khả năng dự báo thị trường là hai tiêu chí khác nhau. Vì vậy, RQ1 cần tập nhãn độc lập bên cạnh việc so các hệ số dự báo trên cùng corpus.
 
-Shiller (2017) đề xuất "kinh tế học narrative": các câu chuyện lan truyền như dịch bệnh và tác động lên hành vi kinh tế. Bybee et al. (2024) chuyển ý tưởng này thành phép đo: tỷ trọng chủ đề trong tin kinh doanh theo thời gian, từ đó giải thích và dự báo hoạt động kinh tế. Nghiên cứu này áp dụng cùng logic cho crypto. Narrative attention được định nghĩa là tỷ trọng tin thuộc mỗi narrative trong ngày.
+Các bằng chứng ngoài mẫu cũng chưa đồng nhất. Garcia và Schweitzer (2015), Ortu và cộng sự (2022) và Critien và cộng sự (2022) kết hợp hoạt động trực tuyến với biến giá trong dự báo hoặc chiến lược giao dịch, nhưng phạm vi nguồn, tài sản và kỳ kiểm tra khác nhau. Auer và Claessens (2018) cho thấy tin quy định cần được tách theo nội dung thay vì gộp toàn bộ thành một nhóm. Nghiên cứu hiện tại đặt câu hỏi gia tăng chặt hơn: liệu mô hình có thêm cảm xúc và narrative vượt mô hình đã chứa lợi suất trễ, biến động, khối lượng, momentum và số tin thô, dưới cùng quy tắc huấn luyện theo thời gian. Việc tách kết quả có ý nghĩa thống kê khỏi giá trị giao dịch sau phí giúp tránh diễn giải một tương quan trong mẫu thành cơ hội đầu tư.
 
-### 2.3. Luồng thông tin và biến động
+## 3. Phương pháp nghiên cứu
 
-Giả thuyết phân phối hỗn hợp (MDH) cho rằng biến động và khối lượng cùng phản ứng đồng thời với luồng thông tin. Giả thuyết thông tin đến tuần tự (SIAH) cho rằng thông tin lan dần, nên có quan hệ trễ. Chou et al. (2023) thấy tin tiêu cực về Bitcoin phù hợp SIAH, còn tin tích cực phù hợp MDH. Kao et al. (2024) có kết quả tương tự trên hợp đồng tương lai. Đây là cơ sở cho RQ2 (bất đối xứng) và RQ4 (lead-lag).
+Mẫu thiết kế gồm BTC, ETH, SOL, BNB và XRP trong khoảng ngày 01/01/2023 đến 30/09/2026 theo giờ UTC. Giá đóng cửa và khối lượng USD lấy từ nến ngày và nến giờ Binance; lợi suất là sai phân log giá đóng cửa, còn biến động thực hiện (realized volatility, RV) là tổng bình phương lợi suất log theo giờ (Andersen & Bollerslev, 1998). Tin chính là văn bản tiếng Anh từ GDELT GKG, với hồ sơ SEC dùng riêng cho nghiên cứu sự kiện. Chỉ giữ bản canonical sau khử trùng; tin không gắn mã được gán BTC trong phân tích sự kiện, còn chỉ số ngày theo mã chỉ lấy tin gắn mã tương ứng. Mẫu được chia kỳ huấn luyện đến 30/06/2025, xác thực đến 31/12/2025 và kiểm tra từ 01/01/2026; đầu ra ngày t chỉ dùng tin có `public_ts_utc` trước 00:00 UTC ngày t+1.[^1]
 
-### 2.4. Đo giọng điệu văn bản
+Thời điểm ra công chúng `public_ts_utc` là giờ đăng hợp lệ sớm hơn giờ hệ thống nhìn thấy, hoặc là giờ nhìn thấy nếu không xác minh được giờ đăng. Giờ đăng chỉ hợp lệ khi không muộn hơn giờ nhìn thấy, không sớm hơn quá 48 giờ và cùng ngày UTC; quy tắc cuối tránh đưa bản văn có thể đã sửa ở ngày sau về ngày trước. Kiểm tra 42 cặp GDELT có cả giờ đăng và giờ thấy cho độ trễ tuyệt đối trung vị của `seendate` là 141,5 phút. Vì vậy, việc dùng ngày GDELT thấy như ngày đăng có thể đổi cả cửa sổ sự kiện và ngày của biến giải thích. Nghiên cứu giữ đồng hồ gốc và so hai cách gán giờ trên cùng tập tin có đủ hai mốc.
 
-Loughran và McDonald (2011) cho thấy từ điển tổng quát như Harvard IV-4 phân loại sai nhiều từ trong ngữ cảnh tài chính. Ví dụ, "liability" hay "tax" mang nghĩa trung tính trong báo cáo tài chính. Họ đề xuất một từ điển chuyên ngành. FinBERT (Araci, 2019) tinh chỉnh mô hình ngôn ngữ BERT trên câu tin tài chính, nên nắm được ngữ cảnh và phủ định tốt hơn danh sách từ. Với crypto, Nasekin và Chen (2020) và Ider và Lessmann (2022) cho thấy mô hình học sâu và nhãn yếu cải thiện việc dựng sentiment. RQ1 kiểm định trực tiếp lợi thế này trên tiêu đề tin crypto.
+Với tin d thuộc ngày t và tài sản i, điểm cảm xúc sᵈ được chấm trên văn bản tiếng Anh gốc bằng Loughran–McDonald, Harvard IV-4 và FinBERT; nhánh tiếng Việt dùng từ điển tài chính tiếng Việt cùng từ điển tiền mã hóa riêng, không dịch qua tiếng Anh. Điểm ngày là trung bình đều trên các tin canonical, còn phần âm và dương được tách trước khi lấy trung bình:
 
-## 3. Tổng quan nghiên cứu và tính mới
+$$ Sᵢ,ₜ = (1/Nᵢ,ₜ) Σ(d∈Dᵢ,ₜ) sᵈ ;  NegSᵢ,ₜ = mean[max(−sᵈ,0)] ;  PosSᵢ,ₜ = mean[max(sᵈ,0)]  \tag{1} $$
 
-Bảng so sánh chi tiết 7 nghiên cứu lõi nằm trong `paper/related_work.md`.
-- **Về sentiment:** Kraaijeveld và De Smedt (2020) dùng từ điển trên Twitter và thấy với nhiều coin, giá dẫn dắt sentiment. Gür và Ünal (2026) dùng FinBERT trên hơn 650.000 tiêu đề, nhưng không so với từ điển.
-- **Về chủ đề:** Khaksar et al. (2026) dùng LDA trên Bitcointalk và đo độ phân tán sentiment theo chủ đề.
-- **Về narrative:** Walker (2024) phân tích narrative crypto trên báo chính thống.
-- **Về dự báo:** Garcia và Schweitzer (2015) và Critien et al. (2022) đánh giá ngoài mẫu. Ortu et al. (2022) kết hợp chỉ báo kỹ thuật và mạng xã hội.
+Sự chú ý tới narrative k được đo bằng tỷ trọng tin nhận nhãn k; bản mềm dùng trung bình xác suất zero-shot. Tám narrative định trước gồm regulation, ETF/institutional, security/hacks, stablecoins, DeFi, AI tokens, macro/monetary và price/speculation. Vectorizer, LDA, BERTopic của Grootendorst (2022) và ngưỡng phân loại chỉ được chọn hoặc ước lượng trên train, với valid dùng để chọn tham số và test giữ nguyên cho đánh giá cuối.[^2]
 
-Tính mới của nghiên cứu nằm ở năm điểm:
-1. **Thời điểm công bố được kiểm chứng.** Mỗi tin có `public_ts_utc` dựng từ nhiều đồng hồ và quy tắc chống lùi ngày. Sai lệch giữa các đồng hồ được công bố theo nguồn, chứ không mặc định ngày trong dữ liệu là ngày công bố.
-2. **Không rò rỉ từ mô hình văn bản.** Vectorizer, LDA, BERTopic và ngưỡng phân loại chỉ fit trên kỳ train. LLM không được dùng làm feature, vì mô hình ngôn ngữ lớn có thể "biết" sự kiện xảy ra sau ngày của tin.
-3. **So sánh đo lường trên cùng corpus crypto.** Từ điển tài chính, từ điển tổng quát, FinBERT và CryptoBERT được so trên cùng tập tiêu đề có nhãn.
-4. **Narrative có tên, định trước.** Tám narrative được đo bằng zero-shot. LDA và BERTopic được báo cáo song song để đối chứng.
-5. **Đánh giá ngoài mẫu bằng kiểm định thống kê.** Mô hình chỉ có biến thị trường được so với mô hình thêm văn bản theo walk-forward, có kiểm định Diebold–Mariano và hiệu chỉnh kiểm định bội.
+$$ Aₖ,ᵢ,ₜ = Nₖ,ᵢ,ₜ / Nᵢ,ₜ ;  Aˢᵒᶠᵗₖ,ᵢ,ₜ = (1/Nᵢ,ₜ) Σ(d∈Dᵢ,ₜ) p(k|d)  \tag{2} $$
 
-## 4. Dữ liệu
+Nghiên cứu xây dựng phương trình dự báo cho lợi suất, RV và log khối lượng ở kỳ hạn h thuộc {1, 3, 7} ngày như sau. X là tập biến thị trường đã biết tại ngày t gồm lợi suất trễ, RV, log khối lượng và momentum; log(1+N) được đưa vào bậc đối chứng trung gian để tách giá trị của số tin thô khỏi sắc thái tin. Sai số chuẩn hồi quy được hiệu chỉnh tự tương quan và phương sai thay đổi theo Newey và West (1987).
 
-### 4.1. Mẫu và chia kỳ
+$$ yᵢ,ₜ₊ₕ = αᵢ + β⁻ NegSᵢ,ₜ + β⁺ PosSᵢ,ₜ + Σₖ θₖ Aₖ,ᵢ,ₜ + δ log(1+Nᵢ,ₜ) + γ′Xᵢ,ₜ + εᵢ,ₜ₊ₕ  \tag{3} $$
 
-Mẫu gồm năm tài sản BTC, ETH, SOL, BNB, XRP, từ 01/01/2023 đến 30/09/2026, theo ngày. Ngày được tính là [00:00, 24:00) giờ UTC, vì thị trường giao dịch liên tục. Mẫu chia ba kỳ không chồng nhau:
-- train: đến 30/06/2025;
-- valid: đến 31/12/2025;
-- test: từ 01/01/2026.
+RQ2 kiểm tra giả thuyết không về tác động bằng nhau của hai phần cảm xúc bằng Wald và đối chiếu hồi quy phân vị ở τ = 0,1; 0,5; 0,9. Cửa sổ phân vị trượt 500 ngày, bước 20 ngày chỉ được diễn giải khi có đủ quan sát hợp lệ; điểm ước lượng ở đuôi không thay thế kiểm định bất đối xứng giữa hai hệ số.
 
-Kỳ test không được dùng khi chọn tham số, chọn số chủ đề hay ngưỡng.
+$$ H₀: β⁻ = β⁺ ;  W = (β̂⁻−β̂⁺)² / Var(β̂⁻−β̂⁺)  \tag{4} $$
 
-### 4.2. Dữ liệu thị trường
+RQ4 dùng hệ phương trình vectơ tự hồi quy (VAR) hai chiều giữa lợi suất hoặc RV và chỉ số tin, kiểm định Granger sau khi kiểm tra tính dừng bằng ADF/KPSS. Bậc trễ chọn trên kỳ phát triển bằng AIC, nhưng chỉ chạy VAR trên đoạn ngày có tin liên tục đủ dài; ngày trống không được nối giả tạo.[^3]
 
-Giá lấy từ Binance qua thư viện ccxt, nến ngày và nến giờ. Lợi suất là log-return ngày. Biến động thực hiện (RV) là tổng bình phương log-return giờ trong ngày (Andersen & Bollerslev, 1998). Khối lượng tính theo USD và lấy log.
+$$ yₜ = a₀ + Σⱼ aⱼ yₜ₋ⱼ + Σⱼ bⱼ Sₜ₋ⱼ + uₜ ;  Sₜ = c₀ + Σⱼ cⱼ Sₜ₋ⱼ + Σⱼ dⱼ yₜ₋ⱼ + vₜ  \tag{5} $$
 
-### 4.3. Dữ liệu văn bản
+Đối với RQ5, Elastic Net, XGBoost và LightGBM được tái ước lượng theo cửa sổ mở rộng. Ba bậc mô hình gồm thị trường, thị trường cộng log(1+N), và thị trường cộng toàn bộ chỉ số văn bản. Kỳ valid chọn siêu tham số; mọi lần tái ước lượng loại quan sát có ngày mục tiêu nằm quá sát ngày dự báo theo quy tắc purge/embargo. Chỉ tiêu chính là RMSE và R² ngoài mẫu theo Campbell và Thompson (2008); chênh lệch lỗi dự báo được đánh giá bằng Diebold–Mariano có hiệu chỉnh mẫu hữu hạn, Clark–West cho mô hình lồng nhau, Giacomini–White và tập mô hình tin cậy khi chuỗi kiểm tra đủ liên tục (Clark & West, 2007; Diebold & Mariano, 1995).[^4]
 
-| Nguồn | Vai trò | Đồng hồ gán ngày | Ghi chú |
-|---|---|---|---|
-| GDELT GKG 2.0, lô :00 mỗi giờ | Nguồn chính: tiêu đề tin tiếng Anh, lọc bằng từ khóa crypto | Giờ GDELT thấy tin; dùng giờ đăng trong HTML meta khi có và cùng ngày UTC | Lô :00 ≈ 25% số bài; lấy theo thứ tự rải đều thời gian, không chọn theo nội dung |
-| SEC EDGAR full-text search | Sự kiện pháp lý/ETF (S-1, 19b-4, 8-K) | Giờ "Accepted" (New York → UTC) | Không đưa vào chỉ số ngày; dùng cho phân tích sự kiện |
-| GDELT translation, tiếng Việt | Nhánh phụ | Giờ GDELT thấy tin | Chấm bằng từ điển tài chính tiếng Việt, không dịch |
-| CryptoPanic dataset (CC0) | Nhãn yếu cho RQ1 | `newsDatetime` (UTC, mục 5.1) | Dừng ở 03/12/2025, không phủ kỳ test, nên không dùng làm feature |
-| UCRY Policy/Price (Lucey et al., 2022) | Biến kiểm soát bất định chung | Tuần kết thúc Chủ nhật, dùng từ thứ Hai | Có đến hết 2024 |
+$$ R²ₒₒₛ = 1 − Σₜ(yₜ−ŷₜ)² / Σₜ(yₜ−ȳₜ,train)² ;  ΔRMSE = RMSEₘₐᵣₖₑₜ − RMSEₘₐᵣₖₑₜ₊ₜₑₓₜ  \tag{6} $$
 
-RSS của các trang tin crypto chỉ lưu khoảng hai ngày gần nhất, và điều khoản của CoinDesk, Cointelegraph, Decrypt cấm thu tự động. Vì vậy RSS chỉ dùng cho bản demo trực tiếp của dashboard.
+Nghiên cứu sự kiện dùng T0 là nến một giờ đầu tiên bắt đầu sau `public_ts_utc`, với cửa sổ ước lượng [−168,−25] giờ; BTC dùng lợi suất trung bình, các tài sản khác dùng mô hình thị trường theo lợi suất BTC làm mức kỳ vọng. Từ đó tính lợi suất bất thường tích lũy (CAR), độ lớn lợi suất bất thường và log khối lượng bất thường tại các cửa sổ [0,1], [0,4], [0,24] giờ; cửa sổ [−4,−2] kiểm tra giá trước tin, còn placebo dời mốc 24 giờ. Tin được nhóm theo tercile FinBERT, điểm LM và narrative; kiểm định t, BMP, Wilcoxon gộp theo ngày và hiệu chỉnh Holm hoặc Benjamini–Hochberg (BH). Đây là quan hệ có điều kiện quanh tin, không phải nhận dạng nhân quả vì nhiều sự kiện có thể trùng giờ.
 
-### 4.4. Thời điểm ra công chúng, trùng lặp và gắn mã
+$$ ARᵈ₍τ₎ = rᵢ,ₜ₀₊τ − α̂ᵢ − β̂ᵢ rBTC,ₜ₀₊τ ;  CARᵈ[a,b] = Σ(τ=a…b) ARᵈ₍τ₎  \tag{7} $$
 
-Mỗi tin có:
-- giờ đăng (`published_at_utc`), nếu nguồn công bố;
-- giờ hệ thống thấy tin (`first_seen_utc`).
+$$ AVᵈ[a,b] = mean₍τ=a…b₎{log(1+Vᵢ,ₜ₀₊τ) − mean[log(1+Vᵢ,est)]}  \tag{8} $$
 
-Thời điểm ra công chúng được tính là `public_ts_utc = min(giờ đăng hợp lệ, giờ thấy)`. Giờ đăng hợp lệ phải thỏa ba điều kiện:
-1. không sau giờ thấy;
-2. không sớm hơn giờ thấy quá 48 giờ;
-3. cùng ngày UTC với giờ thấy.
+Các biến được mô tả trong Bảng 1. Bảng 2 thống kê riêng cấp cặp tin–tài sản có nến hợp lệ, vì các phép kiểm định sự kiện sử dụng tập này. Giá trị trung bình cấp sự kiện ở Bảng 2 có trọng số mỗi cặp bằng nhau; phần kết quả kiểm định sau đó gộp theo ngày nên có thể khác. Mọi thống kê trong hai bảng đều lấy từ các tệp `outputs/tables/real/` của bản chụp dữ liệu, không dùng dữ liệu mô phỏng.
 
-Điều kiện (3) xuất phát từ kiểm tra đối kháng. Văn bản ta có là bản thấy lúc `first_seen_utc`, và bài có thể đã sửa sau giờ đăng. Nếu lùi văn bản đó qua nửa đêm, thông tin của ngày t+1 sẽ lọt vào chỉ số ngày t. Tin thuộc ngày t khi `public_ts_utc ∈ [t, t+1)` UTC.
+Bảng 1
 
-Hai tin được coi là trùng khi cùng URL chuẩn hóa, hoặc khi tiêu đề giống nhau ít nhất 90% với một bản gốc trong vòng 3 ngày trước. URL chuẩn hóa chỉ bỏ tham số theo dõi, giữ đường dẫn và tham số định danh bài. Bản gốc là bản công bố sớm nhất. So khớp không nối chuỗi: mỗi tin chỉ so với bản gốc, không so với bản trùng khác. Mã coin gắn bằng biểu thức chính quy theo ticker và tên.
+Mô Tả Biến
 
-### 4.5. Độ phủ dữ liệu
-
-Tại thời điểm lập bản này, GDELT đã thu được 445/1.369 ngày. Chuỗi văn bản đã dựng lại trên 338 ngày, gồm 35.126 tin tiếng Anh canonical. Mô hình kinh tế lượng ở mục 6.3 chạy trên bản chụp trước đó (180 ngày). Bảng thống kê corpus (`outputs/tables/corpus_stats.csv`) sẽ được cập nhật khi thu đủ.
-
-## 5. Phương pháp
-
-### 5.1. Kiểm định đồng hồ dữ liệu
-
-Độ lệch giữa giờ thấy và giờ đăng được đo cho từng nguồn:
-- **GDELT:** lấy một mẫu ngẫu nhiên URL (seed cố định). Chỉ truy cập các trang mà robots.txt cho phép, và đọc giờ đăng có múi giờ trong thẻ meta.
-- **SEC:** so giờ chấp nhận (đổi sang UTC) với `file_date`.
-- **CryptoPanic:** suy ra múi giờ bằng cách khớp tiêu đề trùng với GDELT.
-
-### 5.2. Sentiment từng tin
-
-- **Loughran–McDonald** (Loughran & McDonald, 2011). Mẫu số là số từ thuộc từ điển gốc. Một từ tích cực bị bỏ nếu có từ phủ định trong ba từ đứng trước. Điểm ròng = (P − N)/(P + N).
-- **Harvard IV-4**: từ điển tổng quát, làm đối chứng.
-- **FinBERT** (Araci, 2019). Điểm = P(tích cực) − P(tiêu cực) ∈ [−1, 1], trung bình trên tối đa 20 câu đầu.
-- **CryptoBERT**: mô hình huấn luyện trên bài đăng crypto, điểm = P(Bullish) − P(Bearish). Chỉ dùng ở bước kiểm định, vì không rõ dữ liệu huấn luyện của nó có trùng giai đoạn mẫu không.
-- **Tin tiếng Việt**: từ điển tài chính tiếng Việt cộng từ điển crypto tự xây, khớp cụm dài nhất, có xử lý phủ định.
-
-### 5.3. Narrative
-
-Tám narrative định trước: quy định, ETF/tổ chức, an ninh/hack, stablecoin, DeFi, token AI, vĩ mô/tiền tệ, giá/đầu cơ.
-
-- **Zero-shot (phương pháp chính).** Tin và mô tả mỗi narrative được biểu diễn bằng embedding đa ngữ. Xác suất narrative là softmax của độ tương đồng cosine. Tin có độ tương đồng cao nhất dưới phân vị 20% của kỳ train được gán "other".
-- **LDA** (benchmark). Vectorizer và mô hình chỉ fit trên train. Số chủ đề K ∈ {8, 12, 16, 20} chọn theo perplexity trên kỳ valid.
-- **BERTopic** (Grootendorst, 2022). Chỉ fit trên train, các kỳ sau dùng transform.
-
-Chủ đề của LDA và BERTopic được ánh xạ sang narrative bằng embedding của mười từ đặc trưng.
-
-### 5.4. Chỉ số ngày
-
-Với mỗi ngày t, xét riêng toàn thị trường và từng mã coin:
-- **Sentiment:** Sent_t = (1/N_t) Σ_d s_d. Tách thành pos_t = trung bình max(s, 0) và neg_t = trung bình max(−s, 0) để kiểm định bất đối xứng.
-- **Attention cứng:** Att_k,t = N_k,t / N_t. **Attention mềm:** trung bình xác suất narrative.
-- **Hai thước đo bất đồng, đặt tên riêng:**
-  - Antweiler–Frank: √(1 − A_t²), với A_t = (N⁺ − N⁻)/(N⁺ + N⁻) theo nhãn FinBERT (Antweiler & Frank, 2004).
-  - Độ lệch chuẩn sentiment trong ngày, theo tinh thần Khaksar et al. (2026).
-- **Gia tốc tin xấu:** neg_t − neg_{t−1}.
-
-Chỉ dùng tin báo tiếng Anh. Mỗi tin có trọng số bằng nhau.
-
-### 5.5. Kiểm định đo lường (RQ1)
-
-- **Nhãn tay:** 300 tiêu đề chọn ngẫu nhiên trước kỳ test, gán nhãn giọng điệu và narrative.
-- **Nhãn yếu:** 6.995 tiêu đề CryptoPanic có ít nhất ba phiếu, chênh lệch phiếu ít nhất hai. Nhãn là phiếu tích cực/tiêu cực của người dùng, phản ánh kỳ vọng giá của đám đông.
-
-Chỉ tiêu: accuracy, macro-F1 và AUC giữa tin tốt và tin xấu. AUC không bị ảnh hưởng bởi mất cân bằng lớp. Điểm bằng 0 (phương pháp không chọn phía) được tính là sai.
-
-### 5.6. Hồi quy dự báo, bất đối xứng và lead-lag (RQ2–RQ4)
-
-Hồi quy dự báo có dạng y_{i,t+h} = α + β·Text_{i,t} + γ′·Market_{i,t} + ε. Trong đó y là lợi suất, RV hoặc log khối lượng, và h ∈ {1, 3, 7}. Sai số chuẩn dùng Newey–West (Newey & West, 1987), độ trễ 7.
-
-RQ2 tách sentiment thành phần dương và âm, kiểm định Wald H₀: β⁻ = β⁺. RQ4 dùng VAR hai chiều, chọn độ trễ theo AIC, với kiểm định nhân quả Granger (Granger, 1969). Holm và Benjamini–Hochberg kiểm soát lỗi khi kiểm định nhiều giả thuyết.
-
-### 5.7. Nghiên cứu sự kiện theo giờ
-
-Quanh mỗi tin, lợi suất bất thường tích lũy (CAR) được tính trên nến giờ, so với trung bình 144 giờ ước lượng trước tin. Tin cùng ngày được gom theo ngày để tránh đếm trùng. Cửa sổ trước tin [−4, −2] giờ kiểm tra giá có chạy trước tin không. Các tin có cả giờ đăng và giờ thấy được tính hai lần, mỗi lần theo một đồng hồ, để đo độ nhạy của kết luận với đồng hồ.
-
-### 5.8. Dự báo ngoài mẫu (RQ5)
-
-Elastic Net, XGBoost và LightGBM được ước lượng theo cửa sổ mở rộng (walk-forward). Có ba phiên bản:
-1. chỉ biến thị trường;
-2. thị trường cộng attention thô;
-3. thị trường cộng toàn bộ văn bản.
-
-Siêu tham số chọn trên kỳ valid. Chỉ tiêu là RMSE và R² ngoài mẫu so với trung bình lịch sử (Campbell & Thompson, 2008). So sánh dùng kiểm định Diebold–Mariano (Diebold & Mariano, 1995). Vì mô hình chỉ có biến thị trường lồng trong mô hình có văn bản, kết quả được đối chiếu thêm với kiểm định Clark–West (Clark & West, 2007). Giá trị kinh tế được đánh giá bằng chiến lược tín hiệu sau phí giao dịch 10 điểm cơ bản.
-
-## 6. Kết quả
-
-### 6.1. Độ tin cậy của đồng hồ dữ liệu
-
-**Bảng 1.** Độ lệch giữa các đồng hồ dữ liệu
-
-| So sánh | n cặp | Trung vị lệch | % lệch > 1 giờ | % đổi ngày UTC |
+| Loại biến | Tên biến | Ký hiệu | Đo lường | Nguồn |
 |---|---|---|---|---|
-| GDELT giờ thấy so với giờ đăng trong HTML | 42 | +142 phút | 78,6 | 16,7 |
-| SEC giờ chấp nhận (UTC) so với `file_date` | 2.053 | — | — | 6,4 |
-| GDELT giờ thấy so với CryptoPanic, tiêu đề trùng | 695 | +1,3 giờ | — | — |
+| Phụ thuộc | Lợi suất | rᵢ,ₜ | Sai phân log giá đóng cửa ngày | Binance, nến ngày |
+| Phụ thuộc | Biến động thực hiện | RVᵢ,ₜ | Tổng bình phương lợi suất log giờ trong ngày | Binance, nến giờ |
+| Phụ thuộc | Khối lượng | logVᵢ,ₜ | log(1 + khối lượng USD) | Binance |
+| Giải thích | Cảm xúc ngày | Sᵢ,ₜ | Trung bình điểm FinBERT hoặc từ điển của tin canonical | GDELT GKG; mô hình văn bản |
+| Giải thích | Tin xấu, tin tốt | NegS; PosS | Trung bình phần âm và phần dương của điểm tin | GDELT GKG; FinBERT |
+| Giải thích | Chú ý narrative | Aₖ,ᵢ,ₜ | Số tin narrative k / số tin ngày t; bản mềm dùng xác suất | GDELT GKG; zero-shot |
+| Kiểm soát | Số tin thô | log(1+Nᵢ,ₜ) | Log của 1 cộng số tin canonical | GDELT GKG |
+| Kiểm soát | Thị trường trễ | Xᵢ,ₜ | Lợi suất trễ, momentum, RV và khối lượng | Binance |
+| Kiểm tra độ vững | Bất đồng; UCRY | Dᵢ,ₜ; UCRYₜ | Độ lệch chuẩn cảm xúc; chỉ số bất định tuần đã công bố | GDELT GKG; Lucey và cộng sự (2022) |
+| Sự kiện | Lợi suất bất thường | CARᵈ[a,b] | Tổng chênh lợi suất giờ so với mô hình ở [−168,−25] giờ | Binance; giờ tin công bố |
 
-**Ý nghĩa.**
-- GDELT thấy tin trễ khoảng hai giờ so với giờ đăng, và cứ sáu tin thì có một tin rơi sang ngày UTC hôm sau. Nghiên cứu gán những tin này vào ngày *thấy*, tức là phía an toàn. Cách này có thể làm trễ tín hiệu nhưng không tạo look-ahead. Do đó các hệ số ở mục 6.3 nếu có sai lệch thì là sai lệch về phía thận trọng.
-- Với SEC, dùng ngày nộp hồ sơ sẽ gán sai ngày cho 6,4% hồ sơ, vì hồ sơ nộp sau 17:30 giờ New York được tính sang ngày làm việc kế tiếp.
-- Độ lệch +1,3 giờ giữa GDELT và CryptoPanic, cộng với việc lệch gần như luôn dương, cho thấy CryptoPanic ghi giờ theo UTC.
+Ghi chú. Biến văn bản ngày t chỉ dùng tin ra công chúng trước 00:00 UTC ngày t+1. Các phép phân tích có UCRY chạy trên mẫu con có dữ liệu; ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
 
-### 6.2. Đo lường sentiment (RQ1)
+Bảng 2
 
-**Bảng 2.** Sentiment so với nhãn yếu CryptoPanic (n = 6.995; 81,6% nhãn tích cực)
+Thống Kê Mô Tả Mẫu Sự Kiện Thật
 
-| Phương pháp | Accuracy | Macro-F1 | AUC | % tin có phân định |
-|---|---|---|---|---|
-| Loughran–McDonald | 0,155 | 0,184 | 0,612 | 25,8 |
-| Harvard IV-4 | 0,312 | 0,245 | 0,571 | 49,2 |
-| FinBERT | 0,748 | 0,637 | **0,712** | 100,0 |
-| CryptoBERT | 0,802 | 0,520 | 0,591 | 100,0 |
+| Biến | Số quan sát | Trung bình | Độ lệch chuẩn | Nhỏ nhất | Lớn nhất |
+|---|---:|---:|---:|---:|---:|
+| Điểm FinBERT | 36.909 | 0,0451 | 0,5166 | −0,9684 | 0,9445 |
+| Điểm LM | 39.003 | −0,1003 | 0,5471 | −1,0000 | 1,0000 |
+| CAR [0,4] giờ (%) | 38.951 | −0,0102 | 1,1803 | −11,2381 | 44,1157 |
+| Độ lớn lợi suất bất thường [0,4] giờ (%) | 38.951 | 0,0877 | 1,3504 | −7,3263 | 44,3118 |
+| Log khối lượng bất thường [0,4] giờ | 38.951 | 0,1106 | 0,6461 | −2,3358 | 4,0676 |
 
-**Ý nghĩa.**
-- FinBERT xếp hạng tin tốt trên tin xấu đúng hơn các phương pháp còn lại. Như vậy RQ1 được ủng hộ: transformer tốt hơn từ điển trên tiêu đề crypto.
-- Hai từ điển bỏ trống phần lớn tiêu đề: Loughran–McDonald chỉ phân định được 25,8% số tin. Tiêu đề ngắn hiếm khi chứa từ trong danh sách, nên từ điển phù hợp với văn bản dài hơn tiêu đề.
-- CryptoBERT có accuracy cao nhất chỉ vì gần như luôn đoán "bullish" trong khi 81,6% nhãn là tích cực. Macro-F1 và AUC thấp của nó cho thấy mô hình huấn luyện trên mạng xã hội không chuyển tốt sang tiêu đề tin.
-- Nhãn yếu đo kỳ vọng giá của đám đông, không phải giọng điệu do chuyên gia đánh giá. Kết quả trên 300 nhãn tay sẽ bổ sung ở bản sau.
+Ghi chú. Mỗi cặp tin–tài sản có trọng số như nhau; khác với trung bình cụm ngày ở phần kết quả. FinBERT không có ở mọi tin SEC. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
 
-### 6.3. Bất đối xứng, narrative, lead-lag và dự báo ngoài mẫu (RQ2–RQ5) — sơ bộ
+## 4. Kết quả nghiên cứu và thảo luận
 
-Kết quả mục này lấy từ `outputs/tables/real/RESULTS.md`. Bản chụp dữ liệu gồm 180/1.369 ngày có tin. Đặc tả chính cho BTC dùng 176 ngày, chia train/valid/test là 130/12/34. Nghiên cứu sự kiện theo giờ dùng 37.179 tin canonical tiếng Anh, tạo 39.003 cặp tin–tài sản trên 772 ngày. Khi bộ thu GDELT phủ đủ mẫu, các con số sẽ được tính lại. Mọi p-value dưới đây đã hiệu chỉnh Holm trong từng họ kiểm định.
+Trước khi diễn giải hệ số, nghiên cứu xem xét phạm vi dữ liệu thật đã có. Bảng 3 trình bày độ phủ văn bản và số ngày dùng được trong đặc tả chính. Đây là mẫu tin đang thu tiếp, không phải toàn bộ tin từng xuất hiện trên thị trường.
 
-**Bảng 3.** Phản ứng giá quanh thời điểm công bố, cửa sổ [0, 4] giờ
+Bảng 3
 
-| Nhóm tin | Chỉ tiêu | Ước lượng | Số ngày | p (Holm) |
-|---|---|---|---|---|
-| Toàn bộ | CAR | 0,037% | 772 | 1,000 |
-| Toàn bộ | \|lợi suất\| bất thường | 0,031% | 772 | 1,000 |
-| Toàn bộ | Khối lượng bất thường (log) | 0,032 | 772 | 1,000 |
-| Regulation | CAR | 0,038% | 388 | 1,000 |
-| Security/hacks | CAR | −0,042% | 215 | 1,000 |
-| ETF/institutional | CAR | −0,021% | 361 | 1,000 |
+Độ Phủ Tin Và Số Ngày Hợp Lệ Theo Tài Sản
 
-**RQ2: bất đối xứng.**
-- Chênh lệch CAR [0, 4] giờ giữa tin FinBERT xấu và tin tốt là −0,018 điểm % (215 ngày ghép cặp; p = 0,433, Holm = 1).
-- Với biến động tuyệt đối [0, 1] giờ, chênh lệch là −0,041 điểm %. Kiểm định t có ý nghĩa sau Holm (p = 0,031), nhưng kiểm định Wilcoxon thì không (p = 0,306).
+| Tài sản | Ngày lịch | Ngày có tin | Tỷ lệ có tin (%) | Ngày mô hình | Train | Valid | Test |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| BTC | 1.369 | 339 | 24,76 | 335 | 229 | 47 | 59 |
+| ETH | 1.369 | 339 | 24,76 | 317 | 219 | 46 | 52 |
+| SOL | 1.369 | 339 | 24,76 | 254 | 183 | 34 | 37 |
+| BNB | 1.369 | 339 | 24,76 | 212 | 144 | 31 | 37 |
+| XRP | 1.369 | 339 | 24,76 | 286 | 194 | 47 | 45 |
 
-*Ý nghĩa:* chưa có bằng chứng vững rằng tin xấu tác động mạnh hơn tin tốt. Hai kiểm định cho kết luận khác nhau, nên kết quả nhạy với phân phối đuôi và chưa đủ để kết luận.
+Ghi chú. Độ phủ từ `coverage.csv`, bản chụp 18/10/2026; ngày có tin tính từ 01/01/2023 đến 24/09/2026, mẫu thiết kế kết thúc 30/09/2026. Ngày mô hình còn cần giá và biến trễ hợp lệ. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
 
-**RQ3: narrative.** Không narrative nào có phản ứng giá có ý nghĩa thống kê (Bảng 3). Dấu ước lượng phù hợp trực giác (tin hack âm, tin quy định dương), nhưng độ lớn nhỏ so với sai số. *Ý nghĩa:* với mẫu hiện tại, chưa thể xếp hạng narrative theo tác động.
+Điều này có nghĩa là chuỗi giá liên tục không làm cho chuỗi tin liên tục: Bitcoin chỉ có 59 ngày kiểm tra đủ biến, dù khoảng lịch dài hơn. Do đó, kết quả hồi quy và dự báo bên dưới chỉ áp dụng cho ngày được quan sát; không được ngoại suy sang các ngày không thu được tin. Sự thiếu hụt dữ liệu có thể làm yếu kiểm định Granger và làm thay đổi thành phần tin theo thời gian.
 
-**RQ4: dẫn trước hay theo sau.**
-- CAR trong cửa sổ trước tin [−4, −2] giờ là −0,016% (p = 0,521, Holm = 1). Không thấy giá đã chạy trước khi tin ra.
-- Trên 37 tin có cả giờ đăng và giờ thấy, kiểm tra độ nhạy theo đồng hồ:
-  - CAR [0, 24] giờ là −0,46% nếu tính từ giờ đăng và −1,02% nếu tính từ giờ GDELT thấy tin.
-  - Chỉ đồng hồ "thấy" cho kết quả có ý nghĩa sau Holm.
-  - Kiểm định chênh lệch ghép cặp giữa hai đồng hồ không có ý nghĩa (Holm p = 0,201).
-- Chưa chạy được VAR/Granger, vì chưa có đoạn ≥ 30 ngày tin liên tục.
+Đối với RQ1, Bảng 4 đặt ba điểm cảm xúc vào cùng hồi quy lợi suất Bitcoin ngày kế tiếp. Đây là so sánh khả năng giải thích có điều kiện, chưa phải phép đo độ chính xác gán nhãn của bộ chấm. Bảng kiểm định nhãn độc lập chỉ được bổ sung sau khi bộ nhãn tay được hoàn thành.
 
-*Ý nghĩa:* chọn đồng hồ có thể đổi kết luận về phản ứng giá trong ngày. Đây là minh chứng thực nghiệm cho việc phải báo cáo độ lệch đồng hồ (mục 6.1).
+Bảng 4
 
-**RQ5: dự báo ngoài mẫu.**
-- Có 6.480 dự báo ngoài mẫu.
-- Với BTC, mô hình Elastic Net thị trường + văn bản dự báo RV một ngày tới đạt R² ngoài mẫu −0,0077 so với trung bình lịch sử, RMSE 0,000509.
-- Chưa tính được kiểm định Diebold–Mariano, vì các ngày test có tin còn rời rạc.
+Hệ Số Cảm Xúc Trong Hồi Quy Lợi Suất Bitcoin Ngày Kế Tiếp
 
-*Ý nghĩa:* ở bản chụp này, văn bản chưa giúp dự báo biến động BTC tốt hơn trung bình lịch sử. Kết luận cho RQ5 cần đoạn test liên tục.
+| Bộ chấm | Hệ số | Số quan sát | p thô | p Holm |
+|---|---:|---:|---:|---:|
+| Loughran–McDonald | −0,01380 | 277 | 0,3040 | 1,0000 |
+| Harvard IV-4 | −0,00123 | 277 | 0,8853 | 1,0000 |
+| FinBERT | 0,01371 | 277 | 0,2542 | 1,0000 |
 
-**Tóm lại, ở giai đoạn sơ bộ:** FinBERT đo giọng điệu tốt hơn từ điển (RQ1). Việc chọn đồng hồ ảnh hưởng đến kết luận về phản ứng giá (RQ4). Các câu hỏi về độ lớn tác động (RQ2, RQ3, RQ5) chưa có bằng chứng có ý nghĩa. Điều này phù hợp với quan điểm thị trường hiệu quả ở tần suất ngày (Fama, 1970), nhưng cần kiểm tra lại khi mẫu đầy đủ.
+Ghi chú. Biến phụ thuộc là lợi suất log ngày t+1; mỗi hệ số đến từ đặc tả có cùng biến kiểm soát thị trường và số tin. p Holm hiệu chỉnh trong họ kiểm định xuất ra từ `regressions.csv`. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
 
-## 7. Thảo luận
+Không hệ số nào đạt ý nghĩa thống kê sau hiệu chỉnh. Điều này có nghĩa là chưa thể nói FinBERT đo cảm xúc tốt hơn từ điển chỉ dựa vào khả năng dự báo lợi suất ở mẫu này; một bộ chấm có thể đọc đúng sắc thái nhưng sắc thái không dự báo giá. Lập luận về sự phù hợp miền của Loughran và McDonald (2011) và ưu thế biểu diễn ngữ cảnh của Araci (2019) vẫn là giả thuyết đo lường cần đánh giá bằng nhãn độc lập. [[CHỜ_DỮ_LIỆU: bảng RQ1_nhãn_độc_lập]]
 
-Kết quả đo lường có hai hàm ý cho các nghiên cứu dùng dữ liệu tin tức crypto. Thứ nhất, ngày trong cơ sở dữ liệu tin không phải lúc nào cũng là ngày công bố. Với khoảng một phần sáu số tin, chênh lệch đủ lớn để đổi ngày. Một nghiên cứu gán ngày theo giờ đăng mà không kiểm tra văn bản có bị sửa sau đó không sẽ có nguy cơ đưa thông tin tương lai vào chỉ số. Một nghiên cứu gán ngày theo giờ thấy thì làm trễ tín hiệu. Báo cáo cả hai độ lệch giúp người đọc đánh giá chiều sai lệch.
+Để xem tin xấu có mạnh hơn tin tốt hay không, Bảng 5 báo cáo Wald và phản ứng sự kiện theo sắc thái. Bảng đồng thời cho thấy mức độ chắc chắn khác nhau giữa giá và khối lượng.
 
-Thứ hai, với tiêu đề ngắn, lợi thế của transformer so với từ điển không nằm ở độ tinh tế mà ở độ phủ: từ điển không phân định được phần lớn tiêu đề. Điều này khớp với lập luận của Loughran và McDonald (2011) rằng công cụ đo phải phù hợp với loại văn bản.
+Bảng 5
 
-## 8. Hạn chế của nghiên cứu
+Bất Đối Xứng Tin Xấu Và Tin Tốt
 
-1. **Lấy mẫu GDELT.** Mới dùng lô :00 mỗi giờ, khoảng 25% số bài. Lấy mẫu theo thời gian nên không chọn lệch theo nội dung, nhưng làm giảm số tin mỗi ngày và tăng nhiễu cho mã coin ít tin.
-2. **Kiểm chứng giờ đăng.** Mới làm được trên 42 cặp, vì phần lớn trang không công bố giờ đăng kèm múi giờ hoặc chặn robot. Ước lượng độ lệch do đó còn rộng.
-3. **Chất lượng nhãn yếu.** Phiếu CryptoPanic phản ánh kỳ vọng giá của người dùng nền tảng, có thể lệch về phía lạc quan (81,6% tích cực). Đây không phải đánh giá giọng điệu độc lập.
-4. **Narrative định trước.** Tám narrative có thể bỏ sót chủ đề mới nổi. LDA và BERTopic được báo cáo song song để giảm rủi ro này. Văn bản dùng cho narrative chỉ gồm tiêu đề và 500 ký tự đầu, nên sự kiện chính nằm sâu trong bài có thể bị bỏ qua.
-5. **Mô hình tiền huấn luyện.** FinBERT huấn luyện trên tin tài chính chung, không riêng crypto. Nguồn gốc dữ liệu huấn luyện của CryptoBERT không công bố theo thời gian, nên nó chỉ dùng trong kiểm định.
-6. **Biến kiểm soát.** UCRY là chuỗi tính lại hồi cứu, không có các bản công bố theo thời gian thực, và chỉ phủ đến 2024. Mô hình có UCRY chạy trên đoạn ngắn hơn.
-7. **Nhân quả.** Hồi quy dự báo và kiểm định Granger cho thấy quan hệ dẫn trước, không chứng minh tin tức gây ra biến động giá.
-8. **Phạm vi.** Mẫu gồm năm tài sản vốn hóa lớn, tin tiếng Anh là chính. Kết quả có thể không áp dụng cho token nhỏ hay cộng đồng ngôn ngữ khác.
+| Phép đo | Số quan sát/ngày | Ước lượng | p thô | p Holm |
+|---|---:|---:|---:|---:|
+| Wald BTC, lợi suất ngày t+1: β⁻ − β⁺ | 276 | −0,00021 | 0,6115 | 1,0000 |
+| Phân vị BTC τ = 0,1: β⁻ − β⁺ | 276 | 0,00003 | 0,9176 | 1,0000 |
+| Phân vị BTC τ = 0,5: β⁻ − β⁺ | 276 | −0,00040 | 0,2908 | 1,0000 |
+| Phân vị BTC τ = 0,9: β⁻ − β⁺ | 276 | −0,00127 | 0,1461 | 1,0000 |
+| CAR xấu trừ tốt [0,4] giờ (điểm %) | 382 ngày | 0,00679 | 0,6758 | 1,0000 |
+| Log khối lượng bất thường xấu trừ tốt [0,4] giờ | 382 ngày | −0,03007 | 0,00014 | 0,00308*** |
 
-## 9. Kết luận
+Ghi chú. Hàng sự kiện dùng tercile FinBERT và so ngày có cả tin xấu, tin tốt; p của khối lượng theo Wilcoxon sau Holm là 0,00081. Bảng lấy từ `wald.csv`, `quantiles.csv`, `event_asymmetry.csv`. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
 
-Nghiên cứu xây dựng một quy trình dữ liệu văn bản cho thị trường tiền mã hóa, đặt trọng tâm vào tính đúng thời điểm. Mỗi tin được gán ngày theo thời điểm ra công chúng có kiểm chứng. Văn bản không được lùi ngày qua nửa đêm. Mô hình văn bản chỉ học trên kỳ train. Sai lệch đồng hồ được công bố.
+Chưa tìm thấy khác biệt giá có ý nghĩa thống kê giữa hai sắc thái, kể cả ở các phân vị lợi suất Bitcoin. Ngược lại, phản ứng khối lượng của tin xấu thấp hơn tin tốt khoảng 0,030 đơn vị log trong bốn giờ, có ý nghĩa sau Holm và cùng chiều theo Wilcoxon. Điều này có nghĩa là mức giao dịch quanh tin tốt cao hơn trong mẫu ngày ghép cặp, chứ không có nghĩa tin tốt gây ra giao dịch: giờ có tin dày và các sự kiện đồng thời có thể cùng tác động. Dấu này khác với trực giác rằng tin xấu luôn gây phản ứng mạnh hơn, và chưa đủ để bác bỏ cơ chế bất đối xứng nêu trong tóm tắt của Chou và cộng sự (2023) hoặc Gür và Ünal (2026), vì các nghiên cứu dùng thị trường và biến mục tiêu khác. Hình 1 cho thấy CAR của ba nhóm sắc thái thay đổi theo cửa sổ, nhưng chưa cung cấp bằng chứng có ý nghĩa về chênh lệch giá.
 
-Về đo lường, FinBERT phân biệt tin tốt và tin xấu tốt hơn từ điển và CryptoBERT trên tiêu đề crypto. Các câu hỏi về tác động tới giá (RQ2–RQ5) sẽ được trả lời trên toàn mẫu. Toàn bộ mã nguồn, bảng kết quả và dashboard được công bố để người khác kiểm tra lại.
+![CAR cụm ngày theo sắc thái FinBERT](../outputs/figures/real/event_car_by_tone.png)
+
+Hình 1. CAR Cụm Ngày Theo Sắc Thái FinBERT
+
+Ghi chú. Hình từ dữ liệu sự kiện thật; các điểm là trung bình cụm ngày, không biểu thị khoảng tin cậy. Tính toán của nhóm tác giả.
+
+Bảng 6 xem phản ứng theo nhóm narrative. Mỗi ước lượng là CAR cụm theo ngày ở [0,4] giờ, tính trên tin đã thu và có thể có nhiều tin cùng một ngày.
+
+Bảng 6
+
+Lợi Suất Bất Thường Theo Câu Chuyện Thị Trường
+
+| Nhóm tin | Cặp tin–tài sản | Ngày | CAR trung bình (%) | p thô | p Holm |
+|---|---:|---:|---:|---:|---:|
+| Toàn bộ | 38.951 | 772 | 0,03715 | 0,2141 | 1,0000 |
+| Quy định (regulation) | 3.837 | 520 | 0,04515 | 0,2126 | 1,0000 |
+| An ninh/vụ tấn công (security/hacks) | 4.348 | 376 | −0,01637 | 0,5987 | 1,0000 |
+| ETF/tổ chức (ETF/institutional) | 10.877 | 510 | 0,00693 | 0,8260 | 1,0000 |
+
+Ghi chú. Trung bình cụm ngày và p t từ `event_tests.csv`; cùng tin có thể tham gia nhiều cửa sổ nhưng mỗi hàng là một narrative xác định. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
+
+Các dấu phù hợp một số cách diễn giải thông thường, nhưng không nhóm nào có ý nghĩa sau điều chỉnh kiểm định bội. Điều này có nghĩa là chưa thể xếp hạng narrative theo tác động giá; mức 0,045% của nhóm quy định không thể được xem là lợi nhuận có thể khai thác. Kết quả hiện tại chưa xác nhận hay phủ định kết luận của Walker (2024) và Khaksar và cộng sự (2026), vì họ dùng nguồn tin và thước đo narrative khác. Độ vững với attention mềm, loại tin suy đoán giá và trọng số nguồn cũng chưa đủ dữ liệu đồng bộ để kết luận. [[CHỜ_DỮ_LIỆU: bảng robustness_source_weighted_exclude_price]]
+
+RQ4 được kiểm tra qua phản ứng trước tin và qua thay đổi đồng hồ. CAR thuần trước tin [−4,−2] giờ bằng −0,01560% trên 772 ngày, p thô 0,5206 và p Holm 1,0000; chưa tìm thấy dịch chuyển giá trung bình có ý nghĩa. Tuy nhiên, độ lớn lợi suất bất thường và log khối lượng bất thường trước tin lần lượt bằng 0,1190% và 0,1522, với p Holm 0,00682 và dưới 0,00001. Điều này có nghĩa là hoạt động giao dịch có thể tăng trước mốc công bố mà không tạo lợi suất có hướng; sự chồng lấp giữa các tin là một lời giải thích khả dĩ, không thể gọi đó là rò rỉ thông tin. Bảng 7 cho thấy cùng những tin có hai đồng hồ tạo kết quả khác nhau ra sao.
+
+Bảng 7
+
+Độ Nhạy Của CAR Theo Đồng Hồ Công Bố
+
+| Cửa sổ | Cặp/ngày | CAR giờ đăng (%) | CAR giờ thấy (%) | p giờ đăng Holm | p giờ thấy Holm | p chênh ghép cặp Holm |
+|---|---:|---:|---:|---:|---:|---:|
+| [0,1] giờ | 39/32 | 0,03999 | −0,12510 | 0,7641 | 0,1870 | 0,4466 |
+| [0,4] giờ | 39/32 | −0,16080 | −0,19150 | 0,7641 | 0,2236 | 0,8896 |
+| [0,24] giờ | 39/32 | −0,46330 | −1,02130** | 0,6869 | 0,0406 | 0,2009 |
+
+Ghi chú. 39 cặp thuộc 37 tin canonical trên 32 ngày; `published_at_utc` và `seendate` được áp dụng cho đúng cùng cặp tin–tài sản, từ `event_timing.csv`. Dấu ** ở CAR giờ thấy biểu thị p Holm của phản ứng so với 0, không phải p của chênh lệch hai đồng hồ. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
+
+Ở 24 giờ, kết quả có ý nghĩa khi tính từ giờ thấy tin nhưng không có ý nghĩa khi tính từ giờ đăng. Điều này có nghĩa là kết luận về một phản ứng khác 0 nhạy với lựa chọn mốc thời gian; kiểm định chênh lệch ghép cặp giữa hai cách đo lại có p Holm 0,2009, nên chưa đủ bằng chứng rằng chính sai lệch đồng hồ tạo ra mức chênh khác 0. Kết quả củng cố yêu cầu kiểm tra đồng hồ trước khi đưa ra tuyên bố giá dẫn tin hay tin dẫn giá. Chuỗi ngày có tin liên tục hiện chưa đủ 30 ngày cho VAR/Granger, vì vậy chưa đủ quan sát để kết luận chiều dự báo ở tần suất ngày. [[CHỜ_DỮ_LIỆU: bảng VAR_Granger_liên_tục]]
+
+Cuối cùng, Bảng 8 so cùng thuật toán Elastic Net trên 59 ngày kiểm tra Bitcoin có đủ đặc trưng và mục tiêu RV ngày sau. Đây là so sánh dự báo ghép cặp, nhưng phần kiểm định chỉ có một đoạn ngắn liên tục.
+
+Bảng 8
+
+Dự Báo Biến Động Bitcoin Ngoài Mẫu, Kỳ Hạn Một Ngày
+
+| Mô hình | Ngày test | RMSE | R² OOS Campbell–Thompson | Số ngày liên tục cho kiểm định |
+|---|---:|---:|---:|---:|
+| Chỉ thị trường | 59 | 0,000578 | 0,1323 | — |
+| Thị trường + số tin thô | 59 | 0,000578 | 0,1323 | — |
+| Thị trường + văn bản | 59 | 0,000574 | 0,1433 | 4 |
+
+Ghi chú. Số liệu từ `oos.csv`; R² OOS so với trung bình huấn luyện, không phải R² trong mẫu. Kiểm định Diebold–Mariano của bậc văn bản có p Holm 1,0000 nhưng chỉ dùng 04 ngày liên tục, không đủ để diễn giải xác nhận. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
+
+Sai số RMSE giảm nhẹ và R² OOS tăng khoảng 0,011 điểm so với mô hình chỉ có thị trường. Điều này có nghĩa là trong 59 ngày quan sát, điểm dự báo văn bản gần RV thật hơn một chút, nhưng lợi ích gia tăng chưa được xác nhận thống kê do chuỗi kiểm định liên tục chỉ dài 04 ngày. Hình 2 trình bày đường lỗi ngoài mẫu trên các ngày có quan sát, cần đọc cùng độ dài đoạn liên tục nêu ở Bảng 8. Kết quả phù hợp với yêu cầu đánh giá ngoài mẫu của Campbell và Thompson (2008), đồng thời không cho phép khẳng định tín hiệu tin có thể sinh lợi sau phí. Bảng chiến lược cũng chưa thể diễn giải ổn định trên những ngày rời rạc; đây chỉ là phép thử giá trị kinh tế, không phải khuyến nghị giao dịch. [[CHỜ_DỮ_LIỆU: bảng RQ5_DM_GW_MCS_đủ_chuỗi]]
+
+![Lỗi dự báo ngoài mẫu theo ngày](../outputs/figures/real/oos_loss.png)
+
+Hình 2. Lỗi Dự Báo Ngoài Mẫu Theo Ngày
+
+Ghi chú. Hình từ dự báo thật của mô hình thị trường và mô hình có văn bản; các khoảng trống trên trục thời gian là ngày không có mẫu ghép hợp lệ. Tính toán của nhóm tác giả.
+
+## 5. Kết luận
+
+Nghiên cứu đặt cảm xúc và narrative tin tức vào cùng một khuôn kiểm tra cho 05 tài sản tiền mã hóa, trong đó thời điểm công bố được xử lý như một phần của phép đo chứ không chỉ là thuộc tính dữ liệu. Trên bản chụp thật hiện có, tin phủ 24,76% ngày lịch. Không có bằng chứng giá sau tin xấu mạnh hơn tin tốt trong bốn giờ hoặc một ngày; khối lượng quanh tin tốt cao hơn trong mẫu ngày ghép cặp. Chưa có narrative nào cho CAR có ý nghĩa sau điều chỉnh kiểm định bội. Việc đổi từ giờ đăng sang giờ hệ thống thấy tin làm đổi trạng thái ý nghĩa ở cửa sổ 24 giờ, nhưng mức chênh hai cách đo chưa có ý nghĩa. Dự báo RV Bitcoin khi thêm văn bản có RMSE thấp hơn rất nhẹ, song RQ5 vẫn chưa có đoạn kiểm định liên tục đủ dài. RQ1 còn cần nhãn kiểm định độc lập; RQ4 còn cần chuỗi tin liền mạch cho VAR/Granger.
+
+Đối với nhà đầu tư, kết quả hiện tại không ủng hộ việc biến một hệ số cảm xúc hoặc một CAR theo narrative thành quy tắc giao dịch. Đối với đơn vị cung cấp dữ liệu và người xây sản phẩm phân tích, thông tin giờ đăng, giờ thấy và quy tắc gán ngày cần được lưu và hiển thị cùng chỉ số, vì thay đổi đồng hồ có thể đổi diễn giải thống kê. Đối với cơ quan quản lý, việc công bố chính xác thời điểm phát hành thông tin giúp đánh giá phản ứng thị trường minh bạch hơn; kết quả hiện tại chưa cho phép suy luận một loại tin gây biến động giá.
+
+Hạn chế lớn nhất là lấy mẫu GDELT theo các lô giờ và độ phủ ngày còn thưa; các tin chồng lấp khiến phản ứng sự kiện khó quy về một tin riêng. Tập audit đồng hồ chỉ có 37 tin dùng được trong so sánh giờ, nhánh tiếng Việt và UCRY chỉ phủ một phần mẫu, còn điểm FinBERT có thể chịu sai lệch miền. Nghiên cứu tiếp theo cần hoàn tất thu tin, đánh nhãn độc lập, kiểm tra các đoạn ngày liên tục, tái ước lượng theo nguồn và giai đoạn, rồi mới kết luận đầy đủ RQ1–RQ5. Các kết luận đã nêu là quan hệ thống kê trên tập quan sát hiện có, không phải tác động nhân quả hay hiệu quả giao dịch được bảo đảm.
+
 
 ## Tài liệu tham khảo
 
@@ -350,3 +307,11 @@ Shiller, R. J. (2017). Narrative economics. *American Economic Review, 107*(4), 
 Tetlock, P. C. (2007). Giving content to investor sentiment: The role of media in the stock market. *The Journal of Finance, 62*(3), 1139–1168. https://doi.org/10.1111/j.1540-6261.2007.01232.x
 
 Walker, C. B. (2024). Going mainstream: Cryptocurrency narratives in newspapers. *International Review of Financial Analysis, 94*, Article 103305. https://doi.org/10.1016/j.irfa.2024.103305
+
+[^1]: Khoảng ngày t là [00:00, 24:00) UTC. `public_ts_utc` chỉ nhận giờ đăng nếu không sau giờ thấy, cách không quá 48 giờ và cùng ngày UTC; nếu không, lấy giờ thấy. Quy tắc ngăn gán văn bản quan sát ở ngày sau về ngày trước.
+
+[^2]: Zero-shot dùng embedding của văn bản và mô tả narrative; xác suất mềm chuẩn hóa trên 08 nhóm. LDA và BERTopic chỉ fit trên train; lựa chọn số chủ đề hoặc ngưỡng dùng valid, không nhìn test.
+
+[^3]: ADF có giả thuyết không là chuỗi có nghiệm đơn vị; KPSS có giả thuyết không là chuỗi dừng. Thiếu đoạn ngày liên tục không được bù bằng giá trị 0 vì 0 có nghĩa kinh tế khác với không thu được tin.
+
+[^4]: Purge loại quan sát huấn luyện có ngày mục tiêu chạm ngày dự báo; embargo chừa thêm khoảng h ngày. Diebold–Mariano dùng hiệu chỉnh Harvey–Leybourne–Newbold; Clark–West xét sai số dự báo của mô hình lớn hơn lồng mô hình nhỏ.
