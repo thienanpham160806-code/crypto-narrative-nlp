@@ -325,11 +325,13 @@ def write_results(tables, output):
     if not timing.empty:
         for item in timing.itertuples():
             lines.append(f'Độ nhạy giờ [{item.window.replace("_", ",")}]: {item.n_unique_articles} tin, '
-                         f'{item.n_days} ngày, CAR published={number(item.mean_car_published*100)}%, '
+                         f'{item.n_pairs} cặp tin–asset trên {item.n_days} ngày, '
+                         f'CAR published={number(item.mean_car_published*100)}%, '
                          f'seen={number(item.mean_car_seen*100)}%, '
                          f'p published/seen={number(item.p_public)}/{number(item.p_seen)}, '
                          f'đổi kết luận p<0,05={item.significance_changed}, '
-                         f'sau Holm={getattr(item, "significance_changed_holm", np.nan)}.')
+                         f'sau Holm={getattr(item, "significance_changed_holm", np.nan)}; '
+                         f'kiểm định chênh lệch ghép cặp Holm p={number(getattr(item, "p_paired_t_holm", np.nan))}.')
     available = granger.pvalue.notna().sum() if not granger.empty else 0
     lines += [f'Chưa đủ: {available} kiểm định Granger dùng được; VAR chỉ chạy trên đoạn ngày liên tục ≥30.',
               'Nghĩa kinh tế: CAR trước T0 gợi ý giá đã phản ánh thông tin sớm hoặc sai số giờ công bố; không chứng minh rò rỉ.', '',
@@ -354,7 +356,13 @@ def write_results(tables, output):
         lines.append(f'EN/text BTC RV h=1: R² CT={number(item.r2_oos_ct)}, RMSE={number(item.rmse)}; '
                      f'DM Holm p={number(getattr(item, "dm_p_holm", np.nan))}.')
     lines += ['Chưa đủ: ngày test có tin rời rạc; DM/GW/MCS cần đoạn liên tục. Dải fan theo sai số có thể xuống dưới RV=0.',
-              'Nghĩa kinh tế: dự báo thật có thể xuất cho dashboard; lợi ích của text chỉ đáng tin nếu kiểm định ghép cặp có đủ đoạn liên tục.', '',
-              'Giới hạn chung: GDELT đang thu tiếp; seendate trễ trung vị khoảng 142 phút trong 42 cặp audit. '
-              'Các p-value chưa giải quyết lựa chọn mẫu tin và nhiều sự kiện trùng ngày.', '']
+              'Nghĩa kinh tế: dự báo thật có thể xuất cho dashboard; lợi ích của text chỉ đáng tin nếu kiểm định ghép cặp có đủ đoạn liên tục.', '']
+    audit_path = Path(output).parent/'timestamp_accuracy.csv'
+    audit = pd.read_csv(audit_path) if audit_path.is_file() else pd.DataFrame()
+    gdelt = audit.loc[audit.source.eq('gdelt')] if not audit.empty else pd.DataFrame()
+    if not gdelt.empty:
+        item = gdelt.iloc[0]
+        lines.append(f'Giới hạn thời điểm: GDELT seendate trễ tuyệt đối trung vị '
+                     f'{number(item.median_abs_lag_min)} phút trong {int(item.n_pairs)} cặp audit.')
+    lines += ['GDELT đang thu tiếp; các p-value chưa giải quyết lựa chọn mẫu tin và nhiều sự kiện trùng ngày.', '']
     (Path(output)/'RESULTS.md').write_text('\n'.join(lines), encoding='utf-8')
