@@ -141,7 +141,7 @@ def test_gkg_network_error_skips_day_without_cache(tmp_path, monkeypatch):
     def get(url, **kw):
         raise ConnectionError("dns")
     assert news_gdelt.collect("en", "2024-03-01", "2024-03-02", get=get, workers=2) == 0
-    assert not list((tmp_path / "en").glob("*.jsonl")) and "ERR ConnectionError" in (tmp_path / "progress.log").read_text()
+    assert not list((tmp_path / "en").glob("*.jsonl")) and "ERR ConnectionError" in (tmp_path / "progress.log").read_text(encoding="utf-8")
 
 
 def test_sec_missing_accepted_stays_null(tmp_path, monkeypatch):
@@ -157,3 +157,21 @@ def test_sec_missing_accepted_stays_null(tmp_path, monkeypatch):
         f.write(json.dumps(dict(id="old", url="u", form="8-K", file_date="2023-01-02", company="Y", accepted="None",
                                 body=None)) + "\n")
     assert news_sec.load().published_at_utc.isna().all()
+
+
+def test_gkg_partial_hours_survive_network_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(news_gdelt, "cache_dir", lambda lang: tmp_path / lang)
+    (tmp_path / "en").mkdir()
+    calls, fail = [], {"on": True}
+
+    def fake_fetch(stamp, lang, get):
+        calls.append(stamp)
+        if fail["on"] and stamp.endswith("100000"):
+            raise ConnectionError("ssl")
+        return [dict(date=stamp, domain="x", url=f"u{stamp}", title="Bitcoin")]
+    monkeypatch.setattr(news_gdelt, "fetch", fake_fetch)
+    assert news_gdelt.collect("en", "2024-03-01", "2024-03-01", get=object(), workers=1) == 0
+    assert len(calls) == 11 and (tmp_path / "en" / "20240301_00.part").exists()
+    fail["on"] = False
+    assert news_gdelt.collect("en", "2024-03-01", "2024-03-01", get=object(), workers=1) == 24
+    assert len(calls) == 11 + 14 and not (tmp_path / "en" / "20240301_00.part").exists()   # chỉ tải lại giờ 10–23

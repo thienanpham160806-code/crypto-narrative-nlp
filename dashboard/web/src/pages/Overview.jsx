@@ -38,7 +38,7 @@ function Judgements() {
         <li>{t.j.vol(lvl(s.vol_risk.level))}</li>
       </ul>
       <dl className="metrics">
-        <div className="metric wide"><dt>{t.m.dominant}</dt><dd>{NARR_LABEL[s.dominant.narrative]}<small>{fmt(lang, s.dominant.share, 1, { pct: true })} attention · 7d</small></dd></div>
+        <div className="metric"><dt>{t.m.dominant}</dt><dd>{NARR_LABEL[s.dominant.narrative]}<small>{fmt(lang, s.dominant.share, 1, { pct: true })} attention · 7d</small></dd></div>
         <div className="metric"><dt>{t.m.intensity}</dt><dd>{lvl(s.intensity.level)}<small>z = {fmt(lang, s.intensity.z, 1, { signed: true })}</small></dd></div>
         <div className="metric"><dt>{t.m.sentiment}</dt><dd>{fmt(lang, s.sentiment.value, 2, { signed: true })}<small>FinBERT · 7d</small></dd></div>
         <div className="metric"><dt>{t.m.negAccel}</dt><dd>{fmt(lang, neg, 0, { signed: true, pct: true })}<small>neg_sent 7d / 7d</small></dd></div>

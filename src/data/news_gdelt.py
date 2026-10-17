@@ -76,15 +76,28 @@ def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> 
 
     def day(dm):
         d, m = dm
+        f = cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl"
+        part = f.with_suffix(".part")                      # giờ đã tải xong: mạng chập chờn không làm mất cả ngày
+        got = {}
+        if part.exists():
+            for line in part.read_text(encoding="utf-8").splitlines():
+                rec = json.loads(line)
+                got[rec["h"]] = rec["rows"]
         try:
-            rows = [r for h in range(24) for r in fetch(f"{d:%Y%m%d}{h:02d}{m:02d}00", lang, get)]
+            for h in range(24):
+                if h not in got:
+                    got[h] = fetch(f"{d:%Y%m%d}{h:02d}{m:02d}00", lang, get)
+                    with open(part, "a", encoding="utf-8") as p:
+                        p.write(json.dumps(dict(h=h, rows=got[h]), ensure_ascii=False) + "\n")
         except Exception as e:
             with lock:
-                note(f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} ERR {type(e).__name__}")
+                note(f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} ERR {type(e).__name__} "
+                     f"({len(got)}/24 giờ đã lưu)")
             return 0
-        f = cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl"
+        rows = [r for h in range(24) for r in got[h]]
         f.with_suffix(".tmp").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
         f.with_suffix(".tmp").replace(f)
+        part.unlink(missing_ok=True)
         with lock:
             done[0] += 1
             note(f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} rows={len(rows)} "
