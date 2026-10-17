@@ -246,3 +246,19 @@ def test_finbert_cache_invalidated_by_model(tmp_path, monkeypatch):
     monkeypatch.setattr(finbert, "MODEL", "another/finbert")
     finbert.score(docs, clf=clf)
     assert n == [1, 1]
+
+
+def test_bertopic_nan_reduction_rows_become_other(monkeypatch):
+    class Umap:
+        def transform(self, e): return np.where(np.arange(len(e))[:, None] == 2, np.nan, 0.0) * np.ones((len(e), 2))
+
+    class Fake:
+        def __init__(self, **kw): self.umap_model = Umap()
+        def fit(self, docs, embeddings): pass
+        def transform(self, docs, embeddings): return [0] * len(docs), [.5] * len(docs)
+        def get_topics(self): return {0: []}
+        def get_topic(self, t): return [("eth", .1)]
+    monkeypatch.setitem(sys.modules, "bertopic", types.SimpleNamespace(BERTopic=Fake))
+    monkeypatch.setitem(sys.modules, "umap", types.SimpleNamespace(UMAP=lambda **kw: None))
+    t, p, _ = narrative.bertopic(pd.Series(list("abcd")), np.zeros((4, 3)), pd.Series(["train"] * 4), 0)
+    assert t.tolist() == [0, 0, -1, 0] and p[2] == 0

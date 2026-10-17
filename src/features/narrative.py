@@ -123,7 +123,13 @@ def bertopic(texts: pd.Series, emb: np.ndarray, per: pd.Series, seed: int):
                  vectorizer_model=CountVectorizer(stop_words="english", min_df=5), min_topic_size=50,
                  calculate_probabilities=False)
     m.fit(texts.iloc[tr].tolist(), embeddings=emb[tr])
-    topic, prob = m.transform(texts.tolist(), embeddings=emb)
+    # UMAP.transform có thể trả NaN (điểm trùng/cô lập) → hdbscan lỗi; các dòng đó gán topic -1 (other)
+    red = getattr(getattr(m, "umap_model", None), "transform", None)
+    ok = np.isfinite(np.asarray(red(emb))).all(1) if red else np.ones(len(emb), bool)
+    topic, prob = np.full(len(emb), -1), np.zeros(len(emb))
+    if ok.any():
+        t, p = m.transform(texts[ok].tolist(), embeddings=emb[ok])
+        topic[ok], prob[ok] = t, np.asarray(p, dtype=float)
     words = {t: " ".join(w for w, _ in m.get_topic(t)[:10]) for t in m.get_topics() if t != -1}
     return np.asarray(topic), np.asarray(prob, dtype=float), words
 
