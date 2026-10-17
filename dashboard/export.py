@@ -88,7 +88,9 @@ def fan(forecasts: pd.DataFrame, min_err: int = 30) -> pd.DataFrame:
     for r in f.itertuples():
         past = err[(f.target < r.origin).to_numpy()]
         q = np.quantile(past, [.05, .25, .75, .95]) if len(past) >= min_err else [np.nan] * 4
-        out.append([r.target, r.prediction, r.prediction + q[1], r.prediction + q[2], r.prediction + q[0], r.prediction + q[3]])
+        lo = lambda v: max(v, 0.0) if not np.isnan(v) else v                 # RV ≥ 0: dải không xuống dưới 0
+        out.append([r.target, r.prediction, lo(r.prediction + q[1]), r.prediction + q[2], lo(r.prediction + q[0]),
+                    r.prediction + q[3]])
     return pd.DataFrame(out, columns=cols)
 
 

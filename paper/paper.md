@@ -4,7 +4,7 @@
 
 *Phiên bản làm việc ngày 18/10/2026.*
 
-> **Trạng thái dữ liệu.** Bộ thu GDELT mới phủ một phần mẫu (xem mục 4.5). Các con số ở mục 6 chỉ dùng dữ liệu đã thu tới ngày lập bản này và được ghi "sơ bộ". Kết quả RQ2–RQ5 sẽ thay bằng `outputs/tables/real/RESULTS.md` khi mô hình chạy trên toàn mẫu. Không có con số nào trong bài được ước đoán.
+> **Trạng thái dữ liệu.** Bộ thu GDELT mới phủ một phần mẫu (xem mục 4.5). Các con số ở mục 6 chỉ dùng dữ liệu đã thu tới ngày lập bản này và được ghi "sơ bộ". Kết quả RQ2–RQ5 lấy từ `outputs/tables/real/RESULTS.md` (bản chụp 180 ngày có tin) và sẽ được tính lại trên toàn mẫu. Không có con số nào trong bài được ước đoán.
 
 ## Tóm tắt
 
@@ -17,7 +17,10 @@ Kết quả về đo lường cho thấy:
 - Ngày nộp hồ sơ (`file_date`) của SEC lệch ngày so với giờ chấp nhận ở 6,4% hồ sơ.
 - Trên 6.995 tiêu đề có nhãn yếu từ phiếu bình chọn của người dùng CryptoPanic, FinBERT phân biệt tin tốt và tin xấu tốt nhất (AUC 0,712). Từ điển Loughran–McDonald đạt 0,612, CryptoBERT 0,591, Harvard IV-4 0,571.
 
-Kết quả về tác động tới giá (RQ2–RQ5) đang chờ dữ liệu đầy đủ.
+Kết quả sơ bộ về tác động tới giá (180 ngày có tin) cho thấy:
+- Chưa có phản ứng giá có ý nghĩa sau hiệu chỉnh kiểm định bội theo sắc thái hay narrative.
+- Kết luận về phản ứng trong 24 giờ đổi theo đồng hồ dùng để gán thời điểm.
+- Văn bản chưa cải thiện dự báo biến động BTC ngoài mẫu (R² ngoài mẫu −0,008).
 
 **Từ khóa:** tiền mã hóa, phân tích văn bản, FinBERT, narrative economics, look-ahead bias, dự báo ngoài mẫu.
 
@@ -120,7 +123,7 @@ Hai tin được coi là trùng khi cùng URL chuẩn hóa, hoặc khi tiêu đ�
 
 ### 4.5. Độ phủ dữ liệu
 
-Tại thời điểm lập bản này, GDELT đã thu được 313/1.369 ngày (22,9%). Bảng thống kê corpus (`outputs/tables/corpus_stats.csv`) sẽ được cập nhật khi thu đủ.
+Tại thời điểm lập bản này, GDELT đã thu được 445/1.369 ngày. Chuỗi văn bản đã dựng lại trên 338 ngày, gồm 35.126 tin tiếng Anh canonical. Mô hình kinh tế lượng ở mục 6.3 chạy trên bản chụp trước đó (180 ngày). Bảng thống kê corpus (`outputs/tables/corpus_stats.csv`) sẽ được cập nhật khi thu đủ.
 
 ## 5. Phương pháp
 
@@ -174,7 +177,11 @@ Hồi quy dự báo có dạng y_{i,t+h} = α + β·Text_{i,t} + γ′·Market_{
 
 RQ2 tách sentiment thành phần dương và âm, kiểm định Wald H₀: β⁻ = β⁺. RQ4 dùng VAR hai chiều, chọn độ trễ theo AIC, với kiểm định nhân quả Granger (Granger, 1969). Holm và Benjamini–Hochberg kiểm soát lỗi khi kiểm định nhiều giả thuyết.
 
-### 5.7. Dự báo ngoài mẫu (RQ5)
+### 5.7. Nghiên cứu sự kiện theo giờ
+
+Quanh mỗi tin, lợi suất bất thường tích lũy (CAR) được tính trên nến giờ, so với trung bình 144 giờ ước lượng trước tin. Tin cùng ngày được gom theo ngày để tránh đếm trùng. Cửa sổ trước tin [−4, −2] giờ kiểm tra giá có chạy trước tin không. Các tin có cả giờ đăng và giờ thấy được tính hai lần, mỗi lần theo một đồng hồ, để đo độ nhạy của kết luận với đồng hồ.
+
+### 5.8. Dự báo ngoài mẫu (RQ5)
 
 Elastic Net, XGBoost và LightGBM được ước lượng theo cửa sổ mở rộng (walk-forward). Có ba phiên bản:
 1. chỉ biến thị trường;
@@ -217,13 +224,47 @@ Siêu tham số chọn trên kỳ valid. Chỉ tiêu là RMSE và R² ngoài m�
 - CryptoBERT có accuracy cao nhất chỉ vì gần như luôn đoán "bullish" trong khi 81,6% nhãn là tích cực. Macro-F1 và AUC thấp của nó cho thấy mô hình huấn luyện trên mạng xã hội không chuyển tốt sang tiêu đề tin.
 - Nhãn yếu đo kỳ vọng giá của đám đông, không phải giọng điệu do chuyên gia đánh giá. Kết quả trên 300 nhãn tay sẽ bổ sung ở bản sau.
 
-### 6.3. Bất đối xứng, narrative, lead-lag và dự báo ngoài mẫu (RQ2–RQ5)
+### 6.3. Bất đối xứng, narrative, lead-lag và dự báo ngoài mẫu (RQ2–RQ5) — sơ bộ
 
-Phần này sẽ lấy từ `outputs/tables/real/RESULTS.md` khi bộ thu GDELT phủ đủ mẫu và mô hình được chạy lại. Ở bản chụp hiện tại (180 ngày có tin), chưa đủ:
-- chuỗi ngày liên tục cho VAR (cần ít nhất 30 ngày);
-- số ngày trong kỳ valid và test cho so sánh ngoài mẫu.
+Kết quả mục này lấy từ `outputs/tables/real/RESULTS.md`. Bản chụp dữ liệu gồm 180/1.369 ngày có tin. Đặc tả chính cho BTC dùng 176 ngày, chia train/valid/test là 130/12/34. Nghiên cứu sự kiện theo giờ dùng 37.179 tin canonical tiếng Anh, tạo 39.003 cặp tin–tài sản trên 772 ngày. Khi bộ thu GDELT phủ đủ mẫu, các con số sẽ được tính lại. Mọi p-value dưới đây đã hiệu chỉnh Holm trong từng họ kiểm định.
 
-Mọi hệ số tạm thời trong `outputs/tables/real/` chỉ có tác dụng kiểm tra pipeline, không dùng để kết luận.
+**Bảng 3.** Phản ứng giá quanh thời điểm công bố, cửa sổ [0, 4] giờ
+
+| Nhóm tin | Chỉ tiêu | Ước lượng | Số ngày | p (Holm) |
+|---|---|---|---|---|
+| Toàn bộ | CAR | 0,037% | 772 | 1,000 |
+| Toàn bộ | \|lợi suất\| bất thường | 0,031% | 772 | 1,000 |
+| Toàn bộ | Khối lượng bất thường (log) | 0,032 | 772 | 1,000 |
+| Regulation | CAR | 0,038% | 388 | 1,000 |
+| Security/hacks | CAR | −0,042% | 215 | 1,000 |
+| ETF/institutional | CAR | −0,021% | 361 | 1,000 |
+
+**RQ2: bất đối xứng.**
+- Chênh lệch CAR [0, 4] giờ giữa tin FinBERT xấu và tin tốt là −0,018 điểm % (215 ngày ghép cặp; p = 0,433, Holm = 1).
+- Với biến động tuyệt đối [0, 1] giờ, chênh lệch là −0,041 điểm %. Kiểm định t có ý nghĩa sau Holm (p = 0,031), nhưng kiểm định Wilcoxon thì không (p = 0,306).
+
+*Ý nghĩa:* chưa có bằng chứng vững rằng tin xấu tác động mạnh hơn tin tốt. Hai kiểm định cho kết luận khác nhau, nên kết quả nhạy với phân phối đuôi và chưa đủ để kết luận.
+
+**RQ3: narrative.** Không narrative nào có phản ứng giá có ý nghĩa thống kê (Bảng 3). Dấu ước lượng phù hợp trực giác (tin hack âm, tin quy định dương), nhưng độ lớn nhỏ so với sai số. *Ý nghĩa:* với mẫu hiện tại, chưa thể xếp hạng narrative theo tác động.
+
+**RQ4: dẫn trước hay theo sau.**
+- CAR trong cửa sổ trước tin [−4, −2] giờ là −0,016% (p = 0,521, Holm = 1). Không thấy giá đã chạy trước khi tin ra.
+- Trên 37 tin có cả giờ đăng và giờ thấy, kiểm tra độ nhạy theo đồng hồ:
+  - CAR [0, 24] giờ là −0,46% nếu tính từ giờ đăng và −1,02% nếu tính từ giờ GDELT thấy tin.
+  - Chỉ đồng hồ "thấy" cho kết quả có ý nghĩa sau Holm.
+  - Kiểm định chênh lệch ghép cặp giữa hai đồng hồ không có ý nghĩa (Holm p = 0,201).
+- Chưa chạy được VAR/Granger, vì chưa có đoạn ≥ 30 ngày tin liên tục.
+
+*Ý nghĩa:* chọn đồng hồ có thể đổi kết luận về phản ứng giá trong ngày. Đây là minh chứng thực nghiệm cho việc phải báo cáo độ lệch đồng hồ (mục 6.1).
+
+**RQ5: dự báo ngoài mẫu.**
+- Có 6.480 dự báo ngoài mẫu.
+- Với BTC, mô hình Elastic Net thị trường + văn bản dự báo RV một ngày tới đạt R² ngoài mẫu −0,0077 so với trung bình lịch sử, RMSE 0,000509.
+- Chưa tính được kiểm định Diebold–Mariano, vì các ngày test có tin còn rời rạc.
+
+*Ý nghĩa:* ở bản chụp này, văn bản chưa giúp dự báo biến động BTC tốt hơn trung bình lịch sử. Kết luận cho RQ5 cần đoạn test liên tục.
+
+**Tóm lại, ở giai đoạn sơ bộ:** FinBERT đo giọng điệu tốt hơn từ điển (RQ1). Việc chọn đồng hồ ảnh hưởng đến kết luận về phản ứng giá (RQ4). Các câu hỏi về độ lớn tác động (RQ2, RQ3, RQ5) chưa có bằng chứng có ý nghĩa. Điều này phù hợp với quan điểm thị trường hiệu quả ở tần suất ngày (Fama, 1970), nhưng cần kiểm tra lại khi mẫu đầy đủ.
 
 ## 7. Thảo luận
 
