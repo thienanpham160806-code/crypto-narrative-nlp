@@ -26,6 +26,7 @@ def test_manuscript_follows_five_part_template():
     assert re.findall(r"\\tag\{(\d+)\}", source) == list("12345678")
     assert set(re.findall(r"\[\^(\d+)\](?!:)", source)) == set("1234")
     assert "outputs/tables/synthetic" not in source
+    assert "tài liệu" not in source.split("## Tài liệu tham khảo", 1)[0].lower()
 
 
 def test_reference_dois_exist_in_bib_and_are_cited():
