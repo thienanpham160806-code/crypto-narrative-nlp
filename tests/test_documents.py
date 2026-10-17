@@ -182,3 +182,18 @@ def test_keep_awake_reports_power_and_is_noop_off_windows(monkeypatch):
     assert isinstance(awake.on_ac(), bool) if sys.platform == "win32" else True
     monkeypatch.setattr(awake.sys, "platform", "linux")
     assert awake.keep_awake_on_ac() is None
+
+
+def test_later_snapshot_never_backdated_across_midnight():
+    gd = doc("gdelt", "https://x.com/a", "SEC decision on bitcoin ETF pending", seen="2024-01-01 23:50")
+    rss = doc("rss:x", "https://x.com/a?utm_source=rss", "SEC approves bitcoin ETF after midnight vote",
+              seen="2024-01-02 00:30", pub="2024-01-01 23:00")
+    df = bd.build([pd.DataFrame([gd, rss])]).set_index("source")
+    assert df.loc["rss:x", "public_ts_utc"] == UTC("2024-01-02 00:30")      # không lùi về ngày 1
+    assert df.loc["gdelt", "is_canonical"] and not df.loc["rss:x", "is_canonical"]   # cùng URL, bản thấy sớm nhất thắng
+
+
+def test_norm_url_keeps_identity_query_and_drops_tracking():
+    assert bd.norm_url("https://News.com/article?id=100") != bd.norm_url("https://news.com/article?id=101")
+    assert bd.norm_url("https://www.News.com/Path/?utm_source=x&id=7") == bd.norm_url("http://news.com/Path?id=7&fbclid=z")
+    assert bd.norm_url("https://news.com/Path") != bd.norm_url("https://news.com/path")

@@ -14,7 +14,7 @@ Mọi timestamp là **UTC**. Ngày `t` = [t 00:00, t+1 00:00) UTC. File đổi s
 | published_at_utc | timestamp[UTC] | **thời điểm ra công chúng** do nguồn công bố |
 | first_seen_utc | timestamp[UTC] | lần đầu pipeline/GDELT thấy tin |
 | ts_source | str | api / rss_pubdate / html_meta / gdelt_seendate / crawl |
-| public_ts_utc | timestamp[UTC] | = min(published_at_utc, first_seen_utc) hợp lệ — **cột DUY NHẤT dùng để gán ngày**. published hợp lệ ⇔ có và nằm trong [first_seen − 48h, first_seen] (hoặc không có first_seen) |
+| public_ts_utc | timestamp[UTC] | = min(published_at_utc, first_seen_utc) hợp lệ — **cột DUY NHẤT dùng để gán ngày**. published hợp lệ ⇔ có, nằm trong [first_seen − 48h, first_seen] **và cùng ngày UTC với first_seen** (hoặc không có first_seen). Chữ là bản thấy lúc first_seen, có thể đã sửa sau giờ đăng → không lùi qua nửa đêm. `published_at_utc` giữ nguyên cho event study trong ngày |
 | asset_tags | list[str] | BTC, ETH, … ; rỗng = tin chung thị trường |
 | dup_group | str | nhóm tin trùng |
 | is_canonical | bool | bản công bố sớm nhất trong dup_group |
