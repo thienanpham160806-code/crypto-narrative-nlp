@@ -253,12 +253,14 @@ def test_bertopic_nan_reduction_rows_become_other(monkeypatch):
         def transform(self, e): return np.where(np.arange(len(e))[:, None] == 2, np.nan, 0.0) * np.ones((len(e), 2))
 
     class Fake:
-        def __init__(self, **kw): self.umap_model = Umap()
+        def __init__(self, **kw): self.umap_model, self.hdbscan_model = Umap(), None
         def fit(self, docs, embeddings): pass
-        def transform(self, docs, embeddings): return [0] * len(docs), [.5] * len(docs)
+        def _map_predictions(self, t): return [x + 1 for x in t]
         def get_topics(self): return {0: []}
         def get_topic(self, t): return [("eth", .1)]
     monkeypatch.setitem(sys.modules, "bertopic", types.SimpleNamespace(BERTopic=Fake))
+    monkeypatch.setitem(sys.modules, "hdbscan", types.SimpleNamespace(
+        approximate_predict=lambda m, x: (np.zeros(len(x), int), np.full(len(x), .5))))
     monkeypatch.setitem(sys.modules, "umap", types.SimpleNamespace(UMAP=lambda **kw: None))
     t, p, _ = narrative.bertopic(pd.Series(list("abcd")), np.zeros((4, 3)), pd.Series(["train"] * 4), 0)
-    assert t.tolist() == [0, 0, -1, 0] and p[2] == 0
+    assert t.tolist() == [1, 1, -1, 1] and p[2] == 0 and p[0] == .5      # NaN → -1; còn lại qua map của BERTopic

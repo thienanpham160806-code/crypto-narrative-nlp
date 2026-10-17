@@ -123,13 +123,19 @@ def bertopic(texts: pd.Series, emb: np.ndarray, per: pd.Series, seed: int):
                  vectorizer_model=CountVectorizer(stop_words="english", min_df=5), min_topic_size=50,
                  calculate_probabilities=False)
     m.fit(texts.iloc[tr].tolist(), embeddings=emb[tr])
-    # UMAP.transform có thể trả NaN (điểm trùng/cô lập) → hdbscan lỗi; các dòng đó gán topic -1 (other)
-    red = getattr(getattr(m, "umap_model", None), "transform", None)
-    ok = np.isfinite(np.asarray(red(emb))).all(1) if red else np.ones(len(emb), bool)
+    # UMAP.transform có thể trả NaN (điểm trùng/cô lập) và kết quả phụ thuộc lô → giảm chiều MỘT lần, dòng NaN = -1
+    # (other), dòng hữu hạn đi qua đúng các bước còn lại của BERTopic.transform 0.17 (approximate_predict + map)
     topic, prob = np.full(len(emb), -1), np.zeros(len(emb))
-    if ok.any():
-        t, p = m.transform(texts[ok].tolist(), embeddings=emb[ok])
-        topic[ok], prob[ok] = t, np.asarray(p, dtype=float)
+    if hasattr(m, "_map_predictions"):
+        import hdbscan
+        red = np.asarray(m.umap_model.transform(emb))
+        ok = np.isfinite(red).all(1)
+        if ok.any():
+            t, p = hdbscan.approximate_predict(m.hdbscan_model, red[ok])
+            topic[ok], prob[ok] = m._map_predictions(t), np.asarray(p, dtype=float)
+    else:
+        t, p = m.transform(texts.tolist(), embeddings=emb)
+        topic, prob = np.asarray(t), np.asarray(p, dtype=float)
     words = {t: " ".join(w for w, _ in m.get_topic(t)[:10]) for t in m.get_topics() if t != -1}
     return np.asarray(topic), np.asarray(prob, dtype=float), words
 
