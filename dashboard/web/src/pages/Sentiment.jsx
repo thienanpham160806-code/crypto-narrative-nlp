@@ -38,9 +38,9 @@ export default function Sentiment() {
     { key: 'sent_lm_7d', label: 'Loughran–McDonald', color: 'var(--s2)' },
     { key: 'sent_hv_7d', label: 'Harvard IV-4', color: 'var(--s3)' },
   ]
-  const pn = [{ key: 'pos_sent_7d', label: 'pos_sent', color: 'var(--s6)' }, { key: 'neg_sent_7d', label: 'neg_sent', color: 'var(--s8)' }]
+  const pn = [{ key: 'pos_sent_7d', label: 'pos_sent', color: 'var(--s6)' }, { key: 'neg_sent_7d', label: 'neg_sent', color: 'var(--neg)', dash: true }]
   const uc = [{ key: 'ucry_policy', label: 'UCRY Policy', color: 'var(--s7)' }, { key: 'ucry_price', label: 'UCRY Price', color: 'var(--s4)' }]
-  const tbl = (series, f) => <Table rows={view} cols={[{ key: 'date', label: 'Date (UTC)' }, ...series.map((s) => ({ key: s.key, label: s.label, num: true, format: f }))]} />
+  const tbl = (series, f) => <Table rows={view} cols={[{ key: 'date', label: t.col.date }, ...series.map((s) => ({ key: s.key, label: s.label, num: true, format: f }))]} />
   return (
     <div className="exhibits full">
       <Exhibit no="3.1" title={l.three[0]} sub={l.three[1]} span2 judgement={l.jThree} source={t.source.gdelt}

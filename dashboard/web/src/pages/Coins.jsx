@@ -35,7 +35,7 @@ export default function Coins() {
       return { asset: a, n_docs: n, days: r.length, sent: sw ? w.reduce((s, d) => s + d.sent_finbert * d.n_docs, 0) / sw : null }
     })
   }, [data, meta, range, end])
-  const cols = [{ key: 'asset', label: 'Asset' }, { key: 'n_docs', label: 'n', num: true }, { key: 'days', label: 'Days', num: true },
+  const cols = [{ key: 'asset', label: t.col.asset }, { key: 'n_docs', label: 'n', num: true }, { key: 'days', label: t.col.days, num: true },
     { key: 'sent', label: 'FinBERT', num: true, format: (v) => fmt(lang, v, 3, { signed: true }) }]
   return (
     <div className="exhibits full">

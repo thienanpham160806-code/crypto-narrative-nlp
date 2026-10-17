@@ -34,19 +34,19 @@ export default function Timing() {
     <div className="exhibits full">
       <p className="prose note" style={{ gridColumn: '1 / -1', margin: 0 }}>{l.intro}</p>
       <Exhibit no="6.1" title={l.acc[0]} sub={l.acc[1]} span2 judgement={l.jAcc} source={t.source.timing}
-        table={<Table rows={acc} cols={[{ key: 'source', label: 'Source' }, { key: 'comparison', label: 'Comparison' }, { key: 'n_docs', label: 'Docs', num: true },
-          { key: 'n_pairs', label: 'Pairs', num: true }, { key: 'pct_has_time', label: '% with time', num: true, format: f1 },
-          { key: 'median_lag_min', label: 'Median lag (min)', num: true, format: f1 }, { key: 'median_abs_lag_min', label: 'Median |lag|', num: true, format: f1 },
-          { key: 'p90_abs_lag_min', label: 'P90 |lag|', num: true, format: f1 }, { key: 'pct_abs_gt_1h', label: '% > 1h', num: true, format: f1 },
-          { key: 'pct_day_shift', label: '% day shift', num: true, format: f1 }]} />} />
+        table={<Table rows={acc} cols={[{ key: 'source', label: t.col.source }, { key: 'comparison', label: t.col.comparison }, { key: 'n_docs', label: t.col.docs, num: true },
+          { key: 'n_pairs', label: t.col.pairs, num: true }, { key: 'pct_has_time', label: t.col.withTime, num: true, format: f1 },
+          { key: 'median_lag_min', label: t.col.medLag, num: true, format: f1 }, { key: 'median_abs_lag_min', label: t.col.medAbs, num: true, format: f1 },
+          { key: 'p90_abs_lag_min', label: t.col.p90, num: true, format: f1 }, { key: 'pct_abs_gt_1h', label: t.col.gt1h, num: true, format: f1 },
+          { key: 'pct_day_shift', label: t.col.dayShift, num: true, format: f1 }]} />} />
       <Exhibit no="6.2" title={l.shift[0]} sub={l.shift[1]} judgement={l.jShift} source={t.source.timing}
         chart={<Bars rows={acc.filter((r) => r.pct_day_shift != null).map((r) => ({ label: `${r.source}`, value: r.pct_day_shift, note: r.comparison }))}
           format={(v) => `${fmt(lang, v, 1)}%`} color="var(--s2)" />}
-        table={<Table rows={acc} cols={[{ key: 'source', label: 'Source' }, { key: 'comparison', label: 'Comparison' }, { key: 'pct_day_shift', label: '% day shift', num: true, format: f1 }]} />} />
+        table={<Table rows={acc} cols={[{ key: 'source', label: t.col.source }, { key: 'comparison', label: t.col.comparison }, { key: 'pct_day_shift', label: t.col.dayShift, num: true, format: f1 }]} />} />
       <Exhibit no="6.3" title={l.corpus[0]} sub={l.corpus[1]} judgement={l.jCorpus}
-        table={<Table rows={data?.corpus ?? []} cols={[{ key: 'source', label: 'Source' }, { key: 'lang', label: 'Lang' }, { key: 'n_docs', label: 'Docs', num: true },
-          { key: 'n_canonical', label: 'Canonical', num: true }, { key: 'dup_rate', label: 'Dup %', num: true, format: (v) => fmt(lang, v * 100, 1) },
-          { key: 'days_with_docs', label: 'Days', num: true }, { key: 'pct_any_asset', label: '% tagged', num: true, format: f1 }]} />} />
+        table={<Table rows={data?.corpus ?? []} cols={[{ key: 'source', label: t.col.source }, { key: 'lang', label: t.col.lang }, { key: 'n_docs', label: t.col.docs, num: true },
+          { key: 'n_canonical', label: t.col.canonical, num: true }, { key: 'dup_rate', label: 'Dup %', num: true, format: (v) => fmt(lang, v * 100, 1) },
+          { key: 'days_with_docs', label: t.col.days, num: true }, { key: 'pct_any_asset', label: t.col.tagged, num: true, format: f1 }]} />} />
     </div>
   )
 }

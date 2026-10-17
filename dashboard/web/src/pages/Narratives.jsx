@@ -47,7 +47,7 @@ export default function Narratives() {
       <Exhibit no="2.1" title={l.stack[0]} sub={l.stack[1]} span2 source={t.source.gdelt} judgement={t.judgement.attention}
         legend={<Legend items={all} hidden={hidden} onToggle={toggle} />}
         chart={<TimeChart rows={view} series={shown} stacked splits={splits} height={300} yFormat={pct} />}
-        table={<Table rows={view} cols={[{ key: 'date', label: 'Date (UTC)' }, ...all.map((s) => ({ key: s.key, label: s.label, num: true, format: pct }))]} />} />
+        table={<Table rows={view} cols={[{ key: 'date', label: t.col.date }, ...all.map((s) => ({ key: s.key, label: s.label, num: true, format: pct }))]} />} />
       <Exhibit no="2.2" title={l.hardSoft[0]} sub={l.hardSoft[1]} judgement={l.jHS} source={t.source.gdelt}
         legend={<>
           <div className="chips" role="group" aria-label="Narrative" style={{ marginBottom: 8, flexWrap: 'wrap' }}>
@@ -56,7 +56,7 @@ export default function Narratives() {
           <Legend items={hs} kind="line" />
         </>}
         chart={<TimeChart rows={view} series={hs} splits={splits} yFormat={pct} />}
-        table={<Table rows={view} cols={[{ key: 'date', label: 'Date (UTC)' }, ...hs.map((s) => ({ key: s.key, label: s.label, num: true, format: pct }))]} />} />
+        table={<Table rows={view} cols={[{ key: 'date', label: t.col.date }, ...hs.map((s) => ({ key: s.key, label: s.label, num: true, format: pct }))]} />} />
       <Exhibit no="2.3" title={l.taxonomy[0]} sub={l.taxonomy[1]} judgement={l.jTax}
         table={<Table rows={data?.taxonomy ?? []} cols={[
           { key: 'narrative', label: 'Narrative', format: (v) => NARR_LABEL[v] ?? v },
@@ -65,9 +65,9 @@ export default function Narratives() {
           { key: 'share_bt', label: 'BERTopic %', num: true, format: (v) => fmt(lang, v, 1) },
           { key: 'agree_lda_with_zs', label: 'LDA = ZS %', num: true, format: (v) => fmt(lang, v, 0) },
           { key: 'agree_bt_with_zs', label: 'BERTopic = ZS %', num: true, format: (v) => fmt(lang, v, 0) }]} />} />
-      <Exhibit no="2.4" title={l.topics[0]} sub={l.topics[1]}
-        table={<Table rows={data?.topics ?? []} cols={[{ key: 'method', label: 'Method' }, { key: 'topic', label: 'Topic', num: true },
-          { key: 'narrative', label: 'Narrative', format: (v) => NARR_LABEL[v] ?? v }, { key: 'top_words', label: 'Top words' }]} />} />
+      <Exhibit no="2.4" title={l.topics[0]} sub={l.topics[1]} span2
+        table={<Table rows={data?.topics ?? []} cols={[{ key: 'method', label: t.col.method }, { key: 'topic', label: t.col.topic, num: true },
+          { key: 'narrative', label: 'Narrative', format: (v) => NARR_LABEL[v] ?? v }, { key: 'top_words', label: t.col.words }]} />} />
       <Snippets no="2.5" limit={20} />
     </div>
   )

@@ -72,6 +72,26 @@ def summary(text: pd.DataFrame, market: pd.DataFrame, forecasts: pd.DataFrame) -
                               level=None if np.isnan(pct) else risk_level(pct)))
 
 
+def fan(forecasts: pd.DataFrame, min_err: int = 30) -> pd.DataFrame:
+    """Fan chart RV BTC h=1 (mô hình FORECAST), vẽ tại target_date. Dải 50%/90% = dự báo + phân vị sai số
+    (actual − prediction) của các dự báo có target_date < ngày lập dự báo hiện tại: chỉ sai số đã biết lúc đó."""
+    cols = ["date", "fan_pred", "fan_lo50", "fan_hi50", "fan_lo90", "fan_hi90"]
+    if forecasts.empty:
+        return pd.DataFrame(columns=cols)
+    m, v = FORECAST
+    f = forecasts[(forecasts.asset == "BTC") & (forecasts.target == "rv") & (forecasts.horizon == 1)
+                  & (forecasts.model == m) & (forecasts.version == v)].copy()
+    f["origin"], f["target"] = pd.to_datetime(f.date, utc=True), pd.to_datetime(f.target_date, utc=True)
+    f = f.sort_values("origin")
+    err = (f.actual - f.prediction).to_numpy()
+    out = []
+    for r in f.itertuples():
+        past = err[(f.target < r.origin).to_numpy()]
+        q = np.quantile(past, [.05, .25, .75, .95]) if len(past) >= min_err else [np.nan] * 4
+        out.append([r.target, r.prediction, r.prediction + q[1], r.prediction + q[2], r.prediction + q[0], r.prediction + q[3]])
+    return pd.DataFrame(out, columns=cols)
+
+
 def daily(text: pd.DataFrame, market: pd.DataFrame, ucry: pd.DataFrame) -> pd.DataFrame:
     al = text[text.asset.eq("ALL")].drop(columns="asset")
     btc = market[market.asset.eq("BTC")][["date", "close", "ret", "rv"]].rename(columns=lambda c: c if c == "date" else f"btc_{c}")
@@ -125,6 +145,7 @@ def main():
         "assets": records(attention_by_asset(text)),
         "helicorder": records(helicorder(d)),
         "snippets": records(snippets(d)),
+        "fan": records(fan(forecasts)),
         "timing": dict(accuracy=records(read(T / "timestamp_accuracy.csv")), corpus=records(read(T / "corpus_stats.csv"))),
         "narratives": dict(taxonomy=records(read(T / "narrative_taxonomy.csv")), topics=records(read(T / "narrative_topics.csv"))),
         "validation": records(read(T / "sentiment_validation.csv")),

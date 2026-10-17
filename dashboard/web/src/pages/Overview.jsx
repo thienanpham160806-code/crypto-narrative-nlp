@@ -57,13 +57,27 @@ export function useRange(rows) {
 export default function Overview() {
   const { t, lang, meta, rows, splits } = useT()
   const timing = useData('timing').data
-  const view = useRange(rows)
+  const fanData = useData('fan').data
+  const ranged = useRange(rows)
+  const view = useMemo(() => {
+    const byDay = new Map((fanData ?? []).map((f) => [f.date.slice(0, 10), f]))
+    return byDay.size ? ranged.map((r) => ({ ...r, ...byDay.get(r.date.slice(0, 10)) })) : ranged
+  }, [ranged, fanData])
   if (!meta) return null
   const nar = narrSeries(meta)
   const pct = (v) => fmt(lang, v, 0, { pct: true })
-  const timingRows = (timing?.accuracy ?? []).filter((r) => r.median_abs_lag_min != null)
-    .map((r) => ({ label: `${r.source} · ${r.comparison.split(' ')[0]}`, value: r.median_abs_lag_min, note: r.comparison }))
-  const tableCols = [{ key: 'date', label: 'Date (UTC)' }, ...nar.map((s) => ({ key: s.key, label: s.label, num: true, format: pct }))]
+  const acc = timing?.accuracy ?? []
+  const lagRows = acc.filter((r) => r.median_abs_lag_min != null)
+    .map((r) => ({ label: `${r.source} · n = ${r.n_pairs}`, value: r.median_abs_lag_min, note: r.comparison }))
+  const shiftRows = acc.filter((r) => r.pct_day_shift != null).map((r) => ({ label: r.source, value: r.pct_day_shift, note: r.comparison }))
+  const pairs = acc.filter((r) => r.source === 'gdelt').reduce((s, r) => s + (r.n_pairs ?? 0), 0)
+  const hasFan = view.some((r) => r.fan_pred != null)
+  const rv = (v) => fmt(lang, v * 1e4, 0)
+  const fanSeries = [{ key: 'btc_rv', label: t.fan.actual, color: 'var(--s2)' }, ...(hasFan ? [{ key: 'fan_pred', label: t.fan.pred, color: 'var(--accent)', dash: true }] : [])]
+  const fanBands = hasFan ? [
+    { lo: 'fan_lo90', hi: 'fan_hi90', color: 'var(--accent)', opacity: 0.12, label: t.fan.b90 },
+    { lo: 'fan_lo50', hi: 'fan_hi50', color: 'var(--accent)', opacity: 0.22, label: t.fan.b50 }] : []
+  const tableCols = [{ key: 'date', label: t.col.date }, ...nar.map((s) => ({ key: s.key, label: s.label, num: true, format: pct }))]
   return (
     <div className="report">
       <Judgements />
@@ -78,16 +92,19 @@ export default function Overview() {
             <TimeChart rows={view} height={150} splits={splits} series={[{ key: 'sent_finbert_7d', label: 'FinBERT 7d', color: 'var(--s1)' }]} yFormat={(v) => fmt(lang, v, 2, { signed: true })} />
             <TimeChart rows={view} height={150} splits={splits} log series={[{ key: 'btc_close', label: 'BTC', color: 'var(--s7)' }]} yFormat={(v) => fmt(lang, v / 1000, 0) + 'k'} />
           </>}
-          table={<Table rows={view} cols={[{ key: 'date', label: 'Date (UTC)' }, { key: 'sent_finbert', label: 'FinBERT', num: true, format: (v) => fmt(lang, v, 3) },
+          table={<Table rows={view} cols={[{ key: 'date', label: t.col.date }, { key: 'sent_finbert', label: 'FinBERT', num: true, format: (v) => fmt(lang, v, 3) },
             { key: 'n_docs', label: 'n', num: true }, { key: 'btc_close', label: 'BTC close', num: true, format: (v) => fmt(lang, v, 0) }]} />} />
-        <Exhibit no="1.3" title={t.ex.vol[0]} sub={t.ex.vol[1]} judgement={t.judgement.vol} source={t.source.binance}
-          chart={<TimeChart rows={view} splits={splits} series={[{ key: 'btc_rv', label: 'BTC RV', color: 'var(--s2)' }]} yFormat={(v) => fmt(lang, v * 1e4, 1)} />}
-          table={<Table rows={view} cols={[{ key: 'date', label: 'Date (UTC)' }, { key: 'btc_rv', label: 'RV ×10⁴', num: true, format: (v) => fmt(lang, v * 1e4, 2) }]} />} />
-        <Exhibit no="1.4" title={t.ex.timing[0]} sub={t.ex.timing[1]} judgement={t.judgement.timing} source={t.source.timing}
-          chart={<Bars rows={timingRows} format={(v) => `${fmt(lang, v, 0)} min`} />}
-          table={<Table rows={timing?.accuracy ?? []} cols={[{ key: 'source', label: 'Source' }, { key: 'comparison', label: 'Comparison' },
-            { key: 'n_pairs', label: 'n', num: true }, { key: 'median_abs_lag_min', label: '|lag| median (min)', num: true, format: (v) => fmt(lang, v, 0) },
-            { key: 'pct_abs_gt_1h', label: '% > 1h', num: true, format: (v) => fmt(lang, v, 1) }, { key: 'pct_day_shift', label: '% day shift', num: true, format: (v) => fmt(lang, v, 1) }]} />} />
+        <Exhibit no="1.3" title={t.ex.vol[0]} sub={hasFan ? t.ex.vol[1] : `${t.ex.vol[1]} · ${t.fcPending}`} judgement={t.judgement.vol} source={t.source.binance}
+          legend={hasFan && <Legend items={[...fanSeries, ...fanBands.map((b) => ({ key: b.lo, label: b.label, color: b.color }))]} kind="line" />}
+          chart={<TimeChart rows={view} splits={splits} series={fanSeries} bands={fanBands} yFormat={rv} testNote={hasFan ? null : t.fcPending} />}
+          table={<Table rows={view} cols={[{ key: 'date', label: t.col.date }, { key: 'btc_rv', label: 'RV ×10⁴', num: true, format: (v) => fmt(lang, v * 1e4, 2) },
+            ...(hasFan ? [{ key: 'fan_pred', label: t.fan.pred, num: true, format: (v) => fmt(lang, v * 1e4, 2) }] : [])]} />} />
+        <Exhibit no="1.4" title={t.ex.timing[0]} sub={lagRows.length ? t.ex.timing[1] : t.lagPending(pairs)} judgement={t.judgement.timing} source={t.source.timing}
+          chart={lagRows.length ? <Bars rows={lagRows} format={(v) => `${fmt(lang, v, 0)} min`} />
+            : <Bars rows={shiftRows} format={(v) => `${fmt(lang, v, 1)}%`} color="var(--s2)" />}
+          table={<Table rows={timing?.accuracy ?? []} cols={[{ key: 'source', label: t.col.source }, { key: 'comparison', label: t.col.comparison },
+            { key: 'n_pairs', label: 'n', num: true }, { key: 'median_abs_lag_min', label: t.col.medAbs, num: true, format: (v) => fmt(lang, v, 0) },
+            { key: 'pct_abs_gt_1h', label: t.col.gt1h, num: true, format: (v) => fmt(lang, v, 1) }, { key: 'pct_day_shift', label: t.col.dayShift, num: true, format: (v) => fmt(lang, v, 1) }]} />} />
         <Snippets no="1.5" />
       </div>
     </div>

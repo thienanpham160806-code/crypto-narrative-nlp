@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useT } from './i18n.js'
 
 /** cols: [{key, label, num?, format?}] · bảng sắp xếp được, thay thế cho mọi biểu đồ. */
-export default function Table({ rows, cols, max = 2000 }) {
+export default function Table({ rows, cols, max = 2000, empty }) {
   const { t } = useT()
   const [sort, setSort] = useState(null)
   const sorted = useMemo(() => {
@@ -15,7 +15,7 @@ export default function Table({ rows, cols, max = 2000 }) {
       return (x > y ? 1 : x < y ? -1 : 0) * dir
     })
   }, [rows, sort])
-  if (!rows.length) return <div className="empty">{t.noData}</div>
+  if (!rows.length) return <div className="empty">{empty ?? t.noData}</div>
   const toggle = (key) => setSort((s) => ({ key, dir: s?.key === key ? -s.dir : -1 }))
   return (
     <div className="table-wrap">

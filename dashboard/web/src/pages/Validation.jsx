@@ -17,13 +17,13 @@ const L = {
 }
 
 export default function Validation() {
-  const { lang } = useT()
+  const { t, lang } = useT()
   const { data } = useData('validation')
   const l = L[lang], f3 = (v) => fmt(lang, v, 3)
   return (
     <div className="exhibits full">
       <Exhibit no="7.1" title={l.title[0]} sub={l.title[1]} span2 judgement={l.j}
-        table={data?.length ? <Table rows={data} cols={[{ key: 'task', label: 'Task' }, { key: 'method', label: 'Method' }, { key: 'n', label: 'n', num: true },
+        table={data?.length ? <Table rows={data} cols={[{ key: 'task', label: t.col.task }, { key: 'method', label: t.col.method }, { key: 'n', label: 'n', num: true },
           { key: 'accuracy', label: 'Accuracy', num: true, format: f3 }, { key: 'macro_f1', label: 'Macro-F1', num: true, format: f3 }]} /> : <div className="empty">{l.empty}</div>} />
     </div>
   )

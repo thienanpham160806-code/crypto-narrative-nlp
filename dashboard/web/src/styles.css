@@ -18,7 +18,7 @@
   --band-valid: rgba(141, 169, 196, 0.16);
   --band-test: rgba(141, 169, 196, 0.32);
   --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
-  --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #0f8fa8;
   --st-good: #0ca30c; --st-warn: #fab219; --st-serious: #ec835a; --st-critical: #d03b3b;
   --serif: 'Source Serif 4', Georgia, serif;
   --sans: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -26,20 +26,20 @@
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme='light'])) {
     color-scheme: dark;
-    --page: #0b1626; --panel: #0f1b2d; --surface: #0f1b2d; --bar: #071120; --bar-ink: #e6edf5; --bar-muted: #8ea3bb;
+    --page: #0f1b2d; --panel: #16263d; --surface: #0f1b2d; --bar: #13315c; --bar-ink: #e6edf5; --bar-muted: #8ea3bb;
     --ink: #e6edf5; --ink-2: #c1cfdf; --muted: #93a6bd; --rule: #23344b; --grid: #1a2a40; --accent: #8db4e2;
     --focus: #6aa6ef; --neg: #ef7b6d; --pos: #5cc27a;
     --band-valid: rgba(141, 169, 196, 0.14); --band-test: rgba(141, 169, 196, 0.28);
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #1aa3bd;
   }
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --page: #0b1626; --panel: #0f1b2d; --surface: #0f1b2d; --bar: #071120; --bar-ink: #e6edf5; --bar-muted: #8ea3bb;
+  --page: #0f1b2d; --panel: #16263d; --surface: #0f1b2d; --bar: #13315c; --bar-ink: #e6edf5; --bar-muted: #8ea3bb;
   --ink: #e6edf5; --ink-2: #c1cfdf; --muted: #93a6bd; --rule: #23344b; --grid: #1a2a40; --accent: #8db4e2;
   --focus: #6aa6ef; --neg: #ef7b6d; --pos: #5cc27a;
   --band-valid: rgba(141, 169, 196, 0.14); --band-test: rgba(141, 169, 196, 0.28);
-  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #1aa3bd;
 }
 
 * { box-sizing: border-box; }
@@ -169,3 +169,4 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: no-preference) {
   .chart.loading svg { opacity: 0.5; transition: opacity 0.2s ease-out; }
 }
+.chart .note-halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; fill: var(--ink-2); font-size: 12px; }

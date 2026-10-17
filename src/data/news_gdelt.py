@@ -167,7 +167,7 @@ if __name__ == "__main__":
     ap.add_argument("--audit", type=int, default=0, help="số URL cần có giờ đăng (0 = thu GKG)")
     a = ap.parse_args()
     if a.audit:
-        print(audit(a.lang, a.audit), "urls có giờ đăng")
+        print(audit(a.lang, a.audit), "urls with published time")
     else:
         while True:                                   # chạy lại các ngày lỗi cho tới khi đủ
             collect(a.lang, a.start, a.end, a.minutes, a.workers)

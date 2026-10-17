@@ -30,7 +30,8 @@ export function Legend({ items, hidden, onToggle, kind = 'rect' }) {
     <div className="legend">
       {items.map((s) => (
         <button key={s.key} aria-pressed={!hidden?.has(s.key)} onClick={() => onToggle?.(s.key)} disabled={!onToggle}>
-          <i className={kind === 'line' ? 'key-line' : 'key-rect'} style={{ background: s.color }} />{s.label}
+          <i className={kind === 'line' ? 'key-line' : 'key-rect'}
+            style={{ background: s.dash ? `repeating-linear-gradient(90deg, ${s.color} 0 4px, transparent 4px 6px)` : s.color }} />{s.label}
         </button>
       ))}
     </div>
