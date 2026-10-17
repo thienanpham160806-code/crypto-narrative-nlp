@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 const T = {
   vi: {
     brandSub: 'Narrative & sentiment từ tin tức · 2023–2026',
-    tabs: { overview: 'Tổng quan', narratives: 'Narratives', sentiment: 'Sentiment', coins: 'Theo coin', models: 'Dự báo & kiểm định', timing: 'Timing accuracy', validation: 'Validation', live: 'Live' },
+    tabs: { overview: 'Tổng quan', narratives: 'Narratives', sentiment: 'Sentiment', coins: 'Theo coin', models: 'Dự báo & kiểm định', timing: 'Timing accuracy', validation: 'Validation', paper: 'Bài báo', live: 'Live' },
     range: 'Khoảng thời gian', all: 'Toàn mẫu', days: (n) => `${n} ngày`,
     coverage: (a, b) => `Độ phủ tin: ${a} / ${b} ngày`,
     bands: { train: 'Train', valid: 'Valid', test: 'Test (ngoài mẫu)' },
@@ -52,7 +52,7 @@ const T = {
   },
   en: {
     brandSub: 'Narrative & sentiment from news · 2023–2026',
-    tabs: { overview: 'Overview', narratives: 'Narratives', sentiment: 'Sentiment', coins: 'By coin', models: 'Forecasts & tests', timing: 'Timing accuracy', validation: 'Validation', live: 'Live' },
+    tabs: { overview: 'Overview', narratives: 'Narratives', sentiment: 'Sentiment', coins: 'By coin', models: 'Forecasts & tests', timing: 'Timing accuracy', validation: 'Validation', paper: 'Paper', live: 'Live' },
     range: 'Range', all: 'Full sample', days: (n) => `${n} days`,
     coverage: (a, b) => `News coverage: ${a} / ${b} days`,
     bands: { train: 'Train', valid: 'Valid', test: 'Test (out-of-sample)' },

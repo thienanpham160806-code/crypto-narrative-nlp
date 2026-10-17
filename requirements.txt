@@ -31,3 +31,4 @@ anthropic>=1.0
 # dashboard backend
 fastapi>=0.110
 uvicorn>=0.29
+markdown>=3.5         # dashboard/paper.py: paper.md → HTML

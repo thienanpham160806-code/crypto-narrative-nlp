@@ -9,8 +9,9 @@ import Models from './pages/Models.jsx'
 import Timing from './pages/Timing.jsx'
 import Validation from './pages/Validation.jsx'
 import Live from './pages/Live.jsx'
+import Paper from './pages/Paper.jsx'
 
-const PAGES = { overview: Overview, narratives: Narratives, sentiment: Sentiment, coins: Coins, models: Models, timing: Timing, validation: Validation, live: Live }
+const PAGES = { overview: Overview, narratives: Narratives, sentiment: Sentiment, coins: Coins, models: Models, timing: Timing, validation: Validation, paper: Paper, live: Live }
 const RANGES = [30, 90, 365, 'all']
 
 const store = {
@@ -79,7 +80,7 @@ export default function App() {
         </div>
       </header>
       <main className="page">
-        {page !== 'live' && (
+        {page !== 'live' && page !== 'paper' && (
           <div className="filters">
             <span className="label">{t.range}</span>
             <div className="chips" role="group" aria-label={t.range}>
