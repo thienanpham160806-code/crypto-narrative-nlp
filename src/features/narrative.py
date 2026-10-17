@@ -1,7 +1,8 @@
 """Narrative cho từng tin: LDA (benchmark) → BERTopic → zero-shot (embedding ↔ mô tả 8 narrative).
 
-Point-in-time: mọi thứ cần "fit" (vectorizer, LDA, chọn K, BERTopic, ngưỡng 'other') chỉ dùng tin TRAIN
-(public_ts ≤ split.train_end); chọn K của LDA bằng perplexity trên VALID. Test không chạm.
+Point-in-time: mọi thứ cần "fit" (vectorizer, LDA, BERTopic, ngưỡng 'other') chỉ dùng tin TRAIN
+(public_ts ≤ split.train_end); riêng số topic K của LDA chọn bằng perplexity trên VALID. Test không bao giờ chạm.
+Text = tiêu đề + 500 ký tự đầu thân bài (GDELT chỉ có tiêu đề); sự kiện chính nằm sâu trong thân bài có thể bị bỏ sót.
 Topic của LDA/BERTopic → narrative: embedding của top-10 từ gần mô tả narrative nào nhất.
 Zero-shot: cosine(embedding tin, embedding mô tả) → softmax; max cosine < quantile 20% của train → 'other'.
 Model embedding đa ngữ → tin tiếng Việt dùng chung mô tả tiếng Anh (không dịch văn bản).
@@ -10,7 +11,7 @@ Ra: data/interim/narratives.parquet, outputs/tables/narrative_topics.csv, output
 Chạy: python -m features.narrative
 """
 from __future__ import annotations
-import sys, pathlib
+import hashlib, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import numpy as np, pandas as pd
 from utils.common import CFG, D, O
@@ -51,22 +52,31 @@ def encoder():
     return SentenceTransformer(CFG["nlp"]["embed_model"])
 
 
-def embed(ids: pd.Series, texts: pd.Series, enc=None, cache=None) -> np.ndarray:
-    """Embedding chuẩn hóa L2, cache theo doc_id ở data/interim/embeddings.npz."""
+PREP = "title+body[:500].v1"     # đổi cách ghép text thì tăng phiên bản → cache tự vô hiệu
+
+
+def text_key(text: str, model: str | None = None) -> str:
+    """Khóa cache = hash(model + phiên bản tiền xử lý + text): đổi text/model không dùng lại vector cũ."""
+    return hashlib.sha256(f"{model or CFG['nlp']['embed_model']}|{PREP}|{text}".encode("utf-8")).hexdigest()[:24]
+
+
+def embed(texts: pd.Series, enc=None, cache=None) -> np.ndarray:
+    """Embedding chuẩn hóa L2, cache theo text_key ở data/interim/embeddings.npz."""
     cache = cache or D("interim", "embeddings.npz")
+    keys = texts.map(text_key)
     old = dict(np.load(cache, allow_pickle=True)) if pathlib.Path(cache).exists() else {"ids": np.array([], object)}
     pos = {d: i for i, d in enumerate(old["ids"])}
-    new = [i for i, d in enumerate(ids) if d not in pos]
-    if new:
+    need = keys[~keys.isin(pos)].drop_duplicates()
+    if len(need):
         enc = enc or encoder()
-        e = enc.encode(texts.iloc[new].tolist(), batch_size=128, normalize_embeddings=True, show_progress_bar=True)
+        e = enc.encode(texts.loc[need.index].tolist(), batch_size=128, normalize_embeddings=True, show_progress_bar=True)
         e = np.asarray(e, dtype=np.float32)
-        all_ids = np.concatenate([old["ids"], ids.iloc[new].to_numpy(object)])
+        all_ids = np.concatenate([old["ids"], need.to_numpy(object)])
         all_emb = np.vstack([old["emb"], e]) if len(old["ids"]) else e
         np.savez(cache, ids=all_ids, emb=all_emb)
         pos = {d: i for i, d in enumerate(all_ids)}
         old = {"ids": all_ids, "emb": all_emb}
-    return old["emb"][[pos[d] for d in ids]]
+    return old["emb"][[pos[k] for k in keys]]
 
 
 def zeroshot(emb: np.ndarray, proto: np.ndarray, train: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -129,7 +139,7 @@ def run(docs: pd.DataFrame, enc=None, seed: int = CFG["seed"]) -> tuple[pd.DataF
     enc = enc or encoder()
     docs = docs.reset_index(drop=True)
     per, texts = periods(docs.public_ts_utc), text_of(docs)
-    emb = embed(docs.doc_id, texts, enc)
+    emb = embed(texts, enc)
     proto = np.asarray(enc.encode([PROTO[k] for k in NARR], normalize_embeddings=True))
     out = pd.DataFrame(dict(doc_id=docs.doc_id, period=per))
     news = docs.source.ne("sec").to_numpy()                              # SEC: văn bản pháp lý dài, lấn át topic

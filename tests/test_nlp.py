@@ -111,16 +111,22 @@ def test_lexicon_routes_by_language():
     assert out.loc["d", "finvn_net"] == -1 and np.isnan(out.loc["d", "lm_net"]) and np.isnan(out.loc["a", "finvn_net"])
 
 
-def test_assemble_llm_overrides_zeroshot():
+def test_assemble_zeroshot_only_and_rejects_duplicate_scores():
     docs = docs_frame()
     lex = pd.DataFrame(dict(doc_id=docs.doc_id, lm_net=0.0))
     fb = pd.DataFrame(dict(doc_id=["a"], sentiment=[.5], positive_prob=[.6], negative_prob=[.1], neutral_prob=[.3]))
     nar = pd.DataFrame(dict(doc_id=docs.doc_id, zs_narr="defi", zs_prob=.4))
-    llm = pd.DataFrame(dict(doc_id=["b"], llm_narr=["regulation"], llm_conf=[.9]))
-    out = doc_scores.assemble(docs, lex, fb, nar, llm).set_index("doc_id")
-    assert list(out.columns) == doc_scores.COLS[1:]
-    assert out.loc["b", "narrative"] == "regulation" and out.loc["b", "narrative_method"] == "llm"
-    assert out.loc["a", "narrative_method"] == "zeroshot" and out.loc["a", "finbert_sentiment"] == .5
+    out = doc_scores.assemble(docs, lex, fb, nar).set_index("doc_id")
+    assert list(out.columns) == doc_scores.COLS[1:] and (out.narrative_method == "zeroshot").all()
+    assert out.loc["a", "finbert_sentiment"] == .5
+    with pytest.raises(pd.errors.MergeError):
+        doc_scores.assemble(docs, lex, pd.concat([fb, fb]), nar)
+
+
+def test_llm_labels_refuse_test_period():
+    docs = pd.DataFrame(dict(doc_id=["a"], title=["x"], public_ts_utc=[UTC("2026-02-01")]))
+    with pytest.raises(ValueError):
+        validation.llm_labels(docs)
 
 
 def test_text_daily_day_cut_canonical_en_and_accel():
@@ -138,7 +144,8 @@ def test_text_daily_day_cut_canonical_en_and_accel():
     assert d1.n_docs == 1 and d1.sent_finbert == .5                  # 23:59:59 ở lại ngày 1; bản trùng e bị loại
     assert d2.n_docs == 2 and np.isclose(d2.neg_sent, .4) and d2.attention_regulation == .5   # tin vi, SEC không vào
     assert np.isclose(d2.neg_accel, .4) and np.isnan(al.loc[UTC("2023-01-04")].neg_accel)     # 01-03 trống → NaN
-    assert np.isclose(d2.disagreement, 1) and d1.disagreement == 0       # 1 dương + 1 âm → bất đồng tối đa
+    assert np.isclose(d2.disagreement_af, 1) and d1.disagreement_af == 0       # 1 dương + 1 âm → bất đồng tối đa
+    assert np.isclose(d2.disagreement_std, np.std([-.8, .2], ddof=1)) and np.isnan(d1.disagreement_std)
     assert np.isclose(d2.soft_attention_defi, .5) and np.isclose(d2.soft_attention_regulation, .4)
     btc = out[out.asset.eq("BTC")]
     assert btc.date.tolist() == [UTC("2023-01-01")]                  # mã: chỉ ngày có tin
@@ -210,3 +217,32 @@ def test_weak_validation_scores_sign_auc_and_undecided():
     r = validation.weak(lab, sc).set_index("method")
     assert r.loc["LM", "accuracy"] == .5 and r.loc["LM", "pct_decided"] == 50      # điểm 0 = không chọn phía = sai
     assert r.loc["FinBERT", "accuracy"] == 1 and r.loc["FinBERT", "auc"] == 1 and "CryptoBERT" not in r.index
+
+
+def test_embedding_cache_keyed_by_text_and_model(tmp_path, monkeypatch):
+    calls = []
+
+    class Enc:
+        def encode(self, texts, **kw):
+            calls.append(list(texts))
+            return np.ones((len(texts), 3))
+    cache = tmp_path / "emb.npz"
+    narrative.embed(pd.Series(["a", "b", "a"]), Enc(), cache)
+    narrative.embed(pd.Series(["a", "b"]), Enc(), cache)
+    assert calls == [["a", "b"]]                                         # trùng text: tính 1 lần; lần 2 dùng cache
+    narrative.embed(pd.Series(["a edited"]), Enc(), cache)
+    monkeypatch.setitem(narrative.CFG["nlp"], "embed_model", "other-model")
+    narrative.embed(pd.Series(["a"]), Enc(), cache)
+    assert calls[1:] == [["a edited"], ["a"]]                            # đổi text hoặc model → tính lại
+
+
+def test_finbert_cache_invalidated_by_model(tmp_path, monkeypatch):
+    monkeypatch.setattr(finbert, "D", lambda *a: tmp_path / a[-1])
+    n = []
+    clf = lambda s, batch_size: (n.append(len(s)), [[{"label": "positive", "score": 1}, {"label": "negative", "score": 0},
+                                                    {"label": "neutral", "score": 0}] for _ in s])[1]
+    docs = pd.DataFrame(dict(doc_id=["a"], text=["Bitcoin rises sharply today."]))
+    finbert.score(docs, clf=clf); finbert.score(docs, clf=clf)
+    monkeypatch.setattr(finbert, "MODEL", "another/finbert")
+    finbert.score(docs, clf=clf)
+    assert n == [1, 1]

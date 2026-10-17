@@ -1,7 +1,8 @@
 """Điểm từng tin → data/interim/doc_scores.parquet (DATA_CONTRACT §2).
 
 en: LM (tài chính) + Harvard IV-4 (tổng quát) + FinBERT (tin báo; SEC chỉ LM/Harvard). vi: fin_vn + crypto_vn qua VietScorer (không dịch).
-Narrative chính = zero-shot embedding (features.narrative); LLM thay thế khi config.nlp.llm.enabled và có cache/key.
+Narrative = zero-shot embedding (features.narrative). LLM KHÔNG bao giờ vào feature (model biết sự kiện sau ngày
+tin → rò rỉ vào test); LLM chỉ dùng ở features.validation trên tin trước split.valid_end.
 Chạy (sau features.narrative): python -m features.doc_scores
 """
 from __future__ import annotations
@@ -38,31 +39,15 @@ def lexicon(docs: pd.DataFrame, lm=None, hv=None, vn=None) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def llm_labels(docs: pd.DataFrame) -> pd.DataFrame:
-    """Nhãn LLM (chỉ khi bật); hết budget/lỗi thì dừng, giữ phần đã có."""
-    from utils.llm_client import LLMClient, BudgetExceeded, LLMError
-    cli, rows = LLMClient(CFG["nlp"]["llm"]), []
-    for d, t in zip(docs.doc_id, docs.title):
-        try:
-            o = cli.classify_narrative(t)
-        except (BudgetExceeded, LLMError):
-            break
-        rows.append(dict(doc_id=d, llm_narr=o["narrative"], llm_sent=o["sentiment"], llm_conf=o.get("confidence")))
-    return pd.DataFrame(rows, columns=["doc_id", "llm_narr", "llm_sent", "llm_conf"])
-
-
-def assemble(docs: pd.DataFrame, lex: pd.DataFrame, fb: pd.DataFrame, nar: pd.DataFrame,
-             llm: pd.DataFrame | None = None) -> pd.DataFrame:
-    df = docs[["doc_id"]].merge(lex, on="doc_id", how="left")
+def assemble(docs: pd.DataFrame, lex: pd.DataFrame, fb: pd.DataFrame, nar: pd.DataFrame) -> pd.DataFrame:
+    """Ghép điểm theo doc_id, mỗi bảng tối đa 1 dòng/tin (validate one_to_one: trùng id thì báo lỗi, không nhân bản)."""
+    df = docs[["doc_id"]].merge(lex, on="doc_id", how="left", validate="one_to_one")
     df = df.merge(fb.rename(columns={"sentiment": "finbert_sentiment"})[
-        ["doc_id", "finbert_sentiment", "positive_prob", "negative_prob", "neutral_prob"]], on="doc_id", how="left")
-    df = df.merge(nar[["doc_id", "zs_narr", "zs_prob"] + [c for c in NPROB if c in nar]], on="doc_id", how="left")
+        ["doc_id", "finbert_sentiment", "positive_prob", "negative_prob", "neutral_prob"]], on="doc_id", how="left",
+        validate="one_to_one")
+    df = df.merge(nar[["doc_id", "zs_narr", "zs_prob"] + [c for c in NPROB if c in nar]], on="doc_id", how="left",
+                  validate="one_to_one")
     df["narrative"], df["narrative_prob"], df["narrative_method"] = df.zs_narr, df.zs_prob, "zeroshot"
-    if llm is not None and len(llm):
-        df = df.merge(llm[["doc_id", "llm_narr", "llm_conf"]], on="doc_id", how="left")
-        m = df.llm_narr.notna()
-        df.loc[m, ["narrative", "narrative_prob", "narrative_method"]] = \
-            np.c_[df.llm_narr[m], df.llm_conf[m], np.full(m.sum(), "llm")]
     for c in COLS:
         if c not in df:
             df[c] = np.nan
@@ -76,8 +61,7 @@ def main():
     en = docs[docs.lang.eq("en") & docs.source.ne("sec")]     # SEC: 20 câu đầu là trang bìa pháp lý → chỉ LM/Harvard
     fb = finbert.score(pd.DataFrame(dict(doc_id=en.doc_id, text=text_of(en, body_chars=20_000))))
     nar = pd.read_parquet(D("interim", "narratives.parquet"))
-    llm = llm_labels(en) if CFG["nlp"]["llm"]["enabled"] else None
-    out = assemble(docs, lexicon(docs), fb, nar, llm)
+    out = assemble(docs, lexicon(docs), fb, nar)
     out.to_parquet(D("interim", "doc_scores.parquet"), index=False)
     print(out.describe().round(3).to_string())
 

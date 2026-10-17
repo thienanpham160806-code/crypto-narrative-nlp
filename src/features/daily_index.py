@@ -7,7 +7,10 @@ event study và timeline.
 asset = 'ALL' (mọi tin, đủ lịch ngày của mẫu) + từng mã (chỉ ngày có tin gắn mã đó).
 neg_accel_t = neg_sent_t − neg_sent_{t−1} (ngày lịch liền kề; ngày trước không có tin → NaN). Chỉ dùng quá khứ.
 soft_attention_k = trung bình xác suất zero-shot nprob_k (không ép nhãn cứng; tổng 8 cột = 1).
-disagreement = √(1 − A²), A = (N⁺ − N⁻)/(N⁺ + N⁻) theo nhãn FinBERT (Antweiler & Frank 2004); N⁺ + N⁻ = 0 → NaN.
+disagreement_af = √(1 − A²), A = (N⁺ − N⁻)/(N⁺ + N⁻) theo nhãn FinBERT (Antweiler & Frank 2004); N⁺ + N⁻ = 0 → NaN.
+disagreement_std = độ lệch chuẩn (ddof=1) của sentiment FinBERT các tin trong ngày (độ phân tán kiểu Khaksar et al.
+2026); < 2 tin → NaN. Hai thước đo khác nhau, không gọi chung là "disagreement".
+Mọi tin canonical phải có điểm (merge one_to_one, thiếu điểm → lỗi): không để tin chưa chấm trông như ngày không có tin.
 Chạy: python -m features.daily_index
 """
 from __future__ import annotations
@@ -30,7 +33,8 @@ def daily(g: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.DataFrame:
                                 **{f"attention_{k}": (f"attention_{k}", "mean") for k in NARR},
                                 **{f"soft_attention_{k}": (f"nprob_{k}", "mean") for k in NARR})
     a = (out.n_pos - out.n_neg) / (out.n_pos + out.n_neg)
-    out["disagreement"] = np.sqrt(1 - a ** 2)
+    out["disagreement_af"] = np.sqrt(1 - a ** 2)
+    out["disagreement_std"] = g.groupby("date").finbert_sentiment.std(ddof=1)
     out = out.reindex(dates)
     out["n_docs"] = out.n_docs.fillna(0).astype(int)
     out["neg_accel"] = out.neg_sent.diff()
@@ -38,7 +42,11 @@ def daily(g: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.DataFrame:
 
 
 def build(docs: pd.DataFrame, scores: pd.DataFrame) -> pd.DataFrame:
-    df = docs[docs.is_canonical & docs.lang.eq("en") & docs.source.ne("sec")].merge(scores, on="doc_id")
+    news = docs[docs.is_canonical & docs.lang.eq("en") & docs.source.ne("sec")]
+    df = news.merge(scores, on="doc_id", how="left", validate="one_to_one", indicator=True)
+    if (miss := df._merge.ne("both").sum()):
+        raise ValueError(f"{miss} tin canonical chưa có doc_scores – chạy lại features.narrative + features.doc_scores")
+    df = df.drop(columns="_merge")
     df["date"] = df.public_ts_utc.dt.tz_convert("UTC").dt.floor("D")
     dates = pd.date_range(CFG["sample"]["start"], CFG["sample"]["end"], freq="D", tz="UTC")
     df = df[df.date.isin(dates)]
@@ -48,7 +56,7 @@ def build(docs: pd.DataFrame, scores: pd.DataFrame) -> pd.DataFrame:
         parts.append(d[d.n_docs > 0])
     out = pd.concat(parts, ignore_index=True)
     cols = ["date", "asset", "n_docs", "sent_finbert", "sent_lm", "sent_hv", "pos_sent", "neg_sent"]
-    return out[cols + [f"attention_{k}" for k in NARR] + ["neg_accel", "disagreement"]
+    return out[cols + [f"attention_{k}" for k in NARR] + ["neg_accel", "disagreement_af", "disagreement_std"]
                + [f"soft_attention_{k}" for k in NARR]]
 
 

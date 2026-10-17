@@ -46,7 +46,7 @@ export default function App() {
   const rows = useMemo(() => {
     if (!daily || !meta) return []
     const r = daily.map((d) => ({ ...d, t: day(d.date) }))
-    const keys = ['sent_finbert', 'sent_lm', 'sent_hv', 'pos_sent', 'neg_sent', 'disagreement', 'n_docs',
+    const keys = ['sent_finbert', 'sent_lm', 'sent_hv', 'pos_sent', 'neg_sent', 'disagreement_af', 'disagreement_std', 'n_docs',
       ...meta.narratives.flatMap((k) => [`soft_attention_${k}`, `attention_${k}`])]
     for (const k of keys) rolling(r, k).forEach((v, i) => { r[i][`${k}_7d`] = v })
     return r

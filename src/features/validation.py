@@ -37,6 +37,23 @@ def scores(y: pd.Series, p: pd.Series) -> dict:
                 macro_f1=f1_score(y[m], p[m], average="macro", zero_division=0))
 
 
+def llm_labels(docs: pd.DataFrame) -> pd.DataFrame:
+    """Nhãn LLM zero-shot CHỈ cho validation. Từ chối tin sau split.valid_end: LLM có thể "biết" sự kiện sau ngày tin."""
+    from utils.llm_client import LLMClient, BudgetExceeded, LLMError
+    end = pd.Timestamp(CFG["split"]["valid_end"], tz="UTC") + pd.Timedelta(days=1)
+    ts = pd.to_datetime(docs.public_ts_utc, utc=True)
+    if (ts >= end).any() or ts.isna().any():
+        raise ValueError("LLM chỉ được gán nhãn tin trước split.valid_end (có public_ts_utc)")
+    cli, rows = LLMClient(CFG["nlp"]["llm"]), []
+    for d, t in zip(docs.doc_id, docs.title):
+        try:
+            o = cli.classify_narrative(t)
+        except (BudgetExceeded, LLMError):
+            break
+        rows.append(dict(doc_id=d, llm_narr=o["narrative"], llm_sent=o["sentiment"], llm_conf=o.get("confidence")))
+    return pd.DataFrame(rows, columns=["doc_id", "llm_narr", "llm_sent", "llm_conf"])
+
+
 def auc(y: pd.Series, s: pd.Series) -> float:
     """AUC positive vs negative trên điểm liên tục (bỏ nhãn neutral); không phụ thuộc mất cân bằng lớp."""
     from sklearn.metrics import roc_auc_score
@@ -115,7 +132,6 @@ def main(cmd: str):
         nar = D("interim", "narratives.parquet")
         llm = None
         if CFG["nlp"]["llm"]["enabled"]:
-            from features.doc_scores import llm_labels
             llm = llm_labels(lab)
         out = evaluate(lab, pd.read_parquet(D("interim", "doc_scores.parquet")),
                        pd.read_parquet(nar) if nar.exists() else None, llm)

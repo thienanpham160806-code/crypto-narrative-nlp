@@ -34,7 +34,8 @@ def score(docs: pd.DataFrame, max_sentences: int = 20, batch_size: int = 32, chu
         sents = sentences(r.text, max_sentences)
         if not sents:
             continue
-        sha = hashlib.sha256("\n".join(sents).encode("utf-8")).hexdigest()[:16]
+        key = f"{MODEL}|max_sentences={max_sentences}|" + "\n".join(sents)     # đổi model/cài đặt → tính lại
+        sha = hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
         if (r.doc_id, sha) in seen:
             rows.append(seen[(r.doc_id, sha)])
         else:

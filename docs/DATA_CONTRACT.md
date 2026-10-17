@@ -26,13 +26,15 @@ Mọi timestamp là **UTC**. Ngày `t` = [t 00:00, t+1 00:00) UTC. File đổi s
 - So sánh phương pháp ở `data/interim/narratives.parquet`: `doc_id, period (train|valid|test), zs_narr, zs_prob, lda_topic, lda_prob, lda_narr, bt_topic, bt_prob, bt_narr` (LDA/BERTopic chỉ tin en; fit chỉ trên train).
 
 ## 3. `data/processed/text_daily.parquet` — owner: Claude
-`date, asset ('ALL' hoặc mã), n_docs, sent_finbert, sent_lm, sent_hv, pos_sent, neg_sent, attention_<narrative>… (8 cột), neg_accel, disagreement, soft_attention_<narrative>… (8 cột)`
+`date, asset ('ALL' hoặc mã), n_docs, sent_finbert, sent_lm, sent_hv, pos_sent, neg_sent, attention_<narrative>… (8 cột), neg_accel, disagreement_af, disagreement_std, soft_attention_<narrative>… (8 cột)`
 - Quy tắc cắt: tin vào ngày `t` ⇔ `public_ts_utc ∈ [t, t+1)`. Chỉ `is_canonical = True`.
 - `pos_sent = mean(max(sent,0))`, `neg_sent = mean(max(-sent,0))`; `attention_k = N_k,t / N_t`.
 - Chỉ tin `lang = en` (nhánh chính), không gồm `sec` (văn bản pháp lý dài; SEC dùng cho event study); w_d = 1. `date` = datetime UTC 00:00 (cùng kiểu market_daily).
 - `ALL`: đủ mọi ngày của mẫu (ngày không tin: `n_docs = 0`, còn lại NaN). Từng mã: chỉ ngày có tin gắn mã.
 - `neg_accel_t = neg_sent_t − neg_sent_{t−1}` (ngày lịch liền trước; trống → NaN).
-- `disagreement_t = √(1 − A_t²)`, `A_t = (N⁺ − N⁻)/(N⁺ + N⁻)` theo nhãn FinBERT (lớp xác suất lớn nhất) – Antweiler & Frank (2004); 0 = đồng thuận, 1 = chia đôi; N⁺ + N⁻ = 0 → NaN.
+- `disagreement_af_t = √(1 − A_t²)`, `A_t = (N⁺ − N⁻)/(N⁺ + N⁻)` theo nhãn FinBERT (lớp xác suất lớn nhất) – Antweiler & Frank (2004); 0 = đồng thuận, 1 = chia đôi; N⁺ + N⁻ = 0 → NaN.
+- `disagreement_std_t` = độ lệch chuẩn (ddof=1) sentiment FinBERT các tin trong ngày (độ phân tán kiểu Khaksar et al., 2026); < 2 tin → NaN.
+- Mọi tin canonical của `text_daily` phải có `doc_scores` (merge one_to_one; thiếu → build báo lỗi).
 - `soft_attention_k,t = mean_d nprob_k` (attention mềm, không ép nhãn cứng; tổng 8 cột = 1). `attention_k` (cứng) giữ nguyên.
 
 ## 4. `data/processed/market_daily.parquet` — owner: Codex
