@@ -4,6 +4,7 @@ from src.utils.common import CFG
 
 MARKET = ['ret', 'rv', 'logvol', *[f'ret_lag{i}' for i in range(1, 8)]]
 TEXT = ['n_docs', 'sent_finbert', 'sent_lm', 'sent_hv', 'pos_sent', 'neg_sent', 'neg_accel']
+TEXT_CORE = [name for name in TEXT if name != 'neg_accel']
 
 
 def make_panel(market, text, horizon=1):

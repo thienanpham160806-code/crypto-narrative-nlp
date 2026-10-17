@@ -11,7 +11,7 @@ from src.models.run import run_analysis
 from src.models.panel import MARKET, make_panel
 from src.models.quantile import run_quantiles
 from src.models.econometrics import attach_ucry, run_econometrics
-from src.evaluation.report import write_report
+from src.evaluation.report import write_report, preliminary_findings, coverage
 from src.utils.common import CFG
 from test_pipeline import make_fixtures
 
@@ -127,7 +127,8 @@ def test_partial_real_sample_produces_pending_tables(tmp_path, monkeypatch):
     monkeypatch.setattr('src.evaluation.report.paper_figures', lambda *args: [])
     tables = run_analysis(market, text, config, tmp_path, tmp_path/'figures', real=True)
     assert tables['oos'].empty
-    assert tables['ml_status'].status.str.contains('insufficient').all()
+    pending = tables['ml_status'].loc[tables['ml_status'].status.ne('coverage')]
+    assert pending.status.str.contains('insufficient').all()
     assert 'REAL' in (tmp_path/'README.md').read_text(encoding='utf-8')
     assert (tmp_path/'regressions.csv').exists()
     assert pd.read_csv(tmp_path/'oos.csv').empty
@@ -144,3 +145,20 @@ def test_unidentified_regressions_withhold_significance():
     assert not unidentifiable.empty
     assert unidentifiable.pvalue.isna().all() and unidentifiable.se.isna().all()
     assert tables['wald'].pvalue.isna().all()
+
+
+def test_sparse_core_uses_same_day_text_and_missing_dm_columns():
+    config = copy.deepcopy(CFG)
+    config['sample'].update(start='2023-01-01', end='2023-12-31', assets=['BTC'])
+    config['split'].update(train_end='2023-06-30', valid_end='2023-09-30')
+    config['model']['horizons'] = [1]
+    market, text = make_fixtures(config)
+    text['neg_accel'] = np.nan
+    text.loc[text.date.dt.day.mod(3).eq(0), 'sent_finbert'] = np.nan
+    counted = coverage(market, text, config).iloc[0]
+    assert counted.usable_model_days > 100
+    assert counted.model_train_days > 30 and counted.model_valid_days > 10 and counted.model_test_days > 10
+    oos = pd.DataFrame([dict(asset='BTC', horizon=1, target='ret', model='EN', version=version,
+                             rmse=.1, r2_oos_ct=.01) for version in ['market', 'attention', 'text']])
+    lines = preliminary_findings({'oos': oos}, real=True)
+    assert any('DM Holm p=nan' in line and 'CW Holm p=nan' in line for line in lines)

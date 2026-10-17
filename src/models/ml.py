@@ -5,7 +5,7 @@ from sklearn.linear_model import ElasticNet
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from src.models.panel import MARKET, TEXT, make_panel
+from src.models.panel import MARKET, TEXT_CORE, make_panel
 from src.evaluation.oos import (diebold_mariano, clark_west, giacomini_white,
                                 model_confidence_set, metrics, strategy)
 
@@ -72,7 +72,7 @@ def run_ml(market, text, config, refit_days=30):
     for horizon in config['model']['horizons']:
         panel = make_panel(market, text, horizon)
         panel['log_n_docs'] = np.log(panel.n_docs.where(panel.n_docs > 0))
-        features_text = [*MARKET, *TEXT, *[f'attention_{k}' for k in config['nlp']['narratives']]]
+        features_text = [*MARKET, *TEXT_CORE, *[f'attention_{k}' for k in config['nlp']['narratives']]]
         features_text += ['log_n_docs', *[c for c in panel if c.startswith(('disagreement', 'soft_attention_', 'attention_soft_', 'ucry_'))]]
         versions = [('market', MARKET), ('attention', [*MARKET, 'log_n_docs']), ('text', features_text)]
         for asset, asset_frame in panel.groupby('asset'):
@@ -83,6 +83,11 @@ def run_ml(market, text, config, refit_days=30):
                 test = frame.loc[(frame.target_date > valid_end) & (frame.date >= valid_end)]
                 valid = valid.loc[valid.date.map(lambda date: len(training_rows(frame, date, horizon, embargo)) >= 30)]
                 test = test.loc[test.date.map(lambda date: len(training_rows(frame, date, horizon, embargo)) >= 30)]
+                status.append(dict(asset=asset, target=target, horizon=horizon, status='coverage',
+                                   n_train=int(frame.target_date.le(train_end).sum()),
+                                   n_valid=len(valid), n_test=len(test),
+                                   valid_start=valid.date.min(), valid_end=valid.date.max(),
+                                   test_start=test.date.min(), test_end=test.date.max()))
                 if len(valid) < 10 or len(test) < 10:
                     status.append(dict(asset=asset, target=target, horizon=horizon, status='insufficient validation/test coverage',
                                        n_valid=len(valid), n_test=len(test)))
