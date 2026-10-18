@@ -9,9 +9,9 @@ The current machine has plotting/Jupyter in the host Python and research depende
 For unattended real inputs:
 
 ```powershell
-python -m src.models.run_real --watch --poll-seconds 1800
+python -m src.models.run_real --watch --poll-seconds 120
 ```
 
-Use a kernel/interpreter containing the listed packages. On this machine the background watcher uses the host Python with `.venv/Lib/site-packages` in `PYTHONPATH`. It retries failed/partially written inputs at the next poll, preserves research splits, and never substitutes synthetic text into a real run. Local watcher logs are not committed. The watcher does not commit or push files produced later.
+The watcher uses the project `.venv` and waits for `data/processed/REBUILD_DONE.json`. It verifies both parquet hashes and two unchanged consecutive polls; incomplete GKG requires `--allow-partial`. On trigger it runs the real pipeline, executes this notebook offline with the host kernel, runs pytest and writes `outputs/tables/real/RUN_DONE.json`. Step failures appear in `failed_steps` and `watch.log` without stopping later steps. When tests pass and other tracked work in the shared folder is clean, it stages only Codex outputs, appends PROGRESS, commits, pulls with rebase and pushes `dev`; otherwise it retries publication at later polls.
 
 `outputs/tables/<mode>/README.md` reports actual coverage, per-table economic interpretation and preliminary RQ1–RQ5 findings. `outputs/figures/<mode>/` contains SVG and PNG paper figures, explicitly labeled REAL or SYNTHETIC. Strategy plots are economic-value tests only.

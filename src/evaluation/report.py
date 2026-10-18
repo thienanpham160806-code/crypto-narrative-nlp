@@ -130,10 +130,22 @@ def paper_figures(market, text, tables, directory, label):
     mode = 'REAL: partial corpus' if label.startswith('REAL') else 'SYNTHETIC: code validation'
 
     def save(fig, name):
+        for ax in fig.axes:
+            ax.set_title('')
+            ax.tick_params(labelsize=10)
+            ax.xaxis.label.set_size(11)
+            ax.yaxis.label.set_size(11)
+            legend = ax.get_legend()
+            if legend is not None:
+                for item in legend.get_texts():
+                    item.set_fontsize(10)
+        if fig._suptitle is not None:
+            fig._suptitle.set_text('')
+        fig.set_size_inches(6, 5.5 if len(fig.axes) > 2 else 3.8)
         fig.tight_layout()
         path = directory/f'{name}.svg'
         fig.savefig(path, metadata={'Date': None})
-        fig.savefig(directory/f'{name}.png', dpi=160)
+        fig.savefig(directory/f'{name}.png', dpi=300)
         plt.close(fig)
         paths.append(path)
 

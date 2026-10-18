@@ -59,3 +59,9 @@ Trước khi có dữ liệu thật, Codex dùng `tests/fixtures/make_fixtures.p
 - Event input: `doc_id, asset, public_ts_utc` (UTC có timezone), mỗi hàng là một bài–asset. Prices: `date, asset, close`; `date` là thời điểm bắt đầu bar UTC, lịch liên tục theo `--frequency` (mặc định `1h`).
 - T0 là bar bắt đầu đầu tiên **sau** `public_ts_utc`; lợi suất đơn từ close bar đó đến close bar kế tiếp. Các cửa sổ config đo bằng số bar; thiếu bar giữ NaN, không nối qua khoảng trống. Asset trùng benchmark bị bỏ vì không có lợi suất tương đối độc lập.
 - Holm/BH dùng một bảng export làm một family; p-value thiếu không được kiểm định. ADF có H0 unit root; KPSS có H0 level stationarity.
+
+## 7. Bắt tay rebuild dữ liệu thật (owner: Claude → Codex)
+
+- Claude ghi `data/processed/REBUILD_DONE.json` **sau khi** hoàn tất `documents.parquet` và `text_daily.parquet`: `{"finished_utc": "ISO-8601 UTC", "gkg_days": 1369, "gkg_total": 1369, "text_daily_sha256": "SHA-256 hex", "documents_sha256": "SHA-256 hex"}`. Hash tính trên byte của `data/processed/text_daily.parquet` và `data/interim/documents.parquet`; `gkg_days/gkg_total` là độ phủ ngày GKG, không phải số ngày có tin.
+- Codex chỉ đọc snapshot khi `finished_utc` mới hơn lần chạy trước, hash khớp file thật và các file cùng sentinel không đổi qua hai lần poll liên tiếp (mặc định 120 giây). Khi `gkg_days < gkg_total`, chỉ chạy nếu có `--allow-partial`.
+- Sau mỗi lần kích hoạt, Codex ghi `outputs/tables/real/RUN_DONE.json`: `{"finished_utc": "ISO-8601 UTC", "input_sha256": "SHA-256 text_daily", "coverage_pct": 100.0, "status": "ok|partial|failed", "failed_steps": []}`. `partial` nghĩa là ít nhất một bước phân tích/xuất bản thất bại; `failed` nghĩa là không chạy được phân tích chính. Log theo dõi ở `outputs/tables/real/watch.log`.

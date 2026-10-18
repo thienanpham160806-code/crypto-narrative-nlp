@@ -31,7 +31,7 @@ def correct_tests(table):
 
 
 def run_analysis(market, text, config, output, figures, real=False, refit_days=30, variants=None, ucry=None,
-                 event_inputs=None):
+                 event_inputs=None, failed_steps=None):
     """Shared offline entry point for CLI and notebook; return all research tables."""
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
@@ -42,22 +42,57 @@ def run_analysis(market, text, config, output, figures, real=False, refit_days=3
         ('quantiles', lambda: run_quantiles(market, text, config)),
         ('expanding forecasts', lambda: run_ml(market, text, config, refit_days))]:
         print(f'Running {label}', flush=True)
-        for name, table in call().items():
-            table = correct_tests(table)
-            tables[name] = table
-            table.to_csv(output/f'{name}.csv', index=False, encoding='utf-8')
+        try:
+            for name, table in call().items():
+                table = correct_tests(table)
+                tables[name] = table
+                table.to_csv(output/f'{name}.csv', index=False, encoding='utf-8')
+        except Exception:
+            if failed_steps is None:
+                raise
+            import logging
+            logging.exception('Analysis step failed: %s', label)
+            failed_steps.append(label)
     if ucry is not None:
-        controlled = run_econometrics(market, attach_ucry(text, ucry), config)
-        for name in ['regressions', 'wald']:
-            tables[f'ucry_{name}'] = correct_tests(controlled[name])
+        try:
+            controlled = run_econometrics(market, attach_ucry(text, ucry), config)
+            for name in ['regressions', 'wald']:
+                tables[f'ucry_{name}'] = correct_tests(controlled[name])
+        except Exception:
+            if failed_steps is None:
+                raise
+            import logging
+            logging.exception('Analysis step failed: ucry')
+            failed_steps.append('ucry')
     if real and event_inputs is not None:
         print('Running hourly events', flush=True)
         documents, scores, prices = event_inputs
-        tables.update(run_real_events(documents, scores, prices, config['split']['train_end'], output, figures))
-    write_report(market, text, config, tables, output, figures, real)
+        try:
+            tables.update(run_real_events(documents, scores, prices, config['split']['train_end'], output, figures))
+        except Exception:
+            if failed_steps is None:
+                raise
+            import logging
+            logging.exception('Analysis step failed: hourly events')
+            failed_steps.append('hourly events')
+    try:
+        write_report(market, text, config, tables, output, figures, real)
+    except Exception:
+        if failed_steps is None:
+            raise
+        import logging
+        logging.exception('Analysis step failed: report/figures')
+        failed_steps.append('report/figures')
     if real:
         from src.evaluation.report import write_results
-        write_results(tables, output)
+        try:
+            write_results(tables, output)
+        except Exception:
+            if failed_steps is None:
+                raise
+            import logging
+            logging.exception('Analysis step failed: RESULTS')
+            failed_steps.append('RESULTS')
     return tables
 
 
