@@ -1,404 +1,529 @@
-"""Build the journal-style Word manuscript from UTF-8 paper/paper.md.
+"""Xuất paper/paper.docx từ khuôn paper/paper.md (điền số liệu bằng fill_results trước).
 
-Uses only the Python standard library. Equations are OMML objects, notes are
-true Word footnotes, and tables have APA-style horizontal rules.
+Times New Roman 13, giãn dòng 1.15, thụt đầu dòng 1.27 cm, spacing 0, số trang giữa header,
+bảng APA (chỉ đường kẻ ngang), phương trình là Word Equation (OMML), chú thích chân trang thật.
+Chạy từ gốc repo: python paper/build_docx.py
 """
-
 from __future__ import annotations
 
 import argparse
 import re
-import struct
 from pathlib import Path
-from xml.etree import ElementTree as ET
-from zipfile import ZIP_DEFLATED, ZipFile
 
+from docx import Document
+from docx.enum.section import WD_ORIENT
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
+from docx.opc.packuri import PackURI
+from docx.opc.part import Part
+from docx.oxml import OxmlElement
+from docx.oxml.ns import nsdecls, qn
+from docx.shared import Cm, Pt
+from lxml import etree
+
+try:
+    from paper import fill_results
+except ImportError:  # chạy trực tiếp: python paper/build_docx.py
+    import fill_results
 
 ROOT = Path(__file__).resolve().parents[1]
-W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-M = "http://schemas.openxmlformats.org/officeDocument/2006/math"
-WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-A = "http://schemas.openxmlformats.org/drawingml/2006/main"
-PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture"
-REL = "http://schemas.openxmlformats.org/package/2006/relationships"
-CT = "http://schemas.openxmlformats.org/package/2006/content-types"
-XML = "http://www.w3.org/XML/1998/namespace"
-for prefix, uri in {"w": W, "r": R, "m": M, "wp": WP, "a": A,
-                    "pic": PIC}.items():
-    ET.register_namespace(prefix, uri)
+M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+XML_SPACE = "{http://www.w3.org/XML/1998/namespace}space"
+FONT = "Times New Roman"
+TEXT_W = 16.0  # cm: A4 trừ lề 2.5 hai bên
 
 
-def q(uri: str, name: str) -> str:
-    return f"{{{uri}}}{name}"
+# ------------------------------------------------------------------ LaTeX -> OMML
+GREEK = {"alpha": "α", "beta": "β", "gamma": "γ", "delta": "δ", "varepsilon": "ε", "tau": "τ", "chi": "χ",
+         "pi": "π", "sim": "∼", "in": "∈", "cdot": "·", "prime": "′"}
+SPACES = {"\\,": "\u2009", "\\;": "\u2005", "\\ ": "\u2005", "\\quad": "\u2003", "\\qquad": "\u2003\u2003"}
+ACCENT = {"hat": "\u0302", "widehat": "\u0302", "tilde": "\u0303", "widetilde": "\u0303", "bar": "\u0304"}
+STOP_OPERAND = {"+", "-", "=", ",", "\\sim", "\\quad", "\\qquad", "}", "\\right"}
 
 
-def el(parent: ET.Element, uri: str, name: str, attrs: dict | None = None,
-       value: str | None = None) -> ET.Element:
-    child = ET.SubElement(parent, q(uri, name), attrs or {})
-    child.text = value
-    return child
+def mel(tag: str, *children, **attrs) -> etree._Element:
+    e = etree.Element(f"{{{M_NS}}}{tag}")
+    for k, v in attrs.items():
+        e.set(f"{{{M_NS}}}{k}", v)
+    for c in children:
+        e.append(c)
+    return e
 
 
-def xml(root: ET.Element) -> bytes:
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+def mrun(text: str, plain: bool = False) -> etree._Element:
+    t = mel("t")
+    t.text = text
+    t.set(XML_SPACE, "preserve")
+    r = mel("r")
+    if plain:
+        r.append(mel("rPr", mel("sty", val="p")))
+    r.append(t)
+    return r
 
 
-def rpr(run: ET.Element, *, bold: bool = False, italic: bool = False,
-        size: int = 26, superscript: bool = False) -> None:
-    props = el(run, W, "rPr")
-    el(props, W, "rFonts", {q(W, "ascii"): "Times New Roman",
-                            q(W, "hAnsi"): "Times New Roman",
-                            q(W, "eastAsia"): "Times New Roman"})
-    el(props, W, "sz", {q(W, "val"): str(size)})
-    if bold:
-        el(props, W, "b")
-    if italic:
-        el(props, W, "i")
-    if superscript:
-        el(props, W, "vertAlign", {q(W, "val"): "superscript"})
-
-
-def add_run(paragraph: ET.Element, value: str, *, bold: bool = False,
-            italic: bool = False, size: int = 26) -> None:
-    run = el(paragraph, W, "r")
-    rpr(run, bold=bold, italic=italic, size=size)
-    el(run, W, "t", {q(XML, "space"): "preserve"}, value)
-
-
-INLINE = re.compile(r"(\[\^(\d+)\]|\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)")
-
-
-def inline(paragraph: ET.Element, value: str, footnotes: dict[int, str],
-           *, size: int = 26) -> None:
-    position = 0
-    for match in INLINE.finditer(value):
-        if match.start() > position:
-            add_run(paragraph, value[position:match.start()], size=size)
-        if match.group(2):
-            number = int(match.group(2))
-            if number not in footnotes:
-                raise ValueError(f"Footnote {number} has no definition")
-            run = el(paragraph, W, "r")
-            rpr(run, size=size, superscript=True)
-            el(run, W, "footnoteReference", {q(W, "id"): str(number)})
-        elif match.group(3):
-            add_run(paragraph, match.group(3), bold=True, size=size)
-        elif match.group(4):
-            add_run(paragraph, match.group(4), italic=True, size=size)
+def merge(items: list) -> list:
+    """Gộp các m:r liền nhau cùng kiểu chữ."""
+    out: list = []
+    for i in items:
+        prev = out[-1] if out else None
+        same = (prev is not None and prev.tag == i.tag == f"{{{M_NS}}}r"
+                and (prev.find(f"{{{M_NS}}}rPr") is None) == (i.find(f"{{{M_NS}}}rPr") is None))
+        if same:
+            prev.find(f"{{{M_NS}}}t").text += i.find(f"{{{M_NS}}}t").text
         else:
-            add_run(paragraph, match.group(5), size=size)
-        position = match.end()
-    if position < len(value):
-        add_run(paragraph, value[position:], size=size)
+            out.append(i)
+    return out
 
 
-def paragraph(parent: ET.Element, value: str, footnotes: dict[int, str],
-              *, style: str = "Normal", center: bool = False,
-              keep_next: bool = False, size: int = 26) -> ET.Element:
-    p = el(parent, W, "p")
-    props = el(p, W, "pPr")
-    el(props, W, "pStyle", {q(W, "val"): style})
-    if center:
-        el(props, W, "jc", {q(W, "val"): "center"})
-    if keep_next:
-        el(props, W, "keepNext")
-    inline(p, value, footnotes, size=size)
-    return p
+def box(tag: str, items: list) -> etree._Element:
+    return mel(tag, *merge(items))
 
 
-def styles() -> bytes:
-    root = ET.Element(q(W, "styles"))
-    for name, indent, size, bold, align in (
-        ("Normal", 720, 26, False, None),
-        ("Title", 0, 28, True, "center"),
-        ("Subtitle", 0, 26, False, "center"),
-        ("Heading1", 0, 26, True, None),
-        ("Caption", 0, 26, True, None),
-        ("TableText", 0, 20, False, None),
-        ("TableNote", 0, 20, False, None),
-        ("FootnoteText", 0, 20, False, None),
-    ):
-        style = el(root, W, "style", {q(W, "type"): "paragraph", q(W, "styleId"): name})
-        el(style, W, "name", {q(W, "val"): name})
-        ppr = el(style, W, "pPr")
-        el(ppr, W, "spacing", {q(W, "before"): "0", q(W, "after"): "0",
-                               q(W, "line"): "276", q(W, "lineRule"): "auto"})
-        el(ppr, W, "ind", {q(W, "firstLine"): str(indent)})
-        if align:
-            el(ppr, W, "jc", {q(W, "val"): align})
-        rp = el(style, W, "rPr")
-        el(rp, W, "rFonts", {q(W, "ascii"): "Times New Roman",
-                             q(W, "hAnsi"): "Times New Roman"})
-        el(rp, W, "sz", {q(W, "val"): str(size)})
-        if bold:
-            el(rp, W, "b")
-    return xml(root)
+class Tex:
+    """Bộ chuyển LaTeX con (đủ cho các phương trình của bài) sang OMML."""
+
+    def __init__(self, src: str):
+        self.t = re.findall(r"\\[A-Za-z]+|\\.|[{}^_]|\S", src)
+        self.i = 0
+
+    def peek(self):
+        return self.t[self.i] if self.i < len(self.t) else None
+
+    def next(self):
+        tok = self.peek()
+        self.i += 1
+        return tok
+
+    def seq(self, end: str | None = None) -> list:
+        out: list = []
+        while self.peek() is not None and self.peek() != end:
+            out.extend(self.item())
+        return out
+
+    def arg(self) -> list:
+        if self.peek() == "{":
+            self.next()
+            inner = self.seq("}")
+            self.next()
+            return inner
+        return self.atom()
+
+    def scripts(self) -> tuple[list | None, list | None]:
+        sub = sup = None
+        while self.peek() in ("_", "^"):
+            if self.next() == "_":
+                sub = self.arg()
+            else:
+                sup = self.arg()
+        return sub, sup
+
+    def item(self) -> list:
+        if self.peek() == "\\sum":
+            return self.nary()
+        base = self.atom()
+        sub, sup = self.scripts()
+        if sub is not None and sup is not None:
+            return [mel("sSubSup", box("e", base), box("sub", sub), box("sup", sup))]
+        if sub is not None:
+            return [mel("sSub", box("e", base), box("sub", sub))]
+        if sup is not None:
+            return [mel("sSup", box("e", base), box("sup", sup))]
+        return base
+
+    def nary(self) -> list:
+        self.next()
+        sub, sup = self.scripts()
+        operand = self.item()
+        while self.peek() is not None and self.peek() not in STOP_OPERAND:
+            operand += self.item()
+        pr = mel("naryPr", mel("chr", val="∑"), mel("limLoc", val="undOvr"))
+        return [mel("nary", pr, box("sub", sub or []), box("sup", sup or []), box("e", operand))]
+
+    def atom(self) -> list:
+        tok = self.next()
+        if tok == "{":
+            inner = self.seq("}")
+            self.next()
+            return inner
+        if tok == "\\left":
+            beg = self.next()
+            inner = self.seq("\\right")
+            self.next()
+            end = self.next()
+            pr = mel("dPr", mel("begChr", val=beg), mel("endChr", val=end))
+            return [mel("d", pr, box("e", inner))]
+        if tok == "\\frac":
+            return [mel("f", box("num", self.arg()), box("den", self.arg()))]
+        if tok == "\\sqrt":
+            return [mel("rad", mel("radPr", mel("degHide", val="1")), mel("deg"), box("e", self.arg()))]
+        if tok == "\\mathrm":
+            return [mrun("".join(x.findtext(f"{{{M_NS}}}t") or "" for x in merge(self.arg())), True)]
+        if tok in ("\\max", "\\min"):
+            return [mrun(tok[1:], True)]
+        if tok.startswith("\\") and tok[1:] in ACCENT:
+            return [mel("acc", mel("accPr", mel("chr", val=ACCENT[tok[1:]])), box("e", self.arg()))]
+        if tok in SPACES:
+            return [mrun(SPACES[tok])]
+        if tok.startswith("\\") and tok[1:] in GREEK:
+            return [mrun(GREEK[tok[1:]])]
+        if tok.startswith("\\"):
+            raise ValueError(f"LaTeX chưa hỗ trợ: {tok}")
+        return [mrun(tok, plain=not tok.isalpha())]
 
 
-def table(body: ET.Element, rows: list[list[str]], notes: dict[int, str]) -> None:
-    if not rows:
-        return
-    columns = max(map(len, rows))
-    tbl = el(body, W, "tbl")
-    props = el(tbl, W, "tblPr")
-    el(props, W, "tblW", {q(W, "w"): "9000", q(W, "type"): "dxa"})
-    el(props, W, "tblLayout", {q(W, "type"): "autofit"})
-    borders = el(props, W, "tblBorders")
-    for side in ("top", "bottom"):
-        el(borders, W, side, {q(W, "val"): "single", q(W, "sz"): "8",
-                              q(W, "color"): "000000"})
-    for side in ("left", "right", "insideH", "insideV"):
-        el(borders, W, side, {q(W, "val"): "nil"})
-    grid = el(tbl, W, "tblGrid")
-    for _ in range(columns):
-        el(grid, W, "gridCol", {q(W, "w"): str(9000 // columns)})
-    for index, cells in enumerate(rows):
-        tr = el(tbl, W, "tr")
-        trpr = el(tr, W, "trPr")
-        el(trpr, W, "cantSplit")
-        if index == 0:
-            el(trpr, W, "tblHeader", {q(W, "val"): "true"})
-        for cell_text in cells + [""] * (columns - len(cells)):
-            cell = el(tr, W, "tc")
-            if index == 0:
-                cp = el(cell, W, "tcPr")
-                cb = el(cp, W, "tcBorders")
-                el(cb, W, "bottom", {q(W, "val"): "single", q(W, "sz"): "6",
-                                      q(W, "color"): "000000"})
-            p = paragraph(cell, cell_text.strip(), notes, style="TableText", size=20)
-            if index == 0:
-                for run in p.findall(q(W, "r")):
-                    el(run.find(q(W, "rPr")), W, "b")
+def omml(latex: str) -> etree._Element:
+    return box("oMath", Tex(latex).seq())
 
 
-def equation(body: ET.Element, source: str, number: str) -> None:
-    p = el(body, W, "p")
-    ppr = el(p, W, "pPr")
-    el(ppr, W, "pStyle", {q(W, "val"): "Normal"})
-    el(ppr, W, "ind", {q(W, "firstLine"): "0"})
-    el(ppr, W, "jc", {q(W, "val"): "center"})
-    math = el(p, M, "oMath")
-    run = el(math, M, "r")
-    el(run, M, "t", value=source)
-    add_run(p, f"    ({number})")
+# ------------------------------------------------------------------ Word
+SUB = re.compile(r"(?<=[\w\u0300-\u036f])_(\{[^}]*\}|[A-Za-z0-9](?!\w))")
+TOKEN = re.compile(r"\[\^(\w+)\]|\*\*(.+?)\*\*|\*(.+?)\*")
+ALIGN = {"l": WD_ALIGN_PARAGRAPH.LEFT, "c": WD_ALIGN_PARAGRAPH.CENTER, "r": WD_ALIGN_PARAGRAPH.RIGHT}
 
 
-def image(body: ET.Element, source: Path, rel_id: str, description: str) -> None:
-    data = source.read_bytes()
-    if data[:8] != b"\x89PNG\r\n\x1a\n":
-        raise ValueError(f"Only PNG figures are supported: {source}")
-    width, height = struct.unpack(">II", data[16:24])
-    cx = 5_600_000
-    cy = round(cx * height / width)
-    p = el(body, W, "p")
-    props = el(p, W, "pPr")
-    el(props, W, "jc", {q(W, "val"): "center"})
-    run = el(p, W, "r")
-    drawing = el(run, W, "drawing")
-    inline_shape = el(drawing, WP, "inline")
-    el(inline_shape, WP, "extent", {"cx": str(cx), "cy": str(cy)})
-    el(inline_shape, WP, "docPr", {"id": rel_id[3:], "name": description})
-    graphic = el(inline_shape, A, "graphic")
-    graphic_data = el(graphic, A, "graphicData", {"uri": PIC})
-    picture = el(graphic_data, PIC, "pic")
-    nonvisual = el(picture, PIC, "nvPicPr")
-    el(nonvisual, PIC, "cNvPr", {"id": "0", "name": source.name})
-    el(nonvisual, PIC, "cNvPicPr")
-    fill = el(picture, PIC, "blipFill")
-    el(fill, A, "blip", {q(R, "embed"): rel_id})
-    stretch = el(fill, A, "stretch")
-    el(stretch, A, "fillRect")
-    shape = el(picture, PIC, "spPr")
-    transform = el(shape, A, "xfrm")
-    el(transform, A, "off", {"x": "0", "y": "0"})
-    el(transform, A, "ext", {"cx": str(cx), "cy": str(cy)})
-    geometry = el(shape, A, "prstGeom", {"prst": "rect"})
-    el(geometry, A, "avLst")
+def set_fonts(rpr) -> None:
+    fonts = rpr.find(qn("w:rFonts"))
+    if fonts is None:
+        fonts = OxmlElement("w:rFonts")
+        rpr.insert(0, fonts)
+    for a in ("ascii", "hAnsi", "eastAsia", "cs"):
+        fonts.set(qn(f"w:{a}"), FONT)
 
 
-def footnotes_part(notes: dict[int, str]) -> bytes:
-    root = ET.Element(q(W, "footnotes"))
-    for number, kind in ((-1, "separator"), (0, "continuationSeparator")):
-        item = el(root, W, "footnote", {q(W, "type"): kind, q(W, "id"): str(number)})
-        p = el(item, W, "p")
-        run = el(p, W, "r")
-        el(run, W, kind)
-    for number, content in sorted(notes.items()):
-        item = el(root, W, "footnote", {q(W, "id"): str(number)})
-        p = el(item, W, "p")
-        ppr = el(p, W, "pPr")
-        el(ppr, W, "pStyle", {q(W, "val"): "FootnoteText"})
-        ref = el(p, W, "r")
-        rpr(ref, size=20, superscript=True)
-        el(ref, W, "footnoteRef")
-        add_run(p, " ", size=20)
-        inline(p, content, notes, size=20)
-    return xml(root)
-
-
-def header_part() -> bytes:
-    root = ET.Element(q(W, "hdr"))
-    p = el(root, W, "p")
-    props = el(p, W, "pPr")
-    el(props, W, "jc", {q(W, "val"): "center"})
-    run = el(p, W, "r")
-    rpr(run, size=20)
-    el(run, W, "fldChar", {q(W, "fldCharType"): "begin"})
-    run = el(p, W, "r")
-    el(run, W, "instrText", {q(XML, "space"): "preserve"}, " PAGE ")
-    run = el(p, W, "r")
-    el(run, W, "fldChar", {q(W, "fldCharType"): "separate"})
-    add_run(p, "1", size=20)
-    run = el(p, W, "r")
-    el(run, W, "fldChar", {q(W, "fldCharType"): "end"})
-    return xml(root)
-
-
-def parse(source: str) -> tuple[list[tuple[str, object]], dict[int, str]]:
-    notes: dict[int, str] = {}
-    lines = []
-    for line in source.splitlines():
-        match = re.match(r"^\[\^(\d+)\]:\s*(.*)$", line)
-        if match:
-            notes[int(match.group(1))] = match.group(2)
+def style_document(doc) -> None:
+    s = doc.sections[0]
+    s.page_width, s.page_height, s.orientation = Cm(21), Cm(29.7), WD_ORIENT.PORTRAIT
+    s.left_margin = s.right_margin = s.top_margin = s.bottom_margin = Cm(2.5)
+    s.header_distance = Cm(1.25)
+    normal = doc.styles["Normal"]
+    normal.font.name, normal.font.size = FONT, Pt(13)
+    rpr = normal.element.get_or_add_rPr()
+    set_fonts(rpr)
+    lang = OxmlElement("w:lang")
+    lang.set(qn("w:val"), "vi-VN")
+    lang.set(qn("w:eastAsia"), "vi-VN")
+    rpr.append(lang)
+    pf = normal.paragraph_format
+    pf.space_before = pf.space_after = Pt(0)
+    pf.line_spacing = 1.15
+    pf.first_line_indent = Cm(1.27)
+    pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    pf.widow_control = True
+    h = doc.styles["Heading 1"]
+    h.font.name, h.font.size, h.font.bold, h.font.italic = FONT, Pt(13), True, False
+    h.font.color.rgb = None
+    set_fonts(h.element.get_or_add_rPr())
+    hp = h.paragraph_format
+    hp.first_line_indent, hp.alignment, hp.keep_with_next = Cm(0), WD_ALIGN_PARAGRAPH.LEFT, True
+    hp.space_before = hp.space_after = Pt(0)
+    p = s.header.paragraphs[0]
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.first_line_indent = Cm(0)
+    for kind, text in (("begin", None), (None, " PAGE "), ("end", None)):
+        r = p.add_run()
+        r.font.size = Pt(11)
+        if kind:
+            f = OxmlElement("w:fldChar")
+            f.set(qn("w:fldCharType"), kind)
         else:
-            lines.append(line)
-    blocks: list[tuple[str, object]] = []
-    i = 0
-    while i < len(lines):
-        line = lines[i].strip()
-        if not line:
+            f = OxmlElement("w:instrText")
+            f.set(XML_SPACE, "preserve")
+            f.text = text
+        r._r.append(f)
+
+
+class Writer:
+    def __init__(self, doc, notes: dict[str, str]):
+        self.doc, self.notes, self.order = doc, notes, []
+
+    def run(self, p, text, size=None, bold=False, italic=False, sup=False, sub=False):
+        r = p.add_run(text)
+        set_fonts(r._r.get_or_add_rPr())
+        r.bold, r.italic = bold or None, italic or None
+        r.font.size = Pt(size) if size else None
+        r.font.superscript, r.font.subscript = sup or None, sub or None
+        return r
+
+    def plain(self, p, text, size=None, bold=False, italic=False, subscripts=True):
+        pos = 0
+        for m in SUB.finditer(text) if subscripts else ():
+            self.run(p, text[pos:m.start()], size, bold, italic)
+            self.run(p, m.group(1).strip("{}"), size, bold, italic, sub=True)
+            pos = m.end()
+        self.run(p, text[pos:], size, bold, italic)
+
+    def inline(self, p, text, size=None, subscripts=True):
+        pos = 0
+        for m in TOKEN.finditer(text):
+            self.plain(p, text[pos:m.start()], size, subscripts=subscripts)
+            if m.group(1):
+                self.footnote_ref(p, m.group(1))
+            else:
+                self.plain(p, m.group(2) or m.group(3), size, bold=bool(m.group(2)),
+                           italic=bool(m.group(3)), subscripts=subscripts)
+            pos = m.end()
+        self.plain(p, text[pos:], size, subscripts=subscripts)
+
+    def footnote_ref(self, p, key):
+        if key not in self.order:
+            self.order.append(key)
+        r = p.add_run()
+        r.font.superscript = True
+        ref = OxmlElement("w:footnoteReference")
+        ref.set(qn("w:id"), str(self.order.index(key) + 1))
+        r._r.append(ref)
+
+    def para(self, text, *, hanging=False, subscripts=True):
+        p = self.doc.add_paragraph()
+        if hanging:
+            pf = p.paragraph_format
+            pf.left_indent, pf.first_line_indent = Cm(1.27), Cm(-1.27)
+            pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        self.inline(p, text, subscripts=subscripts)
+
+    def flat(self, align=WD_ALIGN_PARAGRAPH.LEFT, after=0, keep=False, spacing=None, before=0):
+        p = self.doc.add_paragraph()
+        pf = p.paragraph_format
+        pf.first_line_indent, pf.alignment, pf.space_after = Cm(0), align, Pt(after)
+        pf.space_before = Pt(before)
+        pf.keep_with_next = keep or None
+        if spacing:
+            pf.line_spacing = spacing
+        return p
+
+    def equation(self, source):
+        number = re.search(r"\\tag\{(\d+)\}", source).group(1)
+        p = self.flat(keep=False)
+        p.paragraph_format.tab_stops.add_tab_stop(Cm(TEXT_W / 2), WD_TAB_ALIGNMENT.CENTER)
+        p.paragraph_format.tab_stops.add_tab_stop(Cm(TEXT_W), WD_TAB_ALIGNMENT.RIGHT)
+        p.add_run("\t")
+        p._p.append(omml(re.sub(r"\\tag\{\d+\}", "", source).strip()))
+        p.add_run(f"\t({number})")
+
+    def note(self, text):
+        p = self.flat(WD_ALIGN_PARAGRAPH.JUSTIFY, after=8)
+        self.run(p, "Ghi chú.", 11, italic=True)
+        self.run(p, text[len("*Ghi chú.*"):], 11)
+
+    def caption(self, label, title):
+        self.run(self.flat(keep=True, before=8), label, bold=True)
+        self.run(self.flat(keep=True), title, italic=True)
+
+    def image(self, alt, path):
+        from PIL import Image
+        file = (ROOT / "paper" / path).resolve()
+        w, h = Image.open(file).size
+        p = self.flat(WD_ALIGN_PARAGRAPH.CENTER, keep=True)
+        p.add_run().add_picture(str(file), width=Cm(min(15.0, 9.5 * w / h)))
+        for d in p._p.iter("{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}docPr"):
+            d.set("descr", alt)
+
+    def table(self, lines):
+        rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in lines]
+        align = ["r" if c.endswith(":") and not c.startswith(":") else "c" if c.startswith(":") else "l"
+                 for c in rows[1]]
+        rows = [rows[0]] + rows[2:]
+        n = len(rows[0])
+        size = 11 if n <= 6 else 9.5
+        head = [max(len(x) for x in r.split()) for r in rows[0]]
+        weight = [max(min(max(len(r[j]) for r in rows[1:]), 40), head[j]) + 5 for j in range(n)]
+        widths = [TEXT_W * x / sum(weight) for x in weight]
+        t = self.doc.add_table(rows=len(rows), cols=n)
+        t.autofit = False
+        layout = OxmlElement("w:tblLayout")
+        layout.set(qn("w:type"), "fixed")
+        t._tbl.tblPr.append(layout)
+        margins = OxmlElement("w:tblCellMar")
+        for side, w in (("top", "30"), ("left", "60"), ("bottom", "30"), ("right", "60")):
+            m = OxmlElement(f"w:{side}")
+            m.set(qn("w:w"), w)
+            m.set(qn("w:type"), "dxa")
+            margins.append(m)
+        t._tbl.tblPr.append(margins)
+        last = len(rows) - 1
+        for i, row in enumerate(rows):
+            trpr = t.rows[i]._tr.get_or_add_trPr()
+            trpr.append(OxmlElement("w:cantSplit"))
+            if i == 0:
+                trpr.append(OxmlElement("w:tblHeader"))
+            for j, text in enumerate(row):
+                cell = t.cell(i, j)
+                cell.width = Cm(widths[j])
+                self.borders(cell, top=i == 0, bottom=i in (0, last))
+                p = cell.paragraphs[0]
+                pf = p.paragraph_format
+                pf.first_line_indent, pf.line_spacing = Cm(0), 1.0
+                pf.keep_with_next = i < last or None
+                pf.alignment = ALIGN["c" if i == 0 and j else align[j]]
+                panel = re.fullmatch(r"\*\*(.+)\*\*", text)
+                stars = None if panel else re.search(r"\*+$", text)
+                self.plain(p, panel.group(1) if panel else text[:stars.start()] if stars else text, size,
+                           bold=i == 0 or bool(panel))
+                if stars:
+                    self.run(p, stars.group(0), size, sup=True)
+        for j, w in enumerate(widths):
+            t.columns[j].width = Cm(w)
+
+    @staticmethod
+    def borders(cell, top, bottom):
+        b = OxmlElement("w:tcBorders")
+        for side, on, sz in (("top", top, "8"), ("bottom", bottom, "4" if top else "8")):
+            if on:
+                e = OxmlElement(f"w:{side}")
+                for k, v in (("val", "single"), ("sz", sz), ("color", "000000")):
+                    e.set(qn(f"w:{k}"), v)
+                b.append(e)
+        cell._tc.get_or_add_tcPr().append(b)
+
+    def title_block(self, fm):
+        email = fm["email"] or "[email tác giả liên hệ]"
+        for text, size, bold, italic, after in (
+                (fm["title_vi"], 15, True, False, 6), (fm["title_en"], 14, True, False, 8),
+                (fm["author"], 13, True, False, 4), (fm["affiliation"], 11, False, True, 2),
+                (f"Tác giả liên hệ, Email: {email}", 11, False, True, 10)):
+            self.run(self.flat(WD_ALIGN_PARAGRAPH.CENTER, after), text, size, bold=bold, italic=italic)
+
+    def frame(self, fm, abstracts):
+        t = self.doc.add_table(rows=1, cols=2)
+        t.autofit = False
+        left, right = t.cell(0, 0), t.cell(0, 1)
+        left.width, right.width = Cm(4.6), Cm(TEXT_W - 4.6)
+        pairs = [("THÔNG TIN", ""), ("DOI:", fm["doi"]), ("Ngày nhận:", fm["received"]),
+                 ("Ngày nhận lại:", fm["revised"]), ("Duyệt đăng:", fm["accepted"]),
+                 ("Mã phân loại JEL:", fm["jel"]), ("Từ khóa:", fm["keywords_vi"]),
+                 ("Keywords:", fm["keywords_en"])]
+
+        def cell_par(cell, first, align=WD_ALIGN_PARAGRAPH.LEFT):
+            p = cell.paragraphs[0] if first else cell.add_paragraph()
+            pf = p.paragraph_format
+            pf.first_line_indent, pf.line_spacing, pf.space_after, pf.alignment = Cm(0), 1.0, Pt(4), align
+            return p
+
+        first = True
+        for label, value in pairs:
+            p = cell_par(left, first)
+            first = False
+            self.run(p, label, 11, bold=not value and label == "THÔNG TIN")
+            if value and len(label) + len(value) < 24:
+                self.run(p, " " + value, 11)
+            elif value:
+                self.run(cell_par(left, False), value, 11)
+        first = True
+        for head, body in abstracts:
+            self.run(cell_par(right, first), head, 11, bold=True)
+            first = False
+            self.inline(cell_par(right, False, WD_ALIGN_PARAGRAPH.JUSTIFY), body, 11)
+        self.flat()
+
+
+def footnotes_part(package, notes: dict[str, str], order: list[str]) -> Part:
+    root = etree.fromstring(f'<w:footnotes {nsdecls("w")}/>'.encode())
+    sub = etree.SubElement
+
+    def add(fid: int, kind: str | None = None) -> etree._Element:
+        fn = sub(root, qn("w:footnote"))
+        fn.set(qn("w:id"), str(fid))
+        if kind:
+            fn.set(qn("w:type"), kind)
+        p = sub(fn, qn("w:p"))
+        ppr = sub(p, qn("w:pPr"))
+        sp = sub(ppr, qn("w:spacing"))
+        for k, v in (("before", "0"), ("after", "0"), ("line", "240"), ("lineRule", "auto")):
+            sp.set(qn(f"w:{k}"), v)
+        sub(ppr, qn("w:ind")).set(qn("w:firstLine"), "0")
+        sub(ppr, qn("w:jc")).set(qn("w:val"), "both")
+        return p
+
+    def run(p, text=None, tag=None, vert=None):
+        r = sub(p, qn("w:r"))
+        rpr = sub(r, qn("w:rPr"))
+        fonts = sub(rpr, qn("w:rFonts"))
+        for a in ("ascii", "hAnsi", "eastAsia", "cs"):
+            fonts.set(qn(f"w:{a}"), FONT)
+        sub(rpr, qn("w:sz")).set(qn("w:val"), "20")
+        if vert:
+            sub(rpr, qn("w:vertAlign")).set(qn("w:val"), vert)
+        if tag:
+            sub(r, qn(tag))
+        if text:
+            t = sub(r, qn("w:t"))
+            t.text = text
+            t.set(XML_SPACE, "preserve")
+
+    sub(add(-1, "separator"), qn("w:r")).append(etree.Element(qn("w:separator")))
+    sub(add(0, "continuationSeparator"), qn("w:r")).append(etree.Element(qn("w:continuationSeparator")))
+    for i, key in enumerate(order, 1):
+        p = add(i)
+        run(p, tag="w:footnoteRef", vert="superscript")
+        text, pos = " " + notes[key], 0
+        for m in SUB.finditer(text):
+            run(p, text[pos:m.start()])
+            run(p, m.group(1).strip("{}"), vert="subscript")
+            pos = m.end()
+        run(p, text[pos:])
+    blob = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+    return Part(PackURI("/word/footnotes.xml"),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml", blob, package)
+
+
+def parse_front(text: str) -> tuple[dict, str]:
+    m = re.match(r"---\n(.*?)\n---\n", text, re.S)
+    fm = {k.strip(): v.strip() for k, _, v in (ln.partition(":") for ln in m.group(1).split("\n"))}
+    return fm, text[m.end():]
+
+
+def build(filled: str, output: Path) -> None:
+    fm, body = parse_front(filled)
+    notes = dict(re.findall(r"^\[\^(\w+)\]: (.*)$", body, re.M))
+    body = re.sub(r"^\[\^\w+\]: .*$", "", body, flags=re.M)
+    blocks = [b.strip("\n") for b in re.split(r"\n\s*\n", body) if b.strip()]
+    doc = Document()
+    style_document(doc)
+    w = Writer(doc, notes)
+    heads = [i for i, b in enumerate(blocks) if b.startswith("## ")]
+    w.title_block(fm)
+    w.frame(fm, [(blocks[i][3:], blocks[i + 1]) for i in heads[:2]])
+    in_refs, i = False, heads[2]
+    while i < len(blocks):
+        b = blocks[i]
+        if b.startswith("## "):
+            in_refs = b == "## Tài liệu tham khảo"
+            doc.add_paragraph(b[3:], style="Heading 1")
+        elif b.startswith("$$"):
+            w.equation(b.strip("$").strip())
+        elif b.startswith("|"):
+            w.table(b.split("\n"))
+        elif re.fullmatch(r"\*\*(Bảng|Hình) \d+\*\*", b):
+            w.caption(b.strip("*"), blocks[i + 1].strip("*"))
             i += 1
-            continue
-        if line.startswith("| "):
-            rows: list[list[str]] = []
-            while i < len(lines) and lines[i].strip().startswith("|"):
-                candidate = [c.strip() for c in lines[i].strip().strip("|").split("|")]
-                if not all(re.fullmatch(r":?-{3,}:?", c or "") for c in candidate):
-                    rows.append(candidate)
-                i += 1
-            blocks.append(("table", rows))
-            continue
-        if line.startswith("$$"):
-            match = re.fullmatch(r"\$\$\s*(.*?)\s*\\tag\{(\d+)\}\s*\$\$", line)
-            if not match:
-                raise ValueError(f"Equation needs \\tag{{n}}: {line}")
-            blocks.append(("equation", match.groups()))
-            i += 1
-            continue
-        image_match = re.fullmatch(r"!\[(.*?)\]\((.*?)\)", line)
-        if image_match:
-            blocks.append(("image", image_match.groups()))
-            i += 1
-            continue
-        if line.startswith("# "):
-            blocks.append(("title", line[2:]))
-        elif line.startswith("## "):
-            blocks.append(("heading", line[3:]))
-        elif re.fullmatch(r"Bảng \d+", line):
-            blocks.append(("caption", line))
-        elif re.fullmatch(r"Hình \d+\. .*", line):
-            blocks.append(("figure_caption", line))
-        elif line.startswith("Ghi chú."):
-            blocks.append(("note", line))
+        elif b.startswith("!["):
+            w.image(*re.match(r"!\[(.*?)\]\((.*?)\)", b).groups())
+        elif b.startswith("*Ghi chú.*"):
+            w.note(b)
         else:
-            blocks.append(("paragraph", line))
+            w.para(b.replace("\n", " "), hanging=in_refs, subscripts=not in_refs)
         i += 1
-    return blocks, notes
-
-
-def document_part(blocks: list[tuple[str, object]], notes: dict[int, str],
-                  figure_paths: list[Path]) -> bytes:
-    root = ET.Element(q(W, "document"))
-    body = el(root, W, "body")
-    after_title = 0
-    image_number = 0
-    for kind, value in blocks:
-        if kind == "table":
-            table(body, value, notes)
-        elif kind == "equation":
-            equation(body, *value)
-        elif kind == "image":
-            description, _ = value
-            image_number += 1
-            image(body, figure_paths[image_number - 1], f"rId{image_number + 3}", description)
-        elif kind == "title":
-            paragraph(body, value, notes, style="Title", center=True, keep_next=True)
-            after_title = 4
-        elif kind == "heading":
-            paragraph(body, value, notes, style="Heading1", keep_next=True)
-        elif kind == "caption":
-            paragraph(body, value, notes, style="Caption", keep_next=True)
-        elif kind == "figure_caption":
-            paragraph(body, value, notes, style="Caption", center=True)
-        elif kind == "note":
-            paragraph(body, value, notes, style="TableNote", size=20)
-        else:
-            centered = after_title > 0
-            paragraph(body, value, notes, style="Subtitle" if centered else "Normal",
-                      center=centered, keep_next=centered)
-            if centered:
-                after_title -= 1
-    section = el(body, W, "sectPr")
-    el(section, W, "headerReference", {q(W, "type"): "default", q(R, "id"): "rId1"})
-    el(section, W, "pgSz", {q(W, "w"): "11906", q(W, "h"): "16838"})
-    el(section, W, "pgMar", {q(W, "top"): "1440", q(W, "right"): "1300",
-                             q(W, "bottom"): "1440", q(W, "left"): "1300",
-                             q(W, "header"): "500", q(W, "footer"): "500"})
-    return xml(root)
+    doc.part.relate_to(footnotes_part(doc.part.package, notes, w.order), RT.FOOTNOTES)
+    cp = doc.core_properties
+    cp.title, cp.author, cp.language = fm["title_vi"], fm["author"], "vi-VN"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    doc.save(output)
 
 
 def package(source: Path, output: Path) -> None:
-    blocks, notes = parse(source.read_text(encoding="utf-8"))
-    figure_paths = [(source.parent / path).resolve() for kind, value in blocks
-                    if kind == "image" for _, path in [value]]
-    content_types = ET.Element(q(CT, "Types"))
-    for ext, kind in (("rels", "application/vnd.openxmlformats-package.relationships+xml"),
-                      ("xml", "application/xml"), ("png", "image/png")):
-        el(content_types, CT, "Default", {"Extension": ext, "ContentType": kind})
-    for part, kind in (("document.xml", "wordprocessingml.document.main+xml"),
-                       ("styles.xml", "wordprocessingml.styles+xml"),
-                       ("header1.xml", "wordprocessingml.header+xml"),
-                       ("footnotes.xml", "wordprocessingml.footnotes+xml")):
-        el(content_types, CT, "Override", {"PartName": "/word/" + part,
-                                           "ContentType": "application/vnd.openxmlformats-officedocument." + kind})
-    root_rels = ET.Element(q(REL, "Relationships"))
-    el(root_rels, REL, "Relationship", {"Id": "rId1", "Type": R + "/officeDocument",
-                                        "Target": "word/document.xml"})
-    doc_rels = ET.Element(q(REL, "Relationships"))
-    for ident, role, target in (("rId1", "header", "header1.xml"),
-                                ("rId2", "styles", "styles.xml"),
-                                ("rId3", "footnotes", "footnotes.xml")):
-        el(doc_rels, REL, "Relationship", {"Id": ident, "Type": R + "/" + role,
-                                           "Target": target})
-    for index, _ in enumerate(figure_paths, 1):
-        el(doc_rels, REL, "Relationship", {"Id": f"rId{index + 3}",
-            "Type": R + "/image", "Target": f"media/image{index}.png"})
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with ZipFile(output, "w", ZIP_DEFLATED) as archive:
-        parts = {
-            "[Content_Types].xml": xml(content_types),
-            "_rels/.rels": xml(root_rels),
-            "word/document.xml": document_part(blocks, notes, figure_paths),
-            "word/styles.xml": styles(),
-            "word/header1.xml": header_part(),
-            "word/footnotes.xml": footnotes_part(notes),
-            "word/_rels/document.xml.rels": xml(doc_rels),
-        }
-        for name, data in parts.items():
-            archive.writestr(name, data)
-        for index, figure in enumerate(figure_paths, 1):
-            archive.write(figure, f"word/media/image{index}.png")
+    """Điền số liệu vào khuôn `source` rồi xuất Word."""
+    filled, _ = fill_results.render(Path(source).read_text(encoding="utf-8"),
+                                    fill_results.parse_bib(fill_results.BIB))
+    build(filled, Path(output))
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=ROOT / "paper" / "paper.md")
-    parser.add_argument("--output", type=Path, default=ROOT / "paper" / "paper.docx")
-    args = parser.parse_args()
-    package(args.source, args.output)
-    print(args.output)
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--source", type=Path, default=ROOT / "paper" / "paper.md")
+    ap.add_argument("--output", type=Path, default=ROOT / "paper" / "paper.docx")
+    a = ap.parse_args()
+    package(a.source, a.output)
+    print(f"Đã ghi {a.output}")
 
 
 if __name__ == "__main__":
