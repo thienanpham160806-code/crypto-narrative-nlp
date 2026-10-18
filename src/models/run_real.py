@@ -1,5 +1,6 @@
 """Run the real analysis once, or after a stable upstream rebuild sentinel."""
 import argparse
+import ctypes
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -33,6 +34,15 @@ def utc(value):
     if parsed.tzinfo is None:
         raise ValueError('finished_utc must include UTC timezone')
     return parsed.astimezone(timezone.utc)
+
+
+def hold_awake(active, setter=None):
+    """Temporarily inhibit Windows idle sleep until the full rebuild is analyzed."""
+    if os.name != 'nt':
+        return
+    setter = setter or ctypes.windll.kernel32.SetThreadExecutionState
+    if not setter(0x80000000 | (0x00000001 if active else 0)):
+        logging.warning('Could not update Windows execution state')
 
 
 def stable_snapshot(sentinel, text_path, documents_path, run_done, allow_partial=False):
@@ -210,6 +220,8 @@ def watch(poll_seconds=120, allow_partial=False):
                         format='%(asctime)s %(levelname)s %(message)s', force=True)
     logging.info('Watcher started pid=%s poll=%ss allow_partial=%s', os.getpid(),
                  poll_seconds, allow_partial)
+    if not (output/'RUN_DONE.json').is_file():
+        hold_awake(True)
     previous = None
     while True:
         candidate, reason = stable_snapshot(ROOT/'data/processed/REBUILD_DONE.json',
@@ -225,6 +237,8 @@ def watch(poll_seconds=120, allow_partial=False):
                 run_cycle(candidate, output)
             except Exception:
                 logging.exception('Run cycle failed before RUN_DONE; retrying next poll')
+            if (output/'RUN_DONE.json').is_file():
+                hold_awake(False)
             previous = None
         else:
             logging.info('First stable poll: %s; checking again', candidate['finished_utc'])

@@ -1,7 +1,10 @@
 """Rebuild handshake must reject stale, mismatched, and moving inputs."""
 from datetime import datetime, timedelta, timezone
 import json
+import os
 import subprocess
+
+import pytest
 
 from src.models import run_real
 
@@ -101,3 +104,11 @@ def test_publish_fast_forward_with_other_agent_work(tmp_path, monkeypatch):
     assert any('push' in command for command in commands)
     assert (output/'PUBLISH_DONE.json').exists()
     assert 'real/ chạy lại trên 100.00%' in (tmp_path/'docs/PROGRESS.md').read_text(encoding='utf-8')
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows execution state only')
+def test_sleep_inhibition_is_released_after_run():
+    flags = []
+    run_real.hold_awake(True, setter=lambda value: flags.append(value) or 1)
+    run_real.hold_awake(False, setter=lambda value: flags.append(value) or 1)
+    assert flags == [0x80000001, 0x80000000]
