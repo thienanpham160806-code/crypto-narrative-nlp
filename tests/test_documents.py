@@ -1,7 +1,7 @@
 """C1: thu thập + hợp nhất documents. Không cần mạng: HTTP được giả lập."""
 import json, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
-import pandas as pd
+import pandas as pd, pytest
 from data import news_gdelt, news_rss, news_sec, build_documents as bd
 
 UTC = lambda s: pd.Timestamp(s, tz="UTC")
@@ -197,3 +197,20 @@ def test_norm_url_keeps_identity_query_and_drops_tracking():
     assert bd.norm_url("https://News.com/article?id=100") != bd.norm_url("https://news.com/article?id=101")
     assert bd.norm_url("https://www.News.com/Path/?utm_source=x&id=7") == bd.norm_url("http://news.com/Path?id=7&fbclid=z")
     assert bd.norm_url("https://news.com/Path") != bd.norm_url("https://news.com/path")
+
+
+def test_http_client_rebuilds_session_after_connection_error(monkeypatch):
+    import requests
+    from utils.http import Client
+    c = Client(rps=1000)
+    first, calls = c.s, []
+
+    def boom(self, url, **kw):
+        calls.append(self)
+        raise requests.exceptions.SSLError("ssl")
+    monkeypatch.setattr(requests.Session, "get", boom)
+    monkeypatch.setattr("tenacity.nap.time.sleep", lambda s: None)
+    with pytest.raises(requests.exceptions.SSLError):
+        c.get("https://x.test/a")
+    assert len(calls) == 5 and len({id(x) for x in calls}) == 5          # mỗi lần thử một phiên mới
+    assert c.s is not first and c.s.headers["User-Agent"].startswith("UEL-Fintech")
