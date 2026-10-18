@@ -52,7 +52,7 @@ Các bằng chứng ngoài mẫu cũng chưa đồng nhất. Garcia và Schweitz
 
 ## 3. Phương pháp nghiên cứu
 
-Mẫu thiết kế gồm BTC, ETH, SOL, BNB và XRP trong khoảng ngày 01/01/2023 đến 30/09/2026 theo giờ UTC. Giá đóng cửa và khối lượng USD lấy từ nến ngày và nến giờ Binance; lợi suất là sai phân log giá đóng cửa, còn biến động thực hiện (realized volatility, RV) là tổng bình phương lợi suất log theo giờ (Andersen & Bollerslev, 1998). Tin chính là văn bản tiếng Anh từ GDELT GKG, với hồ sơ SEC dùng riêng cho nghiên cứu sự kiện. Chỉ giữ bản canonical sau khử trùng; tin không gắn mã được gán BTC trong phân tích sự kiện, còn chỉ số ngày theo mã chỉ lấy tin gắn mã tương ứng. Mẫu được chia kỳ huấn luyện đến 30/06/2025, xác thực đến 31/12/2025 và kiểm tra từ 01/01/2026; đầu ra ngày t chỉ dùng tin có `public_ts_utc` trước 00:00 UTC ngày t+1.[^1]
+Mẫu thiết kế gồm BTC, ETH, SOL, BNB và XRP trong khoảng ngày 01/01/2023 đến 30/09/2026 theo giờ UTC. Giá đóng cửa và khối lượng USD lấy từ nến ngày và nến giờ Binance; lợi suất là sai phân log giá đóng cửa, còn biến động thực hiện (realized volatility, RV) là tổng bình phương lợi suất log theo giờ (Andersen & Bollerslev, 1998). Tin chính là văn bản tiếng Anh từ GDELT GKG, với hồ sơ SEC dùng riêng cho nghiên cứu sự kiện. Chỉ giữ bản canonical sau khử trùng; tin không gắn mã được gán BTC trong phân tích sự kiện, còn chỉ số ngày theo mã chỉ lấy tin gắn mã tương ứng. Khi ghép dữ liệu cho mô hình dự báo, ngày không có tin gắn mã nhưng corpus chung có tin dùng chỉ số chung `ALL` làm tín hiệu thay thế; ngày corpus trống vẫn là thiếu dữ liệu. Vì vậy, số ngày dùng cho mô hình có thể lớn hơn số ngày có tin gắn trực tiếp với một tài sản. Mẫu được chia kỳ huấn luyện đến 30/06/2025, xác thực đến 31/12/2025 và kiểm tra từ 01/01/2026; đầu ra ngày t chỉ dùng tin có `public_ts_utc` trước 00:00 UTC ngày t+1.[^1]
 
 Thời điểm ra công chúng `public_ts_utc` là giờ đăng hợp lệ sớm hơn giờ hệ thống nhìn thấy, hoặc là giờ nhìn thấy nếu không xác minh được giờ đăng. Giờ đăng chỉ hợp lệ khi không muộn hơn giờ nhìn thấy, không sớm hơn quá 48 giờ và cùng ngày UTC; quy tắc cuối tránh đưa bản văn có thể đã sửa ở ngày sau về ngày trước. Kiểm tra 42 cặp GDELT có cả giờ đăng và giờ thấy cho độ trễ tuyệt đối trung vị của `seendate` là 141,5 phút. Vì vậy, việc dùng ngày GDELT thấy như ngày đăng có thể đổi cả cửa sổ sự kiện và ngày của biến giải thích. Nghiên cứu giữ đồng hồ gốc và so hai cách gán giờ trên cùng tập tin có đủ hai mốc.
 
@@ -123,23 +123,23 @@ Ghi chú. Mỗi cặp tin–tài sản có trọng số như nhau; khác với t
 
 ## 4. Kết quả nghiên cứu và thảo luận
 
-Trước khi diễn giải hệ số, nghiên cứu xem xét phạm vi dữ liệu thật đã có. Bảng 3 trình bày độ phủ văn bản và số ngày dùng được trong đặc tả chính. Đây là mẫu tin đang thu tiếp, không phải toàn bộ tin từng xuất hiện trên thị trường.
+Trước khi diễn giải hệ số, nghiên cứu xem xét phạm vi dữ liệu thật đã có. Bảng 3 trình bày riêng số ngày có tin gắn từng mã và số ngày dùng được trong đặc tả chính. Đây là mẫu tin đang thu tiếp, không phải toàn bộ tin từng xuất hiện trên thị trường.
 
 Bảng 3
 
-Độ Phủ Tin Và Số Ngày Hợp Lệ Theo Tài Sản
+Độ Phủ Tin Gắn Mã Và Số Ngày Hợp Lệ Theo Tài Sản
 
-| Tài sản | Ngày lịch | Ngày có tin | Tỷ lệ có tin (%) | Ngày mô hình | Train | Valid | Test |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| BTC | 1.369 | 339 | 24,76 | 335 | 229 | 47 | 59 |
-| ETH | 1.369 | 339 | 24,76 | 317 | 219 | 46 | 52 |
-| SOL | 1.369 | 339 | 24,76 | 254 | 183 | 34 | 37 |
-| BNB | 1.369 | 339 | 24,76 | 212 | 144 | 31 | 37 |
-| XRP | 1.369 | 339 | 24,76 | 286 | 194 | 47 | 45 |
+| Tài sản | Ngày lịch | Ngày tin gắn mã | Tỷ lệ tin gắn mã (%) | Ngày mô hình | Dùng ALL | Train | Valid | Test |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| BTC | 1.369 | 338 | 24,69 | 335 | 1 | 229 | 47 | 59 |
+| ETH | 1.369 | 327 | 23,89 | 317 | 12 | 219 | 46 | 52 |
+| SOL | 1.369 | 299 | 21,84 | 254 | 40 | 183 | 34 | 37 |
+| BNB | 1.369 | 201 | 14,68 | 212 | 138 | 144 | 31 | 37 |
+| XRP | 1.369 | 315 | 23,01 | 286 | 23 | 194 | 47 | 45 |
 
-Ghi chú. Độ phủ từ `coverage.csv`, bản chụp 18/10/2026; ngày có tin tính từ 01/01/2023 đến 24/09/2026, mẫu thiết kế kết thúc 30/09/2026. Ngày mô hình còn cần giá và biến trễ hợp lệ. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
+Ghi chú. Độ phủ tin gắn mã từ `asset_news_days` và số ngày dùng corpus chung từ `fallback_model_days` trong `coverage.csv`, bản chụp 18/10/2026; toàn corpus có tin trong 339/1.369 ngày lịch (24,76%). Ngày mô hình còn cần giá và biến trễ hợp lệ. Mẫu thiết kế kết thúc 30/09/2026; tin hiện quan sát đến 24/09/2026. ***, **, * biểu thị mức ý nghĩa thống kê lần lượt là 1%, 5% và 10%. Tính toán của nhóm tác giả.
 
-Điều này có nghĩa là chuỗi giá liên tục không làm cho chuỗi tin liên tục: Bitcoin chỉ có 59 ngày kiểm tra đủ biến, dù khoảng lịch dài hơn. Do đó, kết quả hồi quy và dự báo bên dưới chỉ áp dụng cho ngày được quan sát; không được ngoại suy sang các ngày không thu được tin. Sự thiếu hụt dữ liệu có thể làm yếu kiểm định Granger và làm thay đổi thành phần tin theo thời gian.
+Điều này có nghĩa là chuỗi giá liên tục không làm cho chuỗi tin liên tục: Bitcoin chỉ có 59 ngày kiểm tra đủ biến, dù khoảng lịch dài hơn. Với BNB, 138 trong 212 ngày mô hình (65,1%) dùng tín hiệu corpus chung; vì vậy không thể diễn giải các ước lượng này như tác động riêng của tin BNB. Tỷ trọng fallback cũng hiện diện ở SOL nhưng thấp hơn, 40 trong 254 ngày. Do đó, kết quả hồi quy và dự báo bên dưới chỉ áp dụng cho ngày được quan sát và cách ghép tin đã nêu; không được ngoại suy sang các ngày không thu được tin. Sự thiếu hụt dữ liệu có thể làm yếu kiểm định Granger và làm thay đổi thành phần tin theo thời gian.
 
 Đối với RQ1, Bảng 4 đặt ba điểm cảm xúc vào cùng hồi quy lợi suất Bitcoin ngày kế tiếp. Đây là so sánh khả năng giải thích có điều kiện, chưa phải phép đo độ chính xác gán nhãn của bộ chấm. Bảng kiểm định nhãn độc lập chỉ được bổ sung sau khi bộ nhãn tay được hoàn thành.
 
