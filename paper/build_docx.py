@@ -8,11 +8,14 @@ from __future__ import annotations
 
 import argparse
 import re
+import tempfile
+import zipfile
 from pathlib import Path
 
 from docx import Document
 from docx.enum.section import WD_ORIENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.enum.table import WD_ALIGN_VERTICAL
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.opc.packuri import PackURI
 from docx.opc.part import Part
@@ -33,146 +36,20 @@ FONT = "Times New Roman"
 TEXT_W = 16.0  # cm: A4 trừ lề 2.5 hai bên
 
 
-# ------------------------------------------------------------------ LaTeX -> OMML
-GREEK = {"alpha": "α", "beta": "β", "gamma": "γ", "delta": "δ", "varepsilon": "ε", "tau": "τ", "chi": "χ",
-         "pi": "π", "sim": "∼", "in": "∈", "cdot": "·", "prime": "′"}
-SPACES = {"\\,": "\u2009", "\\;": "\u2005", "\\ ": "\u2005", "\\quad": "\u2003", "\\qquad": "\u2003\u2003"}
-ACCENT = {"hat": "\u0302", "widehat": "\u0302", "tilde": "\u0303", "widetilde": "\u0303", "bar": "\u0304"}
-STOP_OPERAND = {"+", "-", "=", ",", "\\sim", "\\quad", "\\qquad", "}", "\\right"}
-
-
-def mel(tag: str, *children, **attrs) -> etree._Element:
-    e = etree.Element(f"{{{M_NS}}}{tag}")
-    for k, v in attrs.items():
-        e.set(f"{{{M_NS}}}{k}", v)
-    for c in children:
-        e.append(c)
-    return e
-
-
-def mrun(text: str, plain: bool = False) -> etree._Element:
-    t = mel("t")
-    t.text = text
-    t.set(XML_SPACE, "preserve")
-    r = mel("r")
-    if plain:
-        r.append(mel("rPr", mel("sty", val="p")))
-    r.append(t)
-    return r
-
-
-def merge(items: list) -> list:
-    """Gộp các m:r liền nhau cùng kiểu chữ."""
-    out: list = []
-    for i in items:
-        prev = out[-1] if out else None
-        same = (prev is not None and prev.tag == i.tag == f"{{{M_NS}}}r"
-                and (prev.find(f"{{{M_NS}}}rPr") is None) == (i.find(f"{{{M_NS}}}rPr") is None))
-        if same:
-            prev.find(f"{{{M_NS}}}t").text += i.find(f"{{{M_NS}}}t").text
-        else:
-            out.append(i)
-    return out
-
-
-def box(tag: str, items: list) -> etree._Element:
-    return mel(tag, *merge(items))
-
-
-class Tex:
-    """Bộ chuyển LaTeX con (đủ cho các phương trình của bài) sang OMML."""
-
-    def __init__(self, src: str):
-        self.t = re.findall(r"\\[A-Za-z]+|\\.|[{}^_]|\S", src)
-        self.i = 0
-
-    def peek(self):
-        return self.t[self.i] if self.i < len(self.t) else None
-
-    def next(self):
-        tok = self.peek()
-        self.i += 1
-        return tok
-
-    def seq(self, end: str | None = None) -> list:
-        out: list = []
-        while self.peek() is not None and self.peek() != end:
-            out.extend(self.item())
-        return out
-
-    def arg(self) -> list:
-        if self.peek() == "{":
-            self.next()
-            inner = self.seq("}")
-            self.next()
-            return inner
-        return self.atom()
-
-    def scripts(self) -> tuple[list | None, list | None]:
-        sub = sup = None
-        while self.peek() in ("_", "^"):
-            if self.next() == "_":
-                sub = self.arg()
-            else:
-                sup = self.arg()
-        return sub, sup
-
-    def item(self) -> list:
-        if self.peek() == "\\sum":
-            return self.nary()
-        base = self.atom()
-        sub, sup = self.scripts()
-        if sub is not None and sup is not None:
-            return [mel("sSubSup", box("e", base), box("sub", sub), box("sup", sup))]
-        if sub is not None:
-            return [mel("sSub", box("e", base), box("sub", sub))]
-        if sup is not None:
-            return [mel("sSup", box("e", base), box("sup", sup))]
-        return base
-
-    def nary(self) -> list:
-        self.next()
-        sub, sup = self.scripts()
-        operand = self.item()
-        while self.peek() is not None and self.peek() not in STOP_OPERAND:
-            operand += self.item()
-        pr = mel("naryPr", mel("chr", val="∑"), mel("limLoc", val="undOvr"))
-        return [mel("nary", pr, box("sub", sub or []), box("sup", sup or []), box("e", operand))]
-
-    def atom(self) -> list:
-        tok = self.next()
-        if tok == "{":
-            inner = self.seq("}")
-            self.next()
-            return inner
-        if tok == "\\left":
-            beg = self.next()
-            inner = self.seq("\\right")
-            self.next()
-            end = self.next()
-            pr = mel("dPr", mel("begChr", val=beg), mel("endChr", val=end))
-            return [mel("d", pr, box("e", inner))]
-        if tok == "\\frac":
-            return [mel("f", box("num", self.arg()), box("den", self.arg()))]
-        if tok == "\\sqrt":
-            return [mel("rad", mel("radPr", mel("degHide", val="1")), mel("deg"), box("e", self.arg()))]
-        if tok == "\\mathrm":
-            return [mrun("".join(x.findtext(f"{{{M_NS}}}t") or "" for x in merge(self.arg())), True)]
-        if tok in ("\\max", "\\min"):
-            return [mrun(tok[1:], True)]
-        if tok.startswith("\\") and tok[1:] in ACCENT:
-            return [mel("acc", mel("accPr", mel("chr", val=ACCENT[tok[1:]])), box("e", self.arg()))]
-        if tok in SPACES:
-            return [mrun(SPACES[tok])]
-        if tok.startswith("\\") and tok[1:] in GREEK:
-            return [mrun(GREEK[tok[1:]])]
-        if tok.startswith("\\"):
-            raise ValueError(f"LaTeX chưa hỗ trợ: {tok}")
-        return [mrun(tok, plain=not tok.isalpha())]
-
-
-def omml(latex: str) -> etree._Element:
-    return box("oMath", Tex(latex).seq())
+# ------------------------------------------------------------------ LaTeX -> OMML (pandoc)
+def omml(latex: list[str]) -> list[etree._Element]:
+    """Mỗi chuỗi LaTeX → một m:oMath gốc của Word, do pandoc dựng (một lần gọi cho cả bài)."""
+    import pypandoc
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "eq.docx"
+        pypandoc.convert_text("\n\n".join(f"$${t}$$" for t in latex), "docx", format="markdown",
+                              outputfile=str(out))
+        with zipfile.ZipFile(out) as z:
+            root = etree.fromstring(z.read("word/document.xml"))
+    maths = [m for m in root.iter(f"{{{M_NS}}}oMath")]
+    if len(maths) != len(latex):
+        raise ValueError(f"pandoc trả {len(maths)} phương trình, cần {len(latex)}")
+    return maths
 
 
 # ------------------------------------------------------------------ Word
@@ -291,14 +168,20 @@ class Writer:
             pf.line_spacing = spacing
         return p
 
-    def equation(self, source):
+    def equation(self, source, math):
+        """Bảng 3 cột không viền: trống | phương trình căn giữa | (n) căn phải."""
         number = re.search(r"\\tag\{(\d+)\}", source).group(1)
-        p = self.flat(keep=False)
-        p.paragraph_format.tab_stops.add_tab_stop(Cm(TEXT_W / 2), WD_TAB_ALIGNMENT.CENTER)
-        p.paragraph_format.tab_stops.add_tab_stop(Cm(TEXT_W), WD_TAB_ALIGNMENT.RIGHT)
-        p.add_run("\t")
-        p._p.append(omml(re.sub(r"\\tag\{\d+\}", "", source).strip()))
-        p.add_run(f"\t({number})")
+        t = self.doc.add_table(rows=1, cols=3)
+        t.autofit = False
+        for col, cell, width, align in zip(t.columns, t.rows[0].cells, (1.4, TEXT_W - 2.8, 1.4),
+                                           (WD_ALIGN_PARAGRAPH.LEFT, WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.RIGHT)):
+            col.width = cell.width = Cm(width)  # gridCol cho LibreOffice, tcW cho Word
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+            pf = cell.paragraphs[0].paragraph_format
+            pf.first_line_indent, pf.alignment, pf.line_spacing = Cm(0), align, 1.0
+            pf.space_before = pf.space_after = Pt(3)
+        t.cell(0, 1).paragraphs[0]._p.append(math)
+        self.run(t.cell(0, 2).paragraphs[0], f"({number})")
 
     def note(self, text):
         p = self.flat(WD_ALIGN_PARAGRAPH.JUSTIFY, after=8)
@@ -306,17 +189,18 @@ class Writer:
         self.run(p, text[len("*Ghi chú.*"):], 11)
 
     def caption(self, label, title):
-        self.run(self.flat(keep=True, before=8), label, bold=True)
-        self.run(self.flat(keep=True), title, italic=True)
+        center = WD_ALIGN_PARAGRAPH.CENTER
+        self.run(self.flat(center, keep=True, before=8), label, bold=True)
+        self.run(self.flat(center, keep=True), title, italic=True)
 
     def image(self, alt, path):
-        from PIL import Image
-        file = (ROOT / "paper" / path).resolve()
-        w, h = Image.open(file).size
+        """Ảnh căn giữa, rộng tối đa 15 cm giữ tỉ lệ, dính với dòng nguồn bên dưới."""
         p = self.flat(WD_ALIGN_PARAGRAPH.CENTER, keep=True)
-        p.add_run().add_picture(str(file), width=Cm(min(15.0, 9.5 * w / h)))
+        p.paragraph_format.line_spacing = 1.0
+        p.add_run().add_picture(str((ROOT / "paper" / path).resolve()), width=Cm(15))
         for d in p._p.iter("{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}docPr"):
             d.set("descr", alt)
+        self.run(self.flat(WD_ALIGN_PARAGRAPH.CENTER, after=4), "Nguồn: Tính toán của nhóm tác giả", 11, italic=True)
 
     def table(self, lines):
         rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in lines]
@@ -353,7 +237,7 @@ class Writer:
                 p = cell.paragraphs[0]
                 pf = p.paragraph_format
                 pf.first_line_indent, pf.line_spacing = Cm(0), 1.0
-                pf.keep_with_next = i < last or None
+                pf.keep_with_next = i == 0 or None  # bảng dài được ngắt trang, dòng tiêu đề lặp lại
                 pf.alignment = ALIGN["c" if i == 0 and j else align[j]]
                 panel = re.fullmatch(r"\*\*(.+)\*\*", text)
                 stars = None if panel else re.search(r"\*+$", text)
@@ -387,7 +271,8 @@ class Writer:
         t = self.doc.add_table(rows=1, cols=2)
         t.autofit = False
         left, right = t.cell(0, 0), t.cell(0, 1)
-        left.width, right.width = Cm(4.6), Cm(TEXT_W - 4.6)
+        t.columns[0].width = left.width = Cm(4.6)
+        t.columns[1].width = right.width = Cm(TEXT_W - 4.6)
         pairs = [("THÔNG TIN", ""), ("DOI:", fm["doi"]), ("Ngày nhận:", fm["received"]),
                  ("Ngày nhận lại:", fm["revised"]), ("Duyệt đăng:", fm["accepted"]),
                  ("Mã phân loại JEL:", fm["jel"]), ("Từ khóa:", fm["keywords_vi"]),
@@ -480,6 +365,7 @@ def build(filled: str, output: Path) -> None:
     doc = Document()
     style_document(doc)
     w = Writer(doc, notes)
+    maths = iter(omml([re.sub(r"\\tag\{\d+\}", "", b.strip("$")).strip() for b in blocks if b.startswith("$$")]))
     heads = [i for i, b in enumerate(blocks) if b.startswith("## ")]
     w.title_block(fm)
     w.frame(fm, [(blocks[i][3:], blocks[i + 1]) for i in heads[:2]])
@@ -490,7 +376,7 @@ def build(filled: str, output: Path) -> None:
             in_refs = b == "## Tài liệu tham khảo"
             doc.add_paragraph(b[3:], style="Heading 1")
         elif b.startswith("$$"):
-            w.equation(b.strip("$").strip())
+            w.equation(b, next(maths))
         elif b.startswith("|"):
             w.table(b.split("\n"))
         elif re.fullmatch(r"\*\*(Bảng|Hình) \d+\*\*", b):

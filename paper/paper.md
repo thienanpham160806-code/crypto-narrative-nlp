@@ -71,53 +71,53 @@ $$ s_d = P_d^{+} - P_d^{-} \tag{2} $$
 
 Gọi D_{i,t} là tập tin thuộc tài sản i trong ngày t và N_{i,t} là số tin của tập này, trong đó tin không gắn mã tài sản cụ thể được gán cho toàn thị trường. Chỉ số cảm xúc ngày, cùng hai thành phần tách riêng tin xấu và tin tốt để kiểm định tính bất đối xứng, được tính như sau:
 
-$$ \mathrm{Sent}_{i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} s_d \tag{3} $$
+$$ \text{Sent}_{i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} s_d \tag{3} $$
 
-$$ \mathrm{NegSent}_{i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} \max\left(-s_d,\, 0\right) \tag{4} $$
+$$ \text{NegSent}_{i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} \max\left(-s_d,\, 0\right) \tag{4} $$
 
-$$ \mathrm{PosSent}_{i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} \max\left(s_d,\, 0\right) \tag{5} $$
+$$ \text{PosSent}_{i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} \max\left(s_d,\, 0\right) \tag{5} $$
 
 Các tin được phân loại vào 08 câu chuyện thị trường định trước gồm quy định pháp lý, quỹ ETF và nhà đầu tư tổ chức, an ninh và tấn công, stablecoin, tài chính phi tập trung, token trí tuệ nhân tạo, vĩ mô và tiền tệ, giá và đầu cơ. Phương pháp chính là phân loại zero-shot, trong đó mỗi tin và mô tả của mỗi câu chuyện được biểu diễn bằng vectơ nhúng đa ngữ và xác suất thuộc câu chuyện k được tính từ độ tương đồng cosine.[^zs] Các mô hình chủ đề LDA (Blei và cộng sự, 2003) và BERTopic (Grootendorst, 2022) được ước lượng song song để đối chứng, chỉ trên kỳ huấn luyện.[^topic] Sự chú ý đến câu chuyện k của tài sản i trong ngày t được đo bằng hai cách, tỷ trọng tin theo nhãn cứng và trung bình xác suất theo nhãn mềm:
 
-$$ \mathrm{Att}_{k,i,t} = \frac{N_{k,i,t}}{N_{i,t}} \tag{6} $$
+$$ \text{Att}_{k,i,t} = \frac{N_{k,i,t}}{N_{i,t}} \tag{6} $$
 
-$$ \widetilde{\mathrm{Att}}_{k,i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} \pi_{d,k} \tag{7} $$
+$$ \widetilde{\text{Att}}_{k,i,t} = \frac{1}{N_{i,t}} \sum_{d \in D_{i,t}} \pi_{d,k} \tag{7} $$
 
 Trong đó N_{k,i,t} là số tin được gán nhãn k và π_{d,k} là xác suất tin d thuộc câu chuyện k. Ngoài ra, nghiên cứu đo hai thước đo bất đồng khác nhau, gồm thước đo của Antweiler và Frank (2004) dựa trên nhãn cảm xúc của các tin trong ngày và độ lệch chuẩn của điểm cảm xúc trong ngày, cùng với gia tốc tin xấu bằng chênh lệch NegSent giữa ngày t và ngày t-1.[^dis]
 
 Để trả lời RQ1 đến RQ3, nghiên cứu xây dựng phương trình hồi quy dự báo như sau:
 
-$$ y_{i,t+h} = \alpha_i + \beta\, \mathrm{Sent}_{i,t} + \gamma^{\prime} \mathrm{Att}_{i,t} + \delta^{\prime} X_{i,t} + \varepsilon_{i,t+h} \tag{8} $$
+$$ y_{i,t+h} = \alpha_i + \beta\, \text{Sent}_{i,t} + \gamma^{\prime} \text{Att}_{i,t} + \delta^{\prime} X_{i,t} + \varepsilon_{i,t+h} \tag{8} $$
 
 Trong đó, i đại diện cho tài sản trong mẫu quan sát, t là ngày quan sát, h ∈ {1, 3, 7} là độ trễ dự báo tính theo ngày, y_{i,t+h} là biến mục tiêu và ε_{i,t+h} là sai số trong mô hình. Biến phụ thuộc là một trong ba đại lượng, gồm lợi suất log của ngày t+h, biến động thực hiện (realized volatility, RV) bằng tổng bình phương lợi suất log theo giờ trong ngày t+h (Andersen & Bollerslev, 1998), và logarit khối lượng giao dịch tính theo USD. Biến giải thích chính là cảm xúc Sent_{i,t} đo lần lượt bằng từng thước đo trong ba thước đo ở trên, kèm vectơ chú ý Att_{i,t} gồm 07 câu chuyện, trong đó câu chuyện giá và đầu cơ làm nhóm tham chiếu vì tổng các tỷ trọng bằng một. Vectơ biến kiểm soát X_{i,t} gồm lợi suất của ngày t và bảy ngày trước, RV và logarit khối lượng của ngày t, logarit số tin trong ngày, các thước đo bất đồng, chú ý theo nhãn mềm và chỉ số bất định tiền mã hóa theo tuần của Lucey và cộng sự (2022) khi chỉ số này có dữ liệu. Các biến được mô tả chi tiết trong Bảng 1 và số liệu thống kê mô tả được trình bày trong Bảng 2. Nghiên cứu ước lượng bình phương nhỏ nhất thông thường theo từng tài sản, với sai số chuẩn Newey và West (1987) có độ trễ bằng giá trị lớn hơn giữa 7 và h-1, chỉ trên các quan sát có biến mục tiêu nằm trong kỳ huấn luyện và kiểm tra.
 
 Để kiểm định tính bất đối xứng ở RQ2, nghiên cứu thay Sent trong phương trình (8) bằng NegSent và PosSent và dùng RV làm biến mục tiêu:
 
-$$ \mathrm{RV}_{i,t+h} = \alpha_i + \beta^{-} \mathrm{NegSent}_{i,t} + \beta^{+} \mathrm{PosSent}_{i,t} + \gamma^{\prime} \mathrm{Att}_{i,t} + \delta^{\prime} X_{i,t} + \varepsilon_{i,t+h} \tag{9} $$
+$$ \text{RV}_{i,t+h} = \alpha_i + \beta^{-} \text{NegSent}_{i,t} + \beta^{+} \text{PosSent}_{i,t} + \gamma^{\prime} \text{Att}_{i,t} + \delta^{\prime} X_{i,t} + \varepsilon_{i,t+h} \tag{9} $$
 
 Giả thuyết không là tin xấu và tin tốt có tác động như nhau, và được kiểm định bằng thống kê Wald:
 
-$$ H_0:\ \beta^{-} = \beta^{+}, \qquad W = \frac{\left(\hat{\beta}^{-} - \hat{\beta}^{+}\right)^{2}}{\widehat{\mathrm{Var}}\left(\hat{\beta}^{-} - \hat{\beta}^{+}\right)} \sim \chi^{2}(1) \tag{10} $$
+$$ H_0:\ \beta^{-} = \beta^{+}, \qquad W = \frac{\left(\hat{\beta}^{-} - \hat{\beta}^{+}\right)^{2}}{\widehat{\text{Var}}\left(\hat{\beta}^{-} - \hat{\beta}^{+}\right)} \sim \chi^{2}(1) \tag{10} $$
 
 Vì tác động của tin có thể khác nhau giữa ngày biến động thấp và ngày biến động cao, nghiên cứu cũng ước lượng phương trình (9) bằng hồi quy phân vị (Koenker & Bassett, 1978) của RV tại các phân vị τ = 0,1, 0,5 và 0,9 và kiểm định cùng giả thuyết β⁻ = β⁺ ở từng phân vị. Sai số chuẩn của hồi quy phân vị chỉ vững với phương sai thay đổi, chưa hiệu chỉnh tự tương quan.
 
 Để trả lời RQ4, nghiên cứu ước lượng mô hình tự hồi quy vectơ (VAR) hai chiều giữa cảm xúc và biến thị trường, trong đó độ trễ p được chọn theo tiêu chí AIC và quan hệ dẫn dắt được kiểm định theo Granger (1969):
 
-$$ Z_t = c + \sum_{j=1}^{p} A_j Z_{t-j} + u_t, \qquad Z_t = \left(\mathrm{Sent}_t,\, y_t\right)^{\prime} \tag{11} $$
+$$ Z_t = c + \sum_{j=1}^{p} A_j Z_{t-j} + u_t, \qquad Z_t = \left(\text{Sent}_t,\, y_t\right)^{\prime} \tag{11} $$
 
 Kiểm định Granger yêu cầu một chuỗi ngày liên tục ít nhất 30 quan sát, nên số kiểm định thực hiện được phụ thuộc vào độ phủ tin. Bên cạnh hồi quy theo ngày, nghiên cứu dùng phân tích sự kiện theo giờ quanh thời điểm T_d. Gọi T_0 là nến giờ đầu tiên mở sau T_d. Lợi suất bất thường của tài sản i ở giờ τ được tính từ mô hình thị trường với BTC làm đại diện thị trường (riêng BTC dùng trung bình), ước lượng trên 144 nến giờ trước tin, và lợi suất bất thường tích lũy (CAR) trong cửa sổ [a, b] giờ là:
 
-$$ \mathrm{AR}_{i,\tau} = r_{i,\tau} - \hat{\alpha}_i - \hat{\beta}_i\, r_{\mathrm{BTC},\tau} \tag{12} $$
+$$ \text{AR}_{i,\tau} = r_{i,\tau} - \hat{\alpha}_i - \hat{\beta}_i\, r_{\text{BTC},\tau} \tag{12} $$
 
-$$ \mathrm{CAR}_{e}[a,b] = \sum_{\tau=a}^{b} \mathrm{AR}_{e,\tau} \tag{13} $$
+$$ \text{CAR}_{e}[a,b] = \sum_{\tau=a}^{b} \text{AR}_{e,\tau} \tag{13} $$
 
 Các cửa sổ gồm [0, 1], [0, 4] và [0, 24] giờ sau tin, cửa sổ [-4, -2] giờ trước tin để kiểm tra giá có chạy trước tin hay không, và nghiên cứu cũng đo độ lớn tuyệt đối của lợi suất và khối lượng giao dịch bất thường. Vì nhiều tin xuất hiện cùng giờ, các sự kiện được gộp theo ngày trước khi kiểm định bằng kiểm định t, kiểm định Wilcoxon và kiểm định của Boehmer và cộng sự (1991), và mọi p-value được hiệu chỉnh theo Holm (1979) trong từng họ kiểm định.[^event]
 
 Để trả lời RQ5, nghiên cứu so sánh dự báo ngoài mẫu của ba phiên bản đặc trưng, gồm chỉ biến thị trường, thêm sự chú ý thô (logarit số tin), và thêm toàn bộ tín hiệu văn bản, trên ba mô hình là Elastic Net, XGBoost và LightGBM. Các mô hình được ước lượng theo cửa sổ mở rộng, tái ước lượng mỗi 30 ngày và chỉ dùng các nhãn đã đáo hạn tại thời điểm dự báo, còn siêu tham số được chọn trên kỳ kiểm tra. Độ chính xác ngoài mẫu được đo bằng R² ngoài mẫu so với trung bình lịch sử (Campbell & Thompson, 2008), và chênh lệch giữa hai mô hình được kiểm định bằng thống kê Diebold và Mariano (1995) có hiệu chỉnh mẫu nhỏ của Harvey và cộng sự (1997), đồng thời đối chiếu với kiểm định Clark và West (2007) vì mô hình chỉ có biến thị trường lồng trong mô hình có văn bản:
 
-$$ R^{2}_{OS} = 1 - \frac{\sum_{t}\left(y_t - \hat{y}_t\right)^{2}}{\sum_{t}\left(y_t - \bar{y}_{t}\right)^{2}} \tag{14} $$
+$$ R^{2}_{OS} = 1 - \frac{\sum_{t}\left(y_t - \hat{y}_t\right)^{2}}{\sum_{t}\left(y_t - \overline{y}_{t}\right)^{2}} \tag{14} $$
 
-$$ d_t = e_{M,t}^{2} - e_{T,t}^{2}, \qquad \mathrm{DM} = \frac{\bar{d}}{\sqrt{\widehat{\mathrm{LRV}}(d)/T}} \tag{15} $$
+$$ d_t = e_{M,t}^{2} - e_{T,t}^{2}, \qquad \text{DM} = \frac{\overline{d}}{\sqrt{\widehat{\text{LRV}}(d)/T}} \tag{15} $$
 
 Trong đó ȳ_t là trung bình lịch sử của biến mục tiêu tại thời điểm dự báo, e_{M,t} và e_{T,t} là sai số dự báo của mô hình chỉ có biến thị trường và mô hình có văn bản, và LRV là phương sai dài hạn. Các kiểm định về giá trị dự báo có điều kiện (Giacomini & White, 2006) và tập mô hình tin cậy (Hansen và cộng sự, 2011) chỉ thực hiện được khi chuỗi kiểm tra đủ dài. Ngoài ra, phép đo cảm xúc được kiểm định bằng 300 tiêu đề chọn ngẫu nhiên trước kỳ đánh giá và được gán nhãn thủ công, và bằng nhãn yếu từ phiếu bình chọn tích cực và tiêu cực của người dùng CryptoPanic, với các chỉ tiêu độ chính xác, F1 trung bình và diện tích dưới đường cong ROC (AUC). Cuối cùng, độ vững của kết quả được kiểm tra bằng cách chia mẫu theo thời gian và bằng việc thêm biến bất định tiền mã hóa làm biến kiểm soát.
 
@@ -237,7 +237,7 @@ Kiểm định Wald ở Bảng 8 bác bỏ giả thuyết β⁻ = β⁺ ở mứ
 
 ![Lợi suất bất thường tích lũy theo nhóm cảm xúc của tin](../outputs/figures/real/event_car_by_tone.png)
 
-*Ghi chú.* Trung bình theo ngày sự kiện của CAR (đơn vị phần trăm) theo ba nhóm tam phân vị của điểm FinBERT (negative là nhóm tin xấu, middle là nhóm giữa, positive là nhóm tin tốt) ở các cửa sổ sau tin; các điểm không kèm khoảng tin cậy. Tính toán của nhóm tác giả.
+*Ghi chú.* Trung bình theo ngày sự kiện của CAR (đơn vị phần trăm) theo ba nhóm tam phân vị của điểm FinBERT (negative là nhóm tin xấu, middle là nhóm giữa, positive là nhóm tin tốt) ở các cửa sổ sau tin; các điểm không kèm khoảng tin cậy.
 
 Đối với RQ4, nghiên cứu xem xét hai khía cạnh là liệu giá có chạy trước tin và liệu kết luận có phụ thuộc vào đồng hồ dùng để gán thời điểm. Về khía cạnh thứ nhất, lợi suất bất thường tích lũy trong cửa sổ [-4, -2] giờ trước tin là {{evt(all,all,-4_-2,car,mean)}} điểm phần trăm (p Holm = {{evt(all,all,-4_-2,car,p_t_holm)}}), {{#if evt_pre_car_sig==0}}nên nghiên cứu chưa ghi nhận dấu hiệu giá đã dịch chuyển có hướng trước khi tin xuất hiện{{#else}}cho thấy giá có thể đã dịch chuyển trước khi tin xuất hiện, nhưng cũng có thể do sai số giờ công bố{{/if}}. {{#if evt_pre_other_sig>0}}Tuy nhiên, độ lớn lợi suất bất thường và khối lượng giao dịch trước tin đều lớn hơn bình thường một cách có ý nghĩa sau hiệu chỉnh (khối lượng bất thường {{evt(all,all,-4_-2,volume,mean)}} log điểm, p Holm = {{evt(all,all,-4_-2,volume,p_t_holm)}}). Điều này có nghĩa là hoạt động giao dịch tăng lên trước mốc công bố mà không tạo ra lợi suất có hướng; sự chồng lấp giữa các tin là một lời giải thích khả dĩ, và không thể coi đó là bằng chứng rò rỉ thông tin. {{/if}}Về mô hình VAR theo ngày, {{#if gr_n_valid==0}}chưa đủ quan sát để kết luận về quan hệ dẫn dắt hai chiều, vì chưa tài sản nào có chuỗi ngày có tin liên tục đủ 30 quan sát để ước lượng VAR (Bảng 10).{{#else}}có {{gr_n_valid}} kiểm định Granger thực hiện được, trong đó {{gr_n_sig}} kiểm định đạt mức 5% (Bảng 10).{{/if}} Về khía cạnh thứ hai, Bảng 11 so sánh phản ứng khi gán thời điểm theo giờ đăng và theo giờ thấy tin trên các tin có đủ hai đồng hồ.
 
@@ -277,7 +277,7 @@ Trên toàn bộ {{oos_n}} cặp (05 tài sản, 03 mô hình và 02 biến mụ
 
 ![Sai số dự báo ngoài mẫu của BTC](../outputs/figures/real/oos_loss.png)
 
-*Ghi chú.* Sai số bình phương trung bình trượt 30 quan sát của dự báo lợi suất BTC một ngày, theo ba mô hình (EN là Elastic Net, LGBM là LightGBM, XGB là XGBoost) và ba phiên bản đặc trưng (market là chỉ biến thị trường, attention là thêm số tin, text là thêm toàn bộ tín hiệu văn bản). Tính toán của nhóm tác giả.
+*Ghi chú.* Sai số bình phương trung bình trượt 30 quan sát của dự báo lợi suất BTC một ngày, theo ba mô hình (EN là Elastic Net, LGBM là LightGBM, XGB là XGBoost) và ba phiên bản đặc trưng (market là chỉ biến thị trường, attention là thêm số tin, text là thêm toàn bộ tín hiệu văn bản).
 
 Cuối cùng, nghiên cứu kiểm tra độ vững của kết quả bằng cách chia mẫu theo thời gian và thêm chỉ số bất định tiền mã hóa của Lucey và cộng sự (2022) làm biến kiểm soát. Bảng 13 trình bày hệ số của FinBERT trong hồi quy dự báo RV một ngày trên toàn mẫu và trên hai giai đoạn trước và sau năm 2025.
 

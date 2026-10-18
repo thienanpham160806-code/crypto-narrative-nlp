@@ -52,12 +52,11 @@ def test_filled_manuscript_passes_citation_and_number_checks():
     assert "{{" not in filled
 
 
-def test_omml_converter_handles_fraction_sum_and_accents():
-    math = build_docx.omml(r"\frac{1}{N}\sum_{d \in D} \widehat{\beta}_{i} \left(x\right)^{2}")
-    tags = {e.tag.split("}")[1] for e in math.iter()}
+def test_pandoc_builds_native_omml_for_every_equation():
+    maths = build_docx.omml([r"\frac{1}{N}\sum_{d \in D} \widehat{\beta}_{i} \left(x\right)^{2}", r"y_t = a"])
+    assert len(maths) == 2
+    tags = {e.tag.split("}")[1] for e in maths[0].iter()}
     assert {"f", "nary", "acc", "sSub", "sSup", "d"} <= tags
-    with pytest.raises(ValueError):
-        build_docx.omml(r"\unknowncmd")
 
 
 @needs_real
