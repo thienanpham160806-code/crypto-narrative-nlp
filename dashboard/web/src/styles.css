@@ -181,7 +181,20 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .paper li { margin-bottom: 6px; }
 .paper blockquote { margin: 20px 0; padding: 12px 16px; background: var(--panel); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--ink-2); }
 .paper blockquote p { margin: 0; }
-.paper table { margin: 12px 0 8px; font-size: 14px; border: 1px solid var(--rule); }
+.paper table { margin: 12px 0 8px; font-size: 14px; border: 0; border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); border-collapse: collapse; display: block; overflow-x: auto; max-width: 100%; }
+.paper table th { border-bottom: 1px solid var(--ink); text-align: right; }
+.paper table th:first-child, .paper table td:first-child { text-align: left; }
+.paper table td { border: 0; }
+.paper .subtitle { font: italic 400 18px/1.4 var(--serif); color: var(--ink-2); margin: 0 0 12px; }
+.paper .byline, .paper .kw { font-size: 14px; color: var(--ink-2); margin: 0 0 6px; }
+.paper .eq { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0; overflow-x: auto; }
+.paper .eq-tex { flex: 1; text-align: center; }
+.paper .eq-tex .katex-display { margin: 0; }
+.paper .eq-no { font-variant-numeric: tabular-nums; }
+.paper img { max-width: 100%; height: auto; display: block; margin: 8px auto; }
+.paper .footnote { margin-top: 40px; font-size: 13px; color: var(--ink-2); }
+.paper .footnote p { margin: 0; }
+.paper sup a { text-decoration: none; }
 .paper th { position: static; }
 .paper td, .paper th { white-space: normal; }
 .paper code { font-size: 0.88em; background: var(--panel); padding: 1px 5px; border-radius: 3px; }
