@@ -1,2 +1,2 @@
 canonical_en_articles,article_asset_rows,scored_finbert_articles,usable_event_rows,usable_event_days,gdelt_event_rows,sec_event_rows,gdelt_article_days,sec_article_days,first_event,last_event,timing_audited_articles,finbert_train_cut_low,finbert_train_cut_high
-37179,39003,18738,39003,772,36909,2094,339,503,2023-01-01 02:00:00+00:00,2026-09-30 21:00:00+00:00,37,-0.015349715948104858,0.15305439801886678
+142646,150160,140593,150160,1363,148066,2094,1352,503,2023-01-01 02:00:00+00:00,2026-10-01 00:00:00+00:00,36,-0.009301602840423593,0.15846427343785754
