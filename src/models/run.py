@@ -112,7 +112,8 @@ def main(real=False):
                                           variants, ucry, event_inputs)
                     if real:
                         for row in tables['coverage'].itertuples():
-                            print(f'Coverage {row.asset}: {row.news_days}/{row.calendar_days} news days; '
+                            print(f'Coverage {row.asset}: {row.news_days}/{row.calendar_days} corpus news days; '
+                                  f'{row.asset_news_days} asset-tagged news days; '
                                   f'train={row.model_train_days}, valid={row.model_valid_days}, test={row.model_test_days}', flush=True)
                     metadata = dict(result_source='real' if real else 'synthetic', config=config, refit_days=args.refit_days,
                                     sha256=dict(current),

@@ -53,6 +53,7 @@ Trước khi có dữ liệu thật, Codex dùng `tests/fixtures/make_fixtures.p
 
 ## 6. X4 và event study — owner: Codex
 - Bảng fixture ở `outputs/tables/synthetic/`; bảng nghiên cứu thật ở `outputs/tables/real/`. `market_coverage.csv` là audit giá thật, giữ ở thư mục cha.
+- Trong `outputs/tables/real/coverage.csv`, `news_days` và `pct_days_with_news` đếm ngày corpus chung có tin sau phép ghép fallback `ALL`; `asset_news_days` và `pct_days_with_asset_news` chỉ đếm ngày có tin gắn trực tiếp với mã. `fallback_model_days` đếm trong `usable_model_days` số ngày mô hình thực sự dùng chỉ số `ALL` vì thiếu tin gắn mã; vì vậy `usable_model_days` có thể lớn hơn `asset_news_days`.
 - X4 chỉ dùng ngày feature và target không sau `split.valid_end`. Horizon là outcome một ngày tại t+h, không phải tổng h ngày.
 - `--source-weighted-text` và `--exclude-price-text` nhận parquet cùng schema `text_daily`, được upstream tổng hợp lại từ bài canonical theo `public_ts_utc`. Không thể suy ra trọng số hoặc sentiment sau khi bỏ narrative từ daily means.
 - Event input: `doc_id, asset, public_ts_utc` (UTC có timezone), mỗi hàng là một bài–asset. Prices: `date, asset, close`; `date` là thời điểm bắt đầu bar UTC, lịch liên tục theo `--frequency` (mặc định `1h`).

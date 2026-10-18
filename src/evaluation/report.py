@@ -95,12 +95,20 @@ def coverage(market, text, config):
     for asset, frame in panel.groupby('asset'):
         news = frame.loc[frame.n_docs.gt(0)]
         scored = news.loc[news.sent_finbert.notna()]
+        tagged = text.loc[text.asset.eq(asset) & text.n_docs.gt(0)]
+        tagged_dates = pd.to_datetime(tagged.date, utc=True).drop_duplicates()
+        asset_news_days = int(tagged_dates.isin(frame.date).sum())
         optional = [c for c in frame if c.startswith(('disagreement', 'soft_attention_', 'attention_soft_', 'ucry_'))]
         attention = [f'attention_{k}' for k in config['nlp']['narratives']]
         usable = frame.replace([np.inf, -np.inf], np.nan).dropna(subset=[*MARKET, *TEXT_CORE, *attention, *optional, 'y_ret', 'y_rv'])
+        fallback_model_days = int((~usable.date.isin(tagged_dates)).sum())
         cutoff = pd.Timestamp(config['split']['valid_end'], tz='UTC')
         rows.append(dict(asset=asset, calendar_days=len(frame), news_days=len(news),
-                         pct_days_with_news=100*len(news)/len(frame), usable_model_days=len(usable),
+                         pct_days_with_news=100*len(news)/len(frame),
+                         asset_news_days=asset_news_days,
+                         pct_days_with_asset_news=100*asset_news_days/len(frame),
+                         usable_model_days=len(usable),
+                         fallback_model_days=fallback_model_days,
                          finbert_days=len(scored), pct_days_with_finbert=100*len(scored)/len(frame),
                          model_development_days=int(usable.target_date.le(cutoff).sum()),
                          model_test_days=int((usable.target_date.gt(cutoff) & usable.date.ge(cutoff)).sum()),
@@ -212,8 +220,10 @@ def write_report(market, text, config, tables, output, figures, real=False):
              'Holm/BH uses each unique comparison table as one family. MCS is evaluation, not test-set model selection.', '',
              '## Actual coverage', '']
     for row in tables['coverage'].itertuples():
-        lines.append(f'- {row.asset}: {row.news_days}/{row.calendar_days} days with indexed news '
-                     f'({row.pct_days_with_news:.2f}%); FinBERT coverage {row.pct_days_with_finbert:.2f}%; '
+        lines.append(f'- {row.asset}: {row.news_days}/{row.calendar_days} corpus news days '
+                     f'({row.pct_days_with_news:.2f}%); {row.asset_news_days} asset-tagged news days '
+                     f'({row.pct_days_with_asset_news:.2f}%); {row.fallback_model_days} model origins use corpus fallback; '
+                     f'FinBERT panel coverage {row.pct_days_with_finbert:.2f}%; '
                      f'news {row.news_start} to {row.news_end}; '
                      f'usable one-day model origins {row.model_start} to {row.model_end} ({row.usable_model_days} rows); '
                      f'train/valid/test={row.model_train_days}/{row.model_valid_days}/{row.model_test_days}.')
@@ -256,7 +266,9 @@ def write_results(tables, output):
              'Bằng chứng dưới đây chỉ áp dụng cho dữ liệu đã thu. Tin cùng ngày được gom theo ngày khi kiểm định sự kiện.', '']
     if not coverage_rows.empty:
         row = coverage_rows.loc[coverage_rows.asset.eq('BTC')].iloc[0]
-        lines += [f'Coverage: {row.news_days}/{row.calendar_days} ngày có tin ({row.pct_days_with_news:.2f}%); '
+        lines += [f'Coverage: corpus chung có {row.news_days}/{row.calendar_days} ngày có tin '
+                  f'({row.pct_days_with_news:.2f}%); riêng BTC có {row.asset_news_days} ngày tin gắn mã '
+                  f'({row.pct_days_with_asset_news:.2f}%), {row.fallback_model_days} ngày mô hình dùng corpus chung; '
                   f'từ {row.news_start} đến {row.news_end}. Core spec dùng {row.usable_model_days} ngày BTC, '
                   f'train/valid/test={row.model_train_days}/{row.model_valid_days}/{row.model_test_days}.', '']
     if not event.empty:

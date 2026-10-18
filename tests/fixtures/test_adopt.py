@@ -162,3 +162,20 @@ def test_sparse_core_uses_same_day_text_and_missing_dm_columns():
                              rmse=.1, r2_oos_ct=.01) for version in ['market', 'attention', 'text']])
     lines = preliminary_findings({'oos': oos}, real=True)
     assert any('DM Holm p=nan' in line and 'CW Holm p=nan' in line for line in lines)
+
+
+def test_coverage_separates_corpus_from_asset_tagged_news():
+    config = copy.deepcopy(CFG)
+    config['sample'].update(start='2023-01-01', end='2023-01-20', assets=['BTC', 'ETH'])
+    market, text = make_fixtures(config)
+    corpus = text.loc[text.asset.eq('BTC')].copy()
+    corpus['asset'] = 'ALL'
+    text = pd.concat([text.loc[~(text.asset.eq('ETH') & text.date.dt.day.mod(2).eq(0))], corpus], ignore_index=True)
+
+    counted = coverage(market, text, config).set_index('asset')
+    assert counted.loc['BTC', 'news_days'] == counted.loc['ETH', 'news_days'] == 20
+    assert counted.loc['BTC', 'asset_news_days'] == 20
+    assert counted.loc['ETH', 'asset_news_days'] == 10
+    assert counted.loc['ETH', 'pct_days_with_asset_news'] == 50
+    assert counted.loc['BTC', 'fallback_model_days'] == 0
+    assert counted.loc['ETH', 'fallback_model_days'] == 6
