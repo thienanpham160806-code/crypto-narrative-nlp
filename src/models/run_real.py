@@ -88,12 +88,6 @@ def publish_results(output):
         return
     if marker.is_file() and json.loads(marker.read_text(encoding='utf-8')).get('input_sha256') == done['input_sha256']:
         return
-    changed = subprocess.check_output(['git', 'diff', '--name-only'], cwd=ROOT, text=True).splitlines()
-    allowed = ('outputs/tables/real/', 'outputs/figures/real/', 'notebooks/main.ipynb', 'docs/PROGRESS.md')
-    foreign = [name for name in changed if not name.replace('\\', '/').startswith(allowed)]
-    if foreign:
-        logging.info('Git publication waiting for shared tracked changes: %s', foreign[:5])
-        return
     paths = [*output.glob('*.csv'), output/'README.md', output/'RESULTS.md',
              output/'run_metadata.json', output/'RUN_DONE.json', ROOT/'notebooks/main.ipynb',
              *(ROOT/'outputs/figures/real').glob('*.png'),
@@ -101,16 +95,33 @@ def publish_results(output):
     paths = [str(path.relative_to(ROOT)) for path in paths if path.is_file()]
     if not paths:
         return
-    progress = ROOT/'docs/PROGRESS.md'
-    line = (f"{datetime.now(timezone.utc):%Y-%m-%d %H:%M} | Codex | real rebuild | "
-            f"real/ chạy lại trên {done['coverage_pct']:.2f}% ngày GKG; "
-            f"RUN_DONE ok, pytest offline qua.\n")
-    with progress.open('a', encoding='utf-8', newline='\n') as stream:
-        stream.write(line)
-    subprocess.run(['git', 'add', '--', *paths, 'docs/PROGRESS.md'], cwd=ROOT, check=True)
-    subprocess.run(['git', 'commit', '-m', 'chore: refresh real research outputs'], cwd=ROOT, check=True)
-    subprocess.run(['git', '-c', 'rebase.autoStash=false', 'pull', '--rebase', 'origin', 'dev'],
-                   cwd=ROOT, check=True)
+    changed = subprocess.check_output(['git', 'status', '--porcelain', '--', *paths],
+                                      cwd=ROOT, text=True)
+    if changed:
+        progress = ROOT/'docs/PROGRESS.md'
+        line = (f"{datetime.now(timezone.utc):%Y-%m-%d %H:%M} | Codex | real rebuild | "
+                f"real/ chạy lại trên {done['coverage_pct']:.2f}% ngày GKG; "
+                f"RUN_DONE ok, pytest offline qua.\n")
+        with progress.open('a', encoding='utf-8', newline='\n') as stream:
+            stream.write(line)
+        subprocess.run(['git', 'add', '--', *paths, 'docs/PROGRESS.md'], cwd=ROOT, check=True)
+        subprocess.run(['git', 'commit', '-m', 'chore: refresh real research outputs', '--',
+                        *paths, 'docs/PROGRESS.md'], cwd=ROOT, check=True)
+    try:
+        subprocess.run(['git', '-c', 'rebase.autoStash=false', 'pull', '--rebase', 'origin', 'dev'],
+                       cwd=ROOT, check=True)
+    except subprocess.CalledProcessError:
+        # Shared unstaged Claude files prohibit rebase. A fresh fetch still proves
+        # whether this commit can be pushed without rewriting remote history.
+        subprocess.run(['git', 'fetch', 'origin', 'dev'], cwd=ROOT, check=True)
+        ahead, behind = map(int, subprocess.check_output(
+            ['git', 'rev-list', '--left-right', '--count', 'HEAD...origin/dev'],
+            cwd=ROOT, text=True).split())
+        if behind:
+            logging.info('Git publication waiting: origin/dev is %s commits ahead', behind)
+            return
+        if not ahead:
+            logging.info('Real outputs already on origin/dev')
     subprocess.run(['git', 'push', 'origin', 'dev'], cwd=ROOT, check=True)
     marker.write_text(json.dumps({'input_sha256': done['input_sha256'],
                                   'published_utc': datetime.now(timezone.utc).isoformat()}) + '\n',

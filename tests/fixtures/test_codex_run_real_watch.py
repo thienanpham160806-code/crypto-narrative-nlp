@@ -1,6 +1,7 @@
 """Rebuild handshake must reject stale, mismatched, and moving inputs."""
 from datetime import datetime, timedelta, timezone
 import json
+import subprocess
 
 from src.models import run_real
 
@@ -76,14 +77,27 @@ def test_watch_waits_for_two_identical_polls(tmp_path, monkeypatch):
     assert len(calls) == 1
 
 
-def test_publish_waits_for_other_agent_work(tmp_path, monkeypatch):
+def test_publish_fast_forward_with_other_agent_work(tmp_path, monkeypatch):
     output = tmp_path/'outputs/tables/real'
     output.mkdir(parents=True)
+    (tmp_path/'docs').mkdir()
     (output/'RUN_DONE.json').write_text(json.dumps({'status': 'ok', 'input_sha256': 'abc',
                                                      'coverage_pct': 100}), encoding='utf-8')
     monkeypatch.setattr(run_real, 'ROOT', tmp_path)
-    monkeypatch.setattr(run_real.subprocess, 'check_output',
-                        lambda *args, **kwargs: 'paper/paper.md\n')
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        if 'pull' in command:
+            raise subprocess.CalledProcessError(1, command)
+
+    def check_output(command, **kwargs):
+        return '?? outputs/tables/real/RUN_DONE.json\n' if 'status' in command else '1\t0\n'
+
+    monkeypatch.setattr(run_real.subprocess, 'run', run)
+    monkeypatch.setattr(run_real.subprocess, 'check_output', check_output)
     run_real.publish_results(output)
-    assert not (tmp_path/'docs/PROGRESS.md').exists()
-    assert not (output/'PUBLISH_DONE.json').exists()
+    assert any('fetch' in command for command in commands)
+    assert any('push' in command for command in commands)
+    assert (output/'PUBLISH_DONE.json').exists()
+    assert 'real/ chạy lại trên 100.00%' in (tmp_path/'docs/PROGRESS.md').read_text(encoding='utf-8')
