@@ -33,3 +33,9 @@ def test_ex_price_drops_price_speculation_docs():
     docs, scores = frames()
     row = btc(build(docs, scores, "ex_price"))
     assert row.n_docs == 2 and row.attention_price_speculation == 0
+
+
+def test_validation_maps_duplicate_sample_ids_to_canonical():
+    from features.validation import canonical_ids
+    docs = pd.DataFrame({"doc_id": ["a", "b", "c"], "dup_group": ["g1", "g1", "g2"], "is_canonical": [True, False, True]})
+    assert canonical_ids(pd.Series(["b", "c", "z"]), docs).tolist() == ["a", "c", "z"]

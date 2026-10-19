@@ -245,6 +245,21 @@ def build_facts() -> tuple[dict, dict]:
         put("gw_nobs_max", int(gw.nobs.max()), vn(gw.nobs.max(), 0))
     h = D.hand
     put("hand_n", int(h.n.max()) if len(h) and "n" in h else 0, None)
+    if len(h) and "accuracy" in h:
+        for task, method, k in (("sentiment", "FinBERT", "fb"), ("sentiment", "LM", "lm"), ("sentiment", "Harvard IV-4", "hv"),
+                                ("narrative", "zero-shot embedding", "zs"), ("narrative", "BERTopic", "bt"), ("narrative", "LDA", "lda")):
+            r = first(h, task=task, method=method)
+            if r is not None:
+                for f in ("accuracy", "macro_f1", "auc"):
+                    put(f"hand_{f}_{k}", float(r[f]), vn(r[f], 3))
+        lab = read(ROOT / "data" / "interim" / "validation_sample.csv")
+        if len(lab) and "label_narrative" in lab:
+            yn = lab.label_narrative.dropna().astype(str).str.strip().str.lower()
+            yn = yn[yn != ""]
+            put("hand_other_pct", float(100 * yn.eq("other").mean()), vn(100 * yn.eq("other").mean(), 1))
+            ys = lab.label_sentiment.dropna().astype(str).str.strip().str.lower()
+            ys = ys[ys != ""]
+            put("hand_neutral_pct", float(100 * ys.eq("neutral").mean()), vn(100 * ys.eq("neutral").mean(), 1))
     # độ vững
     rb = D.rob
     if len(rb):
@@ -426,10 +441,12 @@ def table_nhan_yeu() -> str | None:
     h = D.hand
     if len(h) and "accuracy" in h and (h.n.fillna(0) > 0).any():   # 300 tiêu đề gán tay → Panel B cùng bảng
         rows.insert(1, ["**Panel A. Nhãn yếu CryptoPanic**", "", "", "", "", ""])
-        rows.append(["**Panel B. Nhãn thủ công**", "", "", "", "", ""])
-        for _, r in h[h.n > 0].iterrows():
-            rows.append([str(r.method), vn(r.n, 0), vn(r.accuracy, 3), vn(r.macro_f1, 3), vn(r.get("auc"), 3),
-                         vn(r.get("pct_decided"), 1)])
+        names = {"LM": "Loughran - McDonald", "zero-shot embedding": "Zero-shot (vectơ nhúng)"}
+        for task, title in (("sentiment", "Panel B. Cảm xúc, nhãn thủ công"), ("narrative", "Panel C. Câu chuyện thị trường, nhãn thủ công")):
+            rows.append([f"**{title}**", "", "", "", "", ""])
+            for _, r in h[(h.n > 0) & (h.task == task)].iterrows():
+                rows.append([names.get(r.method, str(r.method)), vn(r.n, 0), vn(r.accuracy, 3), vn(r.macro_f1, 3),
+                             vn(r.get("auc"), 3), "—"])
     return md(rows, "lrrrrr")
 
 

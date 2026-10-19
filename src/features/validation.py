@@ -87,6 +87,14 @@ def weak(lab: pd.DataFrame, sc: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def canonical_ids(ids: pd.Series, docs: pd.DataFrame) -> pd.Series:
+    """Tin trong mẫu có thể thành bản trùng sau khi rebuild kho (chỉ bản canonical được chấm) → lấy điểm của bản
+    canonical cùng dup_group; cùng một tin nên nhãn người vẫn đúng."""
+    canon = docs[docs.is_canonical].set_index("dup_group").doc_id
+    group = docs.set_index("doc_id").dup_group
+    return ids.map(lambda d: canon.get(group.get(d), d))
+
+
 def evaluate(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = None,
              llm: pd.DataFrame | None = None) -> pd.DataFrame:
     df = lab.merge(sc, on="doc_id", how="left")
@@ -96,7 +104,7 @@ def evaluate(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = Non
         df = df.merge(llm[["doc_id", "llm_narr", "llm_sent"]], on="doc_id", how="left")
     y = df.label_sentiment.replace("", np.nan).str.strip().str.lower()
     probs = df[["positive_prob", "negative_prob", "neutral_prob"]]
-    fb = probs.idxmax(axis=1, skipna=True).str.replace("_prob", "").where(probs.notna().all(axis=1))
+    fb = probs.fillna(-1).idxmax(axis=1).str.replace("_prob", "").where(probs.notna().all(axis=1))
     sent = {"LM": sign3(df.lm_net), "Harvard IV-4": sign3(df.hv_net), "FinBERT": fb, "LLM zero-shot": df.get("llm_sent")}
     cont = {"LM": df.lm_net, "Harvard IV-4": df.hv_net, "FinBERT": df.positive_prob - df.negative_prob}
     rows = [dict(task="sentiment", method=k, **scores(y, v), auc=auc(y, cont[k]) if k in cont else np.nan,
@@ -129,6 +137,7 @@ def main(cmd: str):
         print(out.round(3).to_string())
     else:
         lab = pd.read_csv(FILE, keep_default_na=False)
+        lab["doc_id"] = canonical_ids(lab.doc_id, pd.read_parquet(D("interim", "documents.parquet")))
         nar = D("interim", "narratives.parquet")
         llm = None
         if CFG["nlp"]["llm"]["enabled"]:
