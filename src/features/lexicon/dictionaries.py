@@ -50,7 +50,8 @@ def load_harvard() -> dict[str, set]:
 
 
 def load_fin_vn() -> dict[str, set]:
-    d = pd.read_csv(P("dict", "fin_vn.csv"))
+    """fin_vn.csv (tài chính chung) + crypto_vn.csv (bổ sung cho tin tiền mã hóa)."""
+    d = pd.concat([pd.read_csv(P("dict", f)) for f in ("fin_vn.csv", "crypto_vn.csv")])
     return {c: set(d.loc[d.category == c, "word"].map(norm_vi)) for c in CATS}
 
 

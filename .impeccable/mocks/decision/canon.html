@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;background:#F8FAFC;color:#0F172A;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+.app{display:grid;grid-template-columns:240px 1fr;height:900px}
+aside{background:#fff;border-right:1px solid #E2E8F0;padding:20px 12px}
+aside b{display:block;padding:0 12px 20px;font-size:16px}
+aside a{display:block;padding:9px 12px;border-radius:6px;color:#475569;text-decoration:none}
+aside a.on{background:#EFF6FF;color:#2563EB;font-weight:600}
+main{padding:24px 32px}
+.top{display:flex;align-items:center;margin-bottom:20px}.top h1{font-size:22px;margin-right:auto}
+.top span{border:1px solid #CBD5E1;border-radius:6px;padding:6px 12px;margin-left:8px;background:#fff}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:20px}
+.k{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px}
+.k small{color:#64748B}.k strong{display:block;font-size:24px;margin-top:4px}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.c{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px;height:300px;position:relative}
+.c h3{font-size:15px}
+svg{position:absolute;left:16px;right:16px;bottom:16px;top:48px;width:calc(100% - 32px);height:calc(100% - 64px)}
+</style></head><body><div class="app">
+<aside><b>Crypto Narrative</b><a class="on" href="#">Tổng quan</a><a href="#">Narratives</a><a href="#">Sentiment</a><a href="#">Coins</a><a href="#">Dự báo</a><a href="#">Timing</a><a href="#">Live</a></aside>
+<main><div class="top"><h1>Tổng quan</h1><span>VI / EN</span><span>Theme</span></div>
+<div class="kpis"><div class="k"><small>Dominant narrative</small><strong>ETF</strong></div><div class="k"><small>Intensity</small><strong>Cao</strong></div><div class="k"><small>Sentiment</small><strong>−0,03</strong></div><div class="k"><small>Neg acceleration</small><strong>+35%</strong></div><div class="k"><small>BTC vol risk</small><strong>Elevated</strong></div></div>
+<div class="charts">
+<div class="c"><h3>Narrative trends</h3><svg viewBox="0 0 600 220" preserveAspectRatio="none"><path d="M0 180 C100 160 200 100 300 120 S500 60 600 80" stroke="#2563EB" stroke-width="2" fill="none"/><path d="M0 200 C120 190 220 170 330 140 S520 150 600 130" stroke="#94A3B8" stroke-width="2" fill="none"/></svg></div>
+<div class="c"><h3>Sentiment vs BTC</h3><svg viewBox="0 0 600 220" preserveAspectRatio="none"><path d="M0 150 L80 140 160 160 240 110 320 120 400 90 480 105 600 70" stroke="#2563EB" stroke-width="2" fill="none"/></svg></div>
+<div class="c"><h3>Attention theo coin</h3><svg viewBox="0 0 600 220" preserveAspectRatio="none"><rect x="20" y="40" width="80" height="180" fill="#2563EB"/><rect x="140" y="130" width="80" height="90" fill="#93C5FD"/><rect x="260" y="170" width="80" height="50" fill="#93C5FD"/><rect x="380" y="185" width="80" height="35" fill="#93C5FD"/></svg></div>
+<div class="c"><h3>Tin đại diện</h3></div>
+</div></main></div></body></html>

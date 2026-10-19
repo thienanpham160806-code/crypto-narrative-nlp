@@ -59,9 +59,10 @@ def collect(start=CFG["sample"]["start"], end=CFG["sample"]["end"], get=None) ->
             cik = s["ciks"][0]
             idx = get(archive(cik, adsh, f"{adsh}-index.htm"))
             doc = get(archive(cik, adsh, name))
+            acc = accepted(idx.text) if idx is not None else None
             f.write(json.dumps(dict(id=h["_id"], url=archive(cik, adsh, name), form=s["form"],
                                     file_date=s["file_date"], company=s["display_names"][0],
-                                    accepted=str(accepted(idx.text)) if idx is not None else None,
+                                    accepted=acc.isoformat() if acc is not None else None,
                                     body=strip_html(doc.text)[:BODY_CHARS] if doc is not None else None),
                                ensure_ascii=False) + "\n")
             done.add(h["_id"]); n += 1
@@ -75,7 +76,7 @@ def load() -> pd.DataFrame:
     company = df.company.astype(str).str.replace(r"\s*\(CIK.*$", "", regex=True)
     return pd.DataFrame(dict(
         source="sec", url=df.url, lang="en", title=df.form + ": " + company, body=df.body,
-        published_at_utc=pd.to_datetime(df.accepted, utc=True, format="ISO8601"), first_seen_utc=pd.NaT,
+        published_at_utc=pd.to_datetime(df.accepted.replace("None", None), utc=True, format="ISO8601"), first_seen_utc=pd.NaT,
         ts_source="api", file_date=pd.to_datetime(df.file_date)))
 
 

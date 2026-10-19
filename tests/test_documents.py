@@ -1,7 +1,7 @@
 """C1: thu thập + hợp nhất documents. Không cần mạng: HTTP được giả lập."""
 import json, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
-import pandas as pd
+import pandas as pd, pytest
 from data import news_gdelt, news_rss, news_sec, build_documents as bd
 
 UTC = lambda s: pd.Timestamp(s, tz="UTC")
@@ -132,3 +132,85 @@ def test_timestamp_table_gdelt_vs_rss_and_sec_shift():
     r = t.loc["rss pubDate vs gdelt seendate (cùng URL)"]
     assert r.n_pairs == 1 and r.median_lag_min == 60 and r.pct_abs_gt_1h == 0 and r.pct_day_shift == 0
     assert t.loc["accepted (UTC) vs file_date"].pct_day_shift == 50
+
+
+def test_gkg_network_error_skips_day_without_cache(tmp_path, monkeypatch):
+    monkeypatch.setattr(news_gdelt, "cache_dir", lambda lang: tmp_path / lang)
+    (tmp_path / "en").mkdir()
+
+    def get(url, **kw):
+        raise ConnectionError("dns")
+    assert news_gdelt.collect("en", "2024-03-01", "2024-03-02", get=get, workers=2) == 0
+    assert not list((tmp_path / "en").glob("*.jsonl")) and "ERR ConnectionError" in (tmp_path / "progress.log").read_text(encoding="utf-8")
+
+
+def test_sec_missing_accepted_stays_null(tmp_path, monkeypatch):
+    monkeypatch.setattr(news_sec, "D", lambda *a: tmp_path / a[-1])
+    hit = {"_id": "0001-23-1:d.htm", "_source": {"ciks": ["1"], "form": "S-1", "file_date": "2023-01-26",
+                                                 "display_names": ["X Trust"]}}
+    pages = {news_sec.FTS: R(200, json.dumps({"hits": {"hits": [hit]}})),
+             news_sec.archive("1", "0001-23-1", "0001-23-1-index.htm"): R(200, "<p>no accepted line</p>"),
+             news_sec.archive("1", "0001-23-1", "d.htm"): R(200, "<p>text</p>")}
+    news_sec.collect("2023-01-01", "2023-01-31", get=lambda u, **k: pages[u])
+    assert '"accepted": null' in (tmp_path / "filings.jsonl").read_text()
+    with open(tmp_path / "filings.jsonl", "a") as f:                        # dòng cũ ghi chuỗi "None"
+        f.write(json.dumps(dict(id="old", url="u", form="8-K", file_date="2023-01-02", company="Y", accepted="None",
+                                body=None)) + "\n")
+    assert news_sec.load().published_at_utc.isna().all()
+
+
+def test_gkg_partial_hours_survive_network_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(news_gdelt, "cache_dir", lambda lang: tmp_path / lang)
+    (tmp_path / "en").mkdir()
+    calls, fail = [], {"on": True}
+
+    def fake_fetch(stamp, lang, get):
+        calls.append(stamp)
+        if fail["on"] and stamp.endswith("100000"):
+            raise ConnectionError("ssl")
+        return [dict(date=stamp, domain="x", url=f"u{stamp}", title="Bitcoin")]
+    monkeypatch.setattr(news_gdelt, "fetch", fake_fetch)
+    assert news_gdelt.collect("en", "2024-03-01", "2024-03-01", get=object(), workers=1) == 0
+    assert len(calls) == 11 and (tmp_path / "en" / "20240301_00.part").exists()
+    fail["on"] = False
+    assert news_gdelt.collect("en", "2024-03-01", "2024-03-01", get=object(), workers=1) == 24
+    assert len(calls) == 11 + 14 and not (tmp_path / "en" / "20240301_00.part").exists()   # chỉ tải lại giờ 10–23
+
+
+def test_keep_awake_reports_power_and_is_noop_off_windows(monkeypatch):
+    from utils import awake
+    assert isinstance(awake.on_ac(), bool) if sys.platform == "win32" else True
+    monkeypatch.setattr(awake.sys, "platform", "linux")
+    assert awake.keep_awake_on_ac() is None
+
+
+def test_later_snapshot_never_backdated_across_midnight():
+    gd = doc("gdelt", "https://x.com/a", "SEC decision on bitcoin ETF pending", seen="2024-01-01 23:50")
+    rss = doc("rss:x", "https://x.com/a?utm_source=rss", "SEC approves bitcoin ETF after midnight vote",
+              seen="2024-01-02 00:30", pub="2024-01-01 23:00")
+    df = bd.build([pd.DataFrame([gd, rss])]).set_index("source")
+    assert df.loc["rss:x", "public_ts_utc"] == UTC("2024-01-02 00:30")      # không lùi về ngày 1
+    assert df.loc["gdelt", "is_canonical"] and not df.loc["rss:x", "is_canonical"]   # cùng URL, bản thấy sớm nhất thắng
+
+
+def test_norm_url_keeps_identity_query_and_drops_tracking():
+    assert bd.norm_url("https://News.com/article?id=100") != bd.norm_url("https://news.com/article?id=101")
+    assert bd.norm_url("https://www.News.com/Path/?utm_source=x&id=7") == bd.norm_url("http://news.com/Path?id=7&fbclid=z")
+    assert bd.norm_url("https://news.com/Path") != bd.norm_url("https://news.com/path")
+
+
+def test_http_client_rebuilds_session_after_connection_error(monkeypatch):
+    import requests
+    from utils.http import Client
+    c = Client(rps=1000)
+    first, calls = c.s, []
+
+    def boom(self, url, **kw):
+        calls.append(self)
+        raise requests.exceptions.SSLError("ssl")
+    monkeypatch.setattr(requests.Session, "get", boom)
+    monkeypatch.setattr("tenacity.nap.time.sleep", lambda s: None)
+    with pytest.raises(requests.exceptions.SSLError):
+        c.get("https://x.test/a")
+    assert len(calls) == 5 and len({id(x) for x in calls}) == 5          # mỗi lần thử một phiên mới
+    assert c.s is not first and c.s.headers["User-Agent"].startswith("UEL-Fintech")

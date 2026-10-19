@@ -37,8 +37,12 @@ pytest -q
 ```
 Tải **Loughran–McDonald Master Dictionary** (https://sraf.nd.edu/loughranmcdonald-master-dictionary/) vào `dict/`. Email liên hệ và API key đặt ở `config/config.local.yaml` / `.env` (không commit).
 
+## Cách chạy lại toàn bộ
+
+Với dữ liệu cục bộ trong `data/processed/`, `data/interim/` và nến giờ Binance đã cache, cài `notebooks/requirements.txt`, rồi chạy mọi cell của [`notebooks/main.ipynb`](notebooks/main.ipynb) từ gốc repo. Notebook không gọi mạng; nó ghi lại bảng vào `outputs/tables/real/`, hình vào `outputs/figures/real/` và giải thích RQ1–RQ5 trong `outputs/tables/real/RESULTS.md`. Chạy CLI tương đương: `python -m src.models.run_real`; thêm `--watch --poll-seconds 1800` để kiểm tra hash đầu vào và chạy lại khi dữ liệu đổi.
+
 ## Làm việc với 2 agent
-**Bắt đầu: [`docs/prompts/START.md`](docs/prompts/START.md)** (clone → 2 prompt). Claude Code và Codex chạy song song trên 2 worktree: [`docs/PLAN.md`](docs/PLAN.md) (phân công), [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md) (schema), [`docs/prompts/`](docs/prompts) (prompt từng phiên), [`docs/PROGRESS.md`](docs/PROGRESS.md) (nhật ký).
+**Bắt đầu: [`docs/prompts/START.md`](docs/prompts/START.md)** (clone → 2 prompt). Claude Code và Codex chạy song song trong cùng folder, nhánh `dev`: [`docs/PLAN.md`](docs/PLAN.md) (phân công), [`docs/DATA_CONTRACT.md`](docs/DATA_CONTRACT.md) (schema), [`docs/prompts/`](docs/prompts) (prompt từng phiên), [`docs/PROGRESS.md`](docs/PROGRESS.md) (nhật ký).
 
 ## Cấu trúc
 ```

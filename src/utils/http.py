@@ -32,16 +32,25 @@ class RetryableHTTPError(Exception):
 
 class Client:
     def __init__(self, rps: float = 2.0, headers: dict | None = None):
-        self.s = requests.Session()
-        self.s.headers.update({"User-Agent": f"UEL-Fintech crypto-narrative research {CFG.get('contact_email', '')}",
-                               **(headers or {})})
+        self.headers = {"User-Agent": f"UEL-Fintech crypto-narrative research {CFG.get('contact_email', '')}",
+                        **(headers or {})}
+        self.s = self._session()
         self.limiter = RateLimiter(rps)
+
+    def _session(self) -> requests.Session:
+        s = requests.Session()
+        s.headers.update(self.headers)
+        return s
 
     @retry(reraise=True, stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=1, max=30),
            retry=retry_if_exception_type((RetryableHTTPError, requests.RequestException)))
     def get(self, url: str, timeout: int = 60, **kw) -> requests.Response | None:
         self.limiter.acquire()
-        r = self.s.get(url, timeout=timeout, **kw)
+        try:
+            r = self.s.get(url, timeout=timeout, **kw)
+        except requests.RequestException:
+            self.s = self._session()        # kết nối cũ trong pool hỏng (SSL/reset) → lần thử sau dùng phiên mới
+            raise
         if r.status_code == 404:            # không tồn tại → không thử lại
             return None
         if r.status_code in (429, 500, 502, 503, 504):

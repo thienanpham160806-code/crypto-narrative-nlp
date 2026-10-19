@@ -1,11 +1,11 @@
 # Kế hoạch & phân công (Claude Code ∥ Codex)
 
-Hai agent chạy **cùng lúc trên hai nhánh/worktree riêng**, chỉ sửa thư mục mình sở hữu, giao tiếp qua `docs/DATA_CONTRACT.md` và `docs/PROGRESS.md`.
+Hai agent chạy **cùng lúc trong cùng folder, cùng nhánh `dev`** (luật git: `AGENTS.md` mục "Làm chung 1 folder"), chỉ sửa thư mục mình sở hữu, giao tiếp qua `docs/DATA_CONTRACT.md` và `docs/PROGRESS.md`.
 
 | Vùng | Owner | Nhánh |
 |---|---|---|
-| `src/data/news_*`, `src/data/vn_*`, `src/features/**`, `dict/`, `dashboard/`, `paper/` | **Claude** | `claude/*` |
-| `src/data/market.py`, `src/models/**`, `src/evaluation/**`, `tests/fixtures/`, `notebooks/` | **Codex** | `codex/*` |
+| `src/data/news_*`, `src/data/vn_*`, `src/features/**`, `dict/`, `dashboard/`, `paper/` | **Claude** | `dev` |
+| `src/data/market.py`, `src/models/**`, `src/evaluation/**`, `tests/fixtures/`, `notebooks/` | **Codex** | `dev` |
 | `config/`, `docs/DATA_CONTRACT.md`, `README.md` | chung — sửa nhỏ, ghi PROGRESS | — |
 
 ## Giai đoạn
@@ -16,4 +16,4 @@ Hai agent chạy **cùng lúc trên hai nhánh/worktree riêng**, chỉ sửa th
 | 3 | C3 Dashboard (impeccable) đọc `outputs/` + snippet đại diện | X3 Walk-forward: market-only vs market+text (EN, XGB, LGBM), Diebold–Mariano, SHAP, chiến lược tín hiệu (sau phí) | bảng 6 + SHAP |
 | 4 | C4 Paper + README | X4 Robustness (horizon, trọng số w_d, bỏ tin price_speculation, sub-period), event study quanh `public_ts_utc` | checklist mục 6 blueprint đủ |
 
-Mỗi cuối giai đoạn: Claude gọi `/codex:review --base main`; trước merge giai đoạn 2 & 3: `/codex:adversarial-review` tập trung **leakage**.
+Mỗi cuối giai đoạn: Claude gọi `/codex:review --base main`, rồi PR `dev` → `main`; trước merge giai đoạn 2 & 3: `/codex:adversarial-review` tập trung **leakage**.

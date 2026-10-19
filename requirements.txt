@@ -2,6 +2,7 @@
 pandas>=2.0
 numpy>=1.24
 scipy>=1.11
+matplotlib>=3.8
 statsmodels>=0.14
 pyyaml>=6.0
 tqdm>=4.66
@@ -31,3 +32,7 @@ anthropic>=1.0
 # dashboard backend
 fastapi>=0.110
 uvicorn>=0.29
+markdown>=3.5         # dashboard/paper.py: paper.md → HTML
+python-docx>=1.2
+lxml>=5
+pypandoc_binary>=1.15  # paper/build_docx.py: LaTeX → Word Equation

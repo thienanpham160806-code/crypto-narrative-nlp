@@ -2,15 +2,14 @@
 
 > Lệnh lấy theo README các repo tại thời điểm 16/10/2026 — nếu báo lỗi, xem README gốc của từng repo.
 
-## Clone + 2 worktree (để Claude và Codex không giẫm chân nhau)
+## Clone (1 folder, nhánh `dev` – xem AGENTS.md "Làm chung 1 folder")
 ```bash
 git clone https://github.com/thienanpham160806-code/crypto-narrative-nlp.git
 cd crypto-narrative-nlp
-git worktree add ../cnn-claude -b claude/phase1
-git worktree add ../cnn-codex  -b codex/phase1
+git checkout dev
 ```
 
-## Claude Code (mở trong `../cnn-claude`)
+## Claude Code (mở trong `crypto-narrative-nlp/`)
 ```text
 /plugin marketplace add JuliusBrussee/caveman
 /plugin install caveman@caveman
@@ -26,7 +25,7 @@ npx -y skills add DietrichGebert/ponytail --skill ponytail --agent claude-code
 npx -y skills add pbakaus/impeccable --agent claude-code
 ```
 
-## Codex CLI (mở trong `../cnn-codex`)
+## Codex CLI (mở trong `crypto-narrative-nlp/`)
 ```bash
 npx -y skills add JuliusBrussee/caveman --agent codex
 npx -y skills add DietrichGebert/ponytail --skill ponytail --agent codex

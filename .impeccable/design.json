@@ -1,0 +1,975 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T18:25:46+00:00",
+  "title": "Design System: Crypto Narrative Report",
+  "extensions": {
+    "colorMeta": {
+      "bar": {
+        "role": "primary",
+        "displayName": "Report Navy",
+        "tonalRamp": [
+          "oklch(15% 0.068 255.3)",
+          "oklch(26% 0.068 255.3)",
+          "oklch(38% 0.068 255.3)",
+          "oklch(50% 0.068 255.3)",
+          "oklch(62% 0.068 255.3)",
+          "oklch(74% 0.068 255.3)",
+          "oklch(85% 0.068 255.3)",
+          "oklch(95% 0.068 255.3)"
+        ]
+      },
+      "bar-ink": {
+        "role": "neutral",
+        "displayName": "Masthead Paper",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(26% 0.000 89.9)",
+          "oklch(38% 0.000 89.9)",
+          "oklch(50% 0.000 89.9)",
+          "oklch(62% 0.000 89.9)",
+          "oklch(74% 0.000 89.9)",
+          "oklch(85% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "bar-muted": {
+        "role": "neutral",
+        "displayName": "Masthead Mist",
+        "tonalRamp": [
+          "oklch(15% 0.029 251.5)",
+          "oklch(26% 0.029 251.5)",
+          "oklch(38% 0.029 251.5)",
+          "oklch(50% 0.029 251.5)",
+          "oklch(62% 0.029 251.5)",
+          "oklch(74% 0.029 251.5)",
+          "oklch(85% 0.029 251.5)",
+          "oklch(95% 0.029 251.5)"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Report Navy Ink",
+        "tonalRamp": [
+          "oklch(15% 0.068 255.3)",
+          "oklch(26% 0.068 255.3)",
+          "oklch(38% 0.068 255.3)",
+          "oklch(50% 0.068 255.3)",
+          "oklch(62% 0.068 255.3)",
+          "oklch(74% 0.068 255.3)",
+          "oklch(85% 0.068 255.3)",
+          "oklch(95% 0.068 255.3)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Slate Ink",
+        "tonalRamp": [
+          "oklch(15% 0.060 254.3)",
+          "oklch(26% 0.060 254.3)",
+          "oklch(38% 0.060 254.3)",
+          "oklch(50% 0.060 254.3)",
+          "oklch(62% 0.060 254.3)",
+          "oklch(74% 0.060 254.3)",
+          "oklch(85% 0.060 254.3)",
+          "oklch(95% 0.060 254.3)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Steel Muted",
+        "tonalRamp": [
+          "oklch(15% 0.048 254.0)",
+          "oklch(26% 0.048 254.0)",
+          "oklch(38% 0.048 254.0)",
+          "oklch(50% 0.048 254.0)",
+          "oklch(62% 0.048 254.0)",
+          "oklch(74% 0.048 254.0)",
+          "oklch(85% 0.048 254.0)",
+          "oklch(95% 0.048 254.0)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Deep Ink Navy",
+        "tonalRamp": [
+          "oklch(15% 0.085 257.8)",
+          "oklch(26% 0.085 257.8)",
+          "oklch(38% 0.085 257.8)",
+          "oklch(50% 0.085 257.8)",
+          "oklch(62% 0.085 257.8)",
+          "oklch(74% 0.085 257.8)",
+          "oklch(85% 0.085 257.8)",
+          "oklch(95% 0.085 257.8)"
+        ]
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Focus Blue",
+        "tonalRamp": [
+          "oklch(15% 0.163 255.5)",
+          "oklch(26% 0.163 255.5)",
+          "oklch(38% 0.163 255.5)",
+          "oklch(50% 0.163 255.5)",
+          "oklch(62% 0.163 255.5)",
+          "oklch(74% 0.163 255.5)",
+          "oklch(85% 0.163 255.5)",
+          "oklch(95% 0.163 255.5)"
+        ]
+      },
+      "page": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(26% 0.000 89.9)",
+          "oklch(38% 0.000 89.9)",
+          "oklch(50% 0.000 89.9)",
+          "oklch(62% 0.000 89.9)",
+          "oklch(74% 0.000 89.9)",
+          "oklch(85% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Mist Panel",
+        "tonalRamp": [
+          "oklch(15% 0.005 247.9)",
+          "oklch(26% 0.005 247.9)",
+          "oklch(38% 0.005 247.9)",
+          "oklch(50% 0.005 247.9)",
+          "oklch(62% 0.005 247.9)",
+          "oklch(74% 0.005 247.9)",
+          "oklch(85% 0.005 247.9)",
+          "oklch(95% 0.005 247.9)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(26% 0.000 89.9)",
+          "oklch(38% 0.000 89.9)",
+          "oklch(50% 0.000 89.9)",
+          "oklch(62% 0.000 89.9)",
+          "oklch(74% 0.000 89.9)",
+          "oklch(85% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline Rule",
+        "tonalRamp": [
+          "oklch(15% 0.015 251.2)",
+          "oklch(26% 0.015 251.2)",
+          "oklch(38% 0.015 251.2)",
+          "oklch(50% 0.015 251.2)",
+          "oklch(62% 0.015 251.2)",
+          "oklch(74% 0.015 251.2)",
+          "oklch(85% 0.015 251.2)",
+          "oklch(95% 0.015 251.2)"
+        ]
+      },
+      "grid": {
+        "role": "neutral",
+        "displayName": "Grid Whisper",
+        "tonalRamp": [
+          "oklch(15% 0.009 247.9)",
+          "oklch(26% 0.009 247.9)",
+          "oklch(38% 0.009 247.9)",
+          "oklch(50% 0.009 247.9)",
+          "oklch(62% 0.009 247.9)",
+          "oklch(74% 0.009 247.9)",
+          "oklch(85% 0.009 247.9)",
+          "oklch(95% 0.009 247.9)"
+        ]
+      },
+      "band-valid": {
+        "role": "neutral",
+        "displayName": "Valid Mist Band",
+        "tonalRamp": [
+          "oklch(15% 0.050 247.6)",
+          "oklch(26% 0.050 247.6)",
+          "oklch(38% 0.050 247.6)",
+          "oklch(50% 0.050 247.6)",
+          "oklch(62% 0.050 247.6)",
+          "oklch(74% 0.050 247.6)",
+          "oklch(85% 0.050 247.6)",
+          "oklch(95% 0.050 247.6)"
+        ],
+        "canonical": "rgba(141, 169, 196, 0.16)"
+      },
+      "band-test": {
+        "role": "neutral",
+        "displayName": "Test Mist Band",
+        "tonalRamp": [
+          "oklch(15% 0.050 247.6)",
+          "oklch(26% 0.050 247.6)",
+          "oklch(38% 0.050 247.6)",
+          "oklch(50% 0.050 247.6)",
+          "oklch(62% 0.050 247.6)",
+          "oklch(74% 0.050 247.6)",
+          "oklch(85% 0.050 247.6)",
+          "oklch(95% 0.050 247.6)"
+        ],
+        "canonical": "rgba(141, 169, 196, 0.32)"
+      },
+      "neg": {
+        "role": "tertiary",
+        "displayName": "Risk Red",
+        "tonalRamp": [
+          "oklch(15% 0.174 29.7)",
+          "oklch(26% 0.174 29.7)",
+          "oklch(38% 0.174 29.7)",
+          "oklch(50% 0.174 29.7)",
+          "oklch(62% 0.174 29.7)",
+          "oklch(74% 0.174 29.7)",
+          "oklch(85% 0.174 29.7)",
+          "oklch(95% 0.174 29.7)"
+        ]
+      },
+      "pos": {
+        "role": "tertiary",
+        "displayName": "Gain Green",
+        "tonalRamp": [
+          "oklch(15% 0.129 148.9)",
+          "oklch(26% 0.129 148.9)",
+          "oklch(38% 0.129 148.9)",
+          "oklch(50% 0.129 148.9)",
+          "oklch(62% 0.129 148.9)",
+          "oklch(74% 0.129 148.9)",
+          "oklch(85% 0.129 148.9)",
+          "oklch(95% 0.129 148.9)"
+        ]
+      },
+      "st-good": {
+        "role": "tertiary",
+        "displayName": "Status Good",
+        "tonalRamp": [
+          "oklch(15% 0.200 142.6)",
+          "oklch(26% 0.200 142.6)",
+          "oklch(38% 0.200 142.6)",
+          "oklch(50% 0.200 142.6)",
+          "oklch(62% 0.200 142.6)",
+          "oklch(74% 0.200 142.6)",
+          "oklch(85% 0.200 142.6)",
+          "oklch(95% 0.200 142.6)"
+        ]
+      },
+      "st-serious": {
+        "role": "tertiary",
+        "displayName": "Status Serious",
+        "tonalRamp": [
+          "oklch(15% 0.141 41.6)",
+          "oklch(26% 0.141 41.6)",
+          "oklch(38% 0.141 41.6)",
+          "oklch(50% 0.141 41.6)",
+          "oklch(62% 0.141 41.6)",
+          "oklch(74% 0.141 41.6)",
+          "oklch(85% 0.141 41.6)",
+          "oklch(95% 0.141 41.6)"
+        ]
+      },
+      "st-critical": {
+        "role": "tertiary",
+        "displayName": "Status Critical",
+        "tonalRamp": [
+          "oklch(15% 0.186 25.2)",
+          "oklch(26% 0.186 25.2)",
+          "oklch(38% 0.186 25.2)",
+          "oklch(50% 0.186 25.2)",
+          "oklch(62% 0.186 25.2)",
+          "oklch(74% 0.186 25.2)",
+          "oklch(85% 0.186 25.2)",
+          "oklch(95% 0.186 25.2)"
+        ]
+      },
+      "s1": {
+        "role": "secondary",
+        "displayName": "Clear Blue",
+        "tonalRamp": [
+          "oklch(15% 0.163 255.5)",
+          "oklch(26% 0.163 255.5)",
+          "oklch(38% 0.163 255.5)",
+          "oklch(50% 0.163 255.5)",
+          "oklch(62% 0.163 255.5)",
+          "oklch(74% 0.163 255.5)",
+          "oklch(85% 0.163 255.5)",
+          "oklch(95% 0.163 255.5)"
+        ]
+      },
+      "s2": {
+        "role": "secondary",
+        "displayName": "Ember Orange",
+        "tonalRamp": [
+          "oklch(15% 0.175 40.6)",
+          "oklch(26% 0.175 40.6)",
+          "oklch(38% 0.175 40.6)",
+          "oklch(50% 0.175 40.6)",
+          "oklch(62% 0.175 40.6)",
+          "oklch(74% 0.175 40.6)",
+          "oklch(85% 0.175 40.6)",
+          "oklch(95% 0.175 40.6)"
+        ]
+      },
+      "s3": {
+        "role": "secondary",
+        "displayName": "Jade",
+        "tonalRamp": [
+          "oklch(15% 0.141 162.1)",
+          "oklch(26% 0.141 162.1)",
+          "oklch(38% 0.141 162.1)",
+          "oklch(50% 0.141 162.1)",
+          "oklch(62% 0.141 162.1)",
+          "oklch(74% 0.141 162.1)",
+          "oklch(85% 0.141 162.1)",
+          "oklch(95% 0.141 162.1)"
+        ]
+      },
+      "s4": {
+        "role": "secondary",
+        "displayName": "Amber",
+        "tonalRamp": [
+          "oklch(15% 0.161 75.1)",
+          "oklch(26% 0.161 75.1)",
+          "oklch(38% 0.161 75.1)",
+          "oklch(50% 0.161 75.1)",
+          "oklch(62% 0.161 75.1)",
+          "oklch(74% 0.161 75.1)",
+          "oklch(85% 0.161 75.1)",
+          "oklch(95% 0.161 75.1)"
+        ]
+      },
+      "s5": {
+        "role": "secondary",
+        "displayName": "Rose",
+        "tonalRamp": [
+          "oklch(15% 0.141 357.4)",
+          "oklch(26% 0.141 357.4)",
+          "oklch(38% 0.141 357.4)",
+          "oklch(50% 0.141 357.4)",
+          "oklch(62% 0.141 357.4)",
+          "oklch(74% 0.141 357.4)",
+          "oklch(85% 0.141 357.4)",
+          "oklch(95% 0.141 357.4)"
+        ]
+      },
+      "s6": {
+        "role": "secondary",
+        "displayName": "Field Green",
+        "tonalRamp": [
+          "oklch(15% 0.180 142.5)",
+          "oklch(26% 0.180 142.5)",
+          "oklch(38% 0.180 142.5)",
+          "oklch(50% 0.180 142.5)",
+          "oklch(62% 0.180 142.5)",
+          "oklch(74% 0.180 142.5)",
+          "oklch(85% 0.180 142.5)",
+          "oklch(95% 0.180 142.5)"
+        ]
+      },
+      "s7": {
+        "role": "secondary",
+        "displayName": "Violet",
+        "tonalRamp": [
+          "oklch(15% 0.197 283.4)",
+          "oklch(26% 0.197 283.4)",
+          "oklch(38% 0.197 283.4)",
+          "oklch(50% 0.197 283.4)",
+          "oklch(62% 0.197 283.4)",
+          "oklch(74% 0.197 283.4)",
+          "oklch(85% 0.197 283.4)",
+          "oklch(95% 0.197 283.4)"
+        ]
+      },
+      "s8": {
+        "role": "secondary",
+        "displayName": "Teal",
+        "tonalRamp": [
+          "oklch(15% 0.104 216.3)",
+          "oklch(26% 0.104 216.3)",
+          "oklch(38% 0.104 216.3)",
+          "oklch(50% 0.104 216.3)",
+          "oklch(62% 0.104 216.3)",
+          "oklch(74% 0.104 216.3)",
+          "oklch(85% 0.104 216.3)",
+          "oklch(95% 0.104 216.3)"
+        ]
+      },
+      "page-dark": {
+        "role": "neutral",
+        "displayName": "Night Navy",
+        "tonalRamp": [
+          "oklch(15% 0.039 258.3)",
+          "oklch(26% 0.039 258.3)",
+          "oklch(38% 0.039 258.3)",
+          "oklch(50% 0.039 258.3)",
+          "oklch(62% 0.039 258.3)",
+          "oklch(74% 0.039 258.3)",
+          "oklch(85% 0.039 258.3)",
+          "oklch(95% 0.039 258.3)"
+        ]
+      },
+      "panel-dark": {
+        "role": "neutral",
+        "displayName": "Mist Panel (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.048 257.5)",
+          "oklch(26% 0.048 257.5)",
+          "oklch(38% 0.048 257.5)",
+          "oklch(50% 0.048 257.5)",
+          "oklch(62% 0.048 257.5)",
+          "oklch(74% 0.048 257.5)",
+          "oklch(85% 0.048 257.5)",
+          "oklch(95% 0.048 257.5)"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Paper Surface (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.039 258.3)",
+          "oklch(26% 0.039 258.3)",
+          "oklch(38% 0.039 258.3)",
+          "oklch(50% 0.039 258.3)",
+          "oklch(62% 0.039 258.3)",
+          "oklch(74% 0.039 258.3)",
+          "oklch(85% 0.039 258.3)",
+          "oklch(95% 0.039 258.3)"
+        ]
+      },
+      "bar-dark": {
+        "role": "primary",
+        "displayName": "Policy Navy (dark masthead)",
+        "tonalRamp": [
+          "oklch(15% 0.085 257.8)",
+          "oklch(26% 0.085 257.8)",
+          "oklch(38% 0.085 257.8)",
+          "oklch(50% 0.085 257.8)",
+          "oklch(62% 0.085 257.8)",
+          "oklch(74% 0.085 257.8)",
+          "oklch(85% 0.085 257.8)",
+          "oklch(95% 0.085 257.8)"
+        ]
+      },
+      "bar-ink-dark": {
+        "role": "neutral",
+        "displayName": "Masthead Paper (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.013 251.6)",
+          "oklch(26% 0.013 251.6)",
+          "oklch(38% 0.013 251.6)",
+          "oklch(50% 0.013 251.6)",
+          "oklch(62% 0.013 251.6)",
+          "oklch(74% 0.013 251.6)",
+          "oklch(85% 0.013 251.6)",
+          "oklch(95% 0.013 251.6)"
+        ]
+      },
+      "bar-muted-dark": {
+        "role": "neutral",
+        "displayName": "Masthead Mist (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.042 251.9)",
+          "oklch(26% 0.042 251.9)",
+          "oklch(38% 0.042 251.9)",
+          "oklch(50% 0.042 251.9)",
+          "oklch(62% 0.042 251.9)",
+          "oklch(74% 0.042 251.9)",
+          "oklch(85% 0.042 251.9)",
+          "oklch(95% 0.042 251.9)"
+        ]
+      },
+      "ink-dark": {
+        "role": "primary",
+        "displayName": "Report Navy Ink (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.013 251.6)",
+          "oklch(26% 0.013 251.6)",
+          "oklch(38% 0.013 251.6)",
+          "oklch(50% 0.013 251.6)",
+          "oklch(62% 0.013 251.6)",
+          "oklch(74% 0.013 251.6)",
+          "oklch(85% 0.013 251.6)",
+          "oklch(95% 0.013 251.6)"
+        ]
+      },
+      "ink-2-dark": {
+        "role": "neutral",
+        "displayName": "Slate Ink (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.027 251.7)",
+          "oklch(26% 0.027 251.7)",
+          "oklch(38% 0.027 251.7)",
+          "oklch(50% 0.027 251.7)",
+          "oklch(62% 0.027 251.7)",
+          "oklch(74% 0.027 251.7)",
+          "oklch(85% 0.027 251.7)",
+          "oklch(95% 0.027 251.7)"
+        ]
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "Steel Muted (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.040 253.3)",
+          "oklch(26% 0.040 253.3)",
+          "oklch(38% 0.040 253.3)",
+          "oklch(50% 0.040 253.3)",
+          "oklch(62% 0.040 253.3)",
+          "oklch(74% 0.040 253.3)",
+          "oklch(85% 0.040 253.3)",
+          "oklch(95% 0.040 253.3)"
+        ]
+      },
+      "rule-dark": {
+        "role": "neutral",
+        "displayName": "Hairline Rule (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.047 256.2)",
+          "oklch(26% 0.047 256.2)",
+          "oklch(38% 0.047 256.2)",
+          "oklch(50% 0.047 256.2)",
+          "oklch(62% 0.047 256.2)",
+          "oklch(74% 0.047 256.2)",
+          "oklch(85% 0.047 256.2)",
+          "oklch(95% 0.047 256.2)"
+        ]
+      },
+      "grid-dark": {
+        "role": "neutral",
+        "displayName": "Grid Whisper (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.046 256.6)",
+          "oklch(26% 0.046 256.6)",
+          "oklch(38% 0.046 256.6)",
+          "oklch(50% 0.046 256.6)",
+          "oklch(62% 0.046 256.6)",
+          "oklch(74% 0.046 256.6)",
+          "oklch(85% 0.046 256.6)",
+          "oklch(95% 0.046 256.6)"
+        ]
+      },
+      "accent-dark": {
+        "role": "primary",
+        "displayName": "Pale Signal Blue",
+        "tonalRamp": [
+          "oklch(15% 0.079 252.9)",
+          "oklch(26% 0.079 252.9)",
+          "oklch(38% 0.079 252.9)",
+          "oklch(50% 0.079 252.9)",
+          "oklch(62% 0.079 252.9)",
+          "oklch(74% 0.079 252.9)",
+          "oklch(85% 0.079 252.9)",
+          "oklch(95% 0.079 252.9)"
+        ]
+      },
+      "focus-dark": {
+        "role": "primary",
+        "displayName": "Focus Blue (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.124 254.1)",
+          "oklch(26% 0.124 254.1)",
+          "oklch(38% 0.124 254.1)",
+          "oklch(50% 0.124 254.1)",
+          "oklch(62% 0.124 254.1)",
+          "oklch(74% 0.124 254.1)",
+          "oklch(85% 0.124 254.1)",
+          "oklch(95% 0.124 254.1)"
+        ]
+      },
+      "neg-dark": {
+        "role": "tertiary",
+        "displayName": "Risk Red (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.145 28.4)",
+          "oklch(26% 0.145 28.4)",
+          "oklch(38% 0.145 28.4)",
+          "oklch(50% 0.145 28.4)",
+          "oklch(62% 0.145 28.4)",
+          "oklch(74% 0.145 28.4)",
+          "oklch(85% 0.145 28.4)",
+          "oklch(95% 0.145 28.4)"
+        ]
+      },
+      "pos-dark": {
+        "role": "tertiary",
+        "displayName": "Gain Green (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.142 151.1)",
+          "oklch(26% 0.142 151.1)",
+          "oklch(38% 0.142 151.1)",
+          "oklch(50% 0.142 151.1)",
+          "oklch(62% 0.142 151.1)",
+          "oklch(74% 0.142 151.1)",
+          "oklch(85% 0.142 151.1)",
+          "oklch(95% 0.142 151.1)"
+        ]
+      },
+      "band-valid-dark": {
+        "role": "neutral",
+        "displayName": "Valid Mist Band (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.050 247.6)",
+          "oklch(26% 0.050 247.6)",
+          "oklch(38% 0.050 247.6)",
+          "oklch(50% 0.050 247.6)",
+          "oklch(62% 0.050 247.6)",
+          "oklch(74% 0.050 247.6)",
+          "oklch(85% 0.050 247.6)",
+          "oklch(95% 0.050 247.6)"
+        ],
+        "canonical": "rgba(141, 169, 196, 0.14)"
+      },
+      "band-test-dark": {
+        "role": "neutral",
+        "displayName": "Test Mist Band (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.050 247.6)",
+          "oklch(26% 0.050 247.6)",
+          "oklch(38% 0.050 247.6)",
+          "oklch(50% 0.050 247.6)",
+          "oklch(62% 0.050 247.6)",
+          "oklch(74% 0.050 247.6)",
+          "oklch(85% 0.050 247.6)",
+          "oklch(95% 0.050 247.6)"
+        ],
+        "canonical": "rgba(141, 169, 196, 0.28)"
+      },
+      "s1-dark": {
+        "role": "secondary",
+        "displayName": "Clear Blue (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.161 255.1)",
+          "oklch(26% 0.161 255.1)",
+          "oklch(38% 0.161 255.1)",
+          "oklch(50% 0.161 255.1)",
+          "oklch(62% 0.161 255.1)",
+          "oklch(74% 0.161 255.1)",
+          "oklch(85% 0.161 255.1)",
+          "oklch(95% 0.161 255.1)"
+        ]
+      },
+      "s2-dark": {
+        "role": "secondary",
+        "displayName": "Ember Orange (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.173 40.1)",
+          "oklch(26% 0.173 40.1)",
+          "oklch(38% 0.173 40.1)",
+          "oklch(50% 0.173 40.1)",
+          "oklch(62% 0.173 40.1)",
+          "oklch(74% 0.173 40.1)",
+          "oklch(85% 0.173 40.1)",
+          "oklch(95% 0.173 40.1)"
+        ]
+      },
+      "s3-dark": {
+        "role": "secondary",
+        "displayName": "Jade (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.128 163.1)",
+          "oklch(26% 0.128 163.1)",
+          "oklch(38% 0.128 163.1)",
+          "oklch(50% 0.128 163.1)",
+          "oklch(62% 0.128 163.1)",
+          "oklch(74% 0.128 163.1)",
+          "oklch(85% 0.128 163.1)",
+          "oklch(95% 0.128 163.1)"
+        ]
+      },
+      "s4-dark": {
+        "role": "secondary",
+        "displayName": "Amber (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.143 73.2)",
+          "oklch(26% 0.143 73.2)",
+          "oklch(38% 0.143 73.2)",
+          "oklch(50% 0.143 73.2)",
+          "oklch(62% 0.143 73.2)",
+          "oklch(74% 0.143 73.2)",
+          "oklch(85% 0.143 73.2)",
+          "oklch(95% 0.143 73.2)"
+        ]
+      },
+      "s5-dark": {
+        "role": "secondary",
+        "displayName": "Rose (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.171 0.8)",
+          "oklch(26% 0.171 0.8)",
+          "oklch(38% 0.171 0.8)",
+          "oklch(50% 0.171 0.8)",
+          "oklch(62% 0.171 0.8)",
+          "oklch(74% 0.171 0.8)",
+          "oklch(85% 0.171 0.8)",
+          "oklch(95% 0.171 0.8)"
+        ]
+      },
+      "s6-dark": {
+        "role": "secondary",
+        "displayName": "Field Green (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.180 142.5)",
+          "oklch(26% 0.180 142.5)",
+          "oklch(38% 0.180 142.5)",
+          "oklch(50% 0.180 142.5)",
+          "oklch(62% 0.180 142.5)",
+          "oklch(74% 0.180 142.5)",
+          "oklch(85% 0.180 142.5)",
+          "oklch(95% 0.180 142.5)"
+        ]
+      },
+      "s7-dark": {
+        "role": "secondary",
+        "displayName": "Violet (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.145 286.8)",
+          "oklch(26% 0.145 286.8)",
+          "oklch(38% 0.145 286.8)",
+          "oklch(50% 0.145 286.8)",
+          "oklch(62% 0.145 286.8)",
+          "oklch(74% 0.145 286.8)",
+          "oklch(85% 0.145 286.8)",
+          "oklch(95% 0.145 286.8)"
+        ]
+      },
+      "s8-dark": {
+        "role": "secondary",
+        "displayName": "Teal (dark)",
+        "tonalRamp": [
+          "oklch(15% 0.112 215.1)",
+          "oklch(26% 0.112 215.1)",
+          "oklch(38% 0.112 215.1)",
+          "oklch(50% 0.112 215.1)",
+          "oklch(62% 0.112 215.1)",
+          "oklch(74% 0.112 215.1)",
+          "oklch(85% 0.112 215.1)",
+          "oklch(95% 0.112 215.1)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The Key judgements heading; prose pages use the same face at 26px."
+      },
+      "brand": {
+        "displayName": "Brand",
+        "purpose": "The masthead report name, with a 12px sans subline."
+      },
+      "headline": {
+        "displayName": "Exhibit Title",
+        "purpose": "Exhibit titles, after a sans 600 14px muted exhibit number."
+      },
+      "title": {
+        "displayName": "Metric Value",
+        "purpose": "Metric values in the Key judgements column."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Judgement bullets, tabs, running text; prose capped at 75ch."
+      },
+      "judgement": {
+        "displayName": "Judgement",
+        "purpose": "The one-sentence reading under each figure, in ink-2, capped at 75ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Exhibit subtitles, filter labels, table cells, coverage text."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Source lines, legends, metric labels, tooltips, snippet timestamps."
+      },
+      "axis": {
+        "displayName": "Axis",
+        "purpose": "Chart tick labels and end-of-line value labels, tabular."
+      }
+    },
+    "shadows": [
+      {
+        "name": "tooltip-float",
+        "value": "0 6px 18px rgba(11, 37, 69, 0.14)",
+        "purpose": "Only on the chart hover tooltip; every other surface is flat."
+      }
+    ],
+    "rules": [
+      {
+        "name": "exhibit-top-rule",
+        "value": "3px solid var(--ink)",
+        "purpose": "Defines each exhibit in place of a box."
+      },
+      {
+        "name": "hairline",
+        "value": "1px solid var(--rule)",
+        "purpose": "Borders, dividers, chart baseline."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px",
+        "purpose": "Keyboard focus on every interactive element."
+      }
+    ],
+    "motion": [
+      {
+        "name": "chart-loading-fade",
+        "value": "opacity 0.2s ease-out",
+        "purpose": "Chart SVG dims to 0.5 while reloading; only under prefers-reduced-motion: no-preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "report-stack",
+        "value": "1100px",
+        "purpose": "At or below: judgements column stacks above exhibits."
+      },
+      {
+        "name": "mobile",
+        "value": "760px",
+        "purpose": "At or below: 16px gutters, tabs on own row, one exhibit column."
+      }
+    ],
+    "themes": {
+      "light": "Default :root tokens.",
+      "dark": "Applied by prefers-color-scheme: dark unless [data-theme='light'], and by [data-theme='dark']. Use the '-dark' sibling of each colour token."
+    }
+  },
+  "components": [
+    {
+      "name": "Masthead with Section Tabs",
+      "kind": "nav",
+      "refersTo": "topbar",
+      "description": "Sticky navy masthead: serif report name, section tabs, VI/EN and light/dark segmented toggles.",
+      "html": "<header class=\"ds-topbar\"><div class=\"ds-brand\">Crypto Narrative Report<small>Narrative &amp; sentiment from news · 2023–2026</small></div><nav class=\"ds-tabs\"><a href=\"#\" aria-current=\"page\">Overview</a><a href=\"#\">Narratives</a><a href=\"#\">Sentiment</a><a href=\"#\">Timing accuracy</a></nav><div class=\"ds-seg\"><button aria-pressed=\"true\">VI</button><button aria-pressed=\"false\">EN</button></div></header>",
+      "css": ".ds-topbar { background: var(--bar, #0b2545); color: var(--bar-ink, #fff); display: flex; align-items: center; gap: 24px; padding: 0 32px; min-height: 60px; font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 15px; } .ds-brand { font: 600 18px/1.2 'Source Serif 4', Georgia, serif; white-space: nowrap; } .ds-brand small { display: block; font: 400 12px 'Source Sans 3', system-ui, sans-serif; color: var(--bar-muted, #b9c8d9); } .ds-tabs { display: flex; gap: 4px; flex: 1; } .ds-tabs a { color: var(--bar-muted, #b9c8d9); text-decoration: none; padding: 18px 10px 16px; border-bottom: 2px solid transparent; } .ds-tabs a:hover { color: var(--bar-ink, #fff); } .ds-tabs a[aria-current='page'] { color: var(--bar-ink, #fff); border-bottom-color: var(--bar-ink, #fff); } .ds-tabs a:focus-visible, .ds-seg button:focus-visible { outline: 2px solid var(--focus, #2a78d6); outline-offset: 2px; border-radius: 2px; } .ds-seg { display: inline-flex; border: 1px solid rgba(185, 200, 217, 0.4); border-radius: 4px; overflow: hidden; } .ds-seg button { background: transparent; border: 0; padding: 5px 10px; font: inherit; font-size: 13px; color: var(--bar-muted, #b9c8d9); cursor: pointer; } .ds-seg button[aria-pressed='true'] { background: var(--bar-ink, #fff); color: var(--bar, #0b2545); font-weight: 600; }"
+    },
+    {
+      "name": "Range Chips",
+      "kind": "chip",
+      "refersTo": "range-chip",
+      "description": "Joined segmented range selector in the filter row; pressed segment fills with the accent.",
+      "html": "<div class=\"ds-chips\" role=\"group\"><button aria-pressed=\"false\">30 days</button><button aria-pressed=\"false\">90 days</button><button aria-pressed=\"false\">365 days</button><button aria-pressed=\"true\">Full sample</button></div>",
+      "css": ".ds-chips { display: inline-flex; border: 1px solid var(--rule, #d6dee7); border-radius: 4px; overflow: hidden; font-family: 'Source Sans 3', system-ui, sans-serif; } .ds-chips button { border: 0; border-right: 1px solid var(--rule, #d6dee7); background: var(--surface, #fff); color: var(--ink, #0b2545); padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; } .ds-chips button:last-child { border-right: 0; } .ds-chips button:hover { background: var(--panel, #f5f8fb); } .ds-chips button:focus-visible { outline: 2px solid var(--focus, #2a78d6); outline-offset: 2px; } .ds-chips button[aria-pressed='true'] { background: var(--accent, #13315c); color: var(--page, #fff); font-weight: 600; }"
+    },
+    {
+      "name": "Figure/Table Toggle",
+      "kind": "button",
+      "refersTo": "view-toggle",
+      "description": "Small joined switch in every exhibit header that swaps the figure for its sortable table.",
+      "html": "<div class=\"ds-view\" role=\"group\"><button aria-pressed=\"true\">Figure</button><button aria-pressed=\"false\">Table</button></div>",
+      "css": ".ds-view { display: inline-flex; border: 1px solid var(--rule, #d6dee7); border-radius: 4px; overflow: hidden; font-family: 'Source Sans 3', system-ui, sans-serif; } .ds-view button { border: 0; background: var(--surface, #fff); padding: 3px 9px; font: inherit; font-size: 12px; color: var(--muted, #5b708a); cursor: pointer; } .ds-view button:hover { color: var(--ink, #0b2545); } .ds-view button:focus-visible { outline: 2px solid var(--focus, #2a78d6); outline-offset: 2px; } .ds-view button[aria-pressed='true'] { background: var(--panel, #f5f8fb); color: var(--ink, #0b2545); font-weight: 600; }"
+    },
+    {
+      "name": "Exhibit",
+      "kind": "card",
+      "refersTo": "exhibit-title",
+      "description": "The signature container: 3px ink top rule, numbered serif title, subtitle, figure with valid/test bands, judgement sentence, source.",
+      "html": "<section class=\"ds-exhibit\"><div class=\"ds-ex-head\"><h2><span class=\"ds-no\">Exhibit 1.3</span>BTC volatility</h2><div class=\"ds-view\"><button aria-pressed=\"true\">Figure</button><button aria-pressed=\"false\">Table</button></div></div><p class=\"ds-ex-sub\">Daily realized volatility, ×10⁴</p><svg class=\"ds-plot\" viewBox=\"0 0 400 120\" role=\"img\" aria-label=\"BTC RV\"><rect x=\"260\" y=\"10\" width=\"50\" height=\"100\" fill=\"rgba(141,169,196,0.16)\"/><rect x=\"310\" y=\"10\" width=\"90\" height=\"100\" fill=\"rgba(141,169,196,0.32)\"/><line x1=\"0\" x2=\"400\" y1=\"110\" y2=\"110\" stroke=\"#d6dee7\"/><path d=\"M0,90L40,80L80,95L120,60L160,85L200,70L240,88L280,40L320,82L360,75L400,86\" fill=\"none\" stroke=\"#eb6834\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><text x=\"264\" y=\"8\" font-size=\"11\" fill=\"#5b708a\">Valid</text><text x=\"314\" y=\"8\" font-size=\"11\" fill=\"#5b708a\">Test</text></svg><p class=\"ds-ex-judgement\">The forecast model only uses information available before the forecast day.</p><p class=\"ds-ex-source\">Source: Binance via ccxt.</p></section>",
+      "css": ".ds-exhibit { border-top: 3px solid var(--ink, #0b2545); padding-top: 12px; font-family: 'Source Sans 3', system-ui, sans-serif; color: var(--ink, #0b2545); max-width: 560px; } .ds-ex-head { display: flex; align-items: flex-start; gap: 12px; } .ds-ex-head h2 { font: 600 17px/1.3 'Source Serif 4', Georgia, serif; margin: 0; flex: 1; } .ds-no { color: var(--muted, #5b708a); margin-right: 8px; font: 600 14px 'Source Sans 3', system-ui, sans-serif; } .ds-ex-sub { color: var(--muted, #5b708a); font-size: 13px; margin: 2px 0 10px; } .ds-plot { display: block; width: 100%; overflow: visible; } .ds-ex-judgement { font-size: 14px; margin: 10px 0 0; color: var(--ink-2, #3d5675); max-width: 75ch; } .ds-ex-source { font-size: 12px; color: var(--muted, #5b708a); margin: 6px 0 0; } .ds-view { display: inline-flex; border: 1px solid var(--rule, #d6dee7); border-radius: 4px; overflow: hidden; } .ds-view button { border: 0; background: var(--surface, #fff); padding: 3px 9px; font: inherit; font-size: 12px; color: var(--muted, #5b708a); cursor: pointer; } .ds-view button:focus-visible { outline: 2px solid var(--focus, #2a78d6); outline-offset: 2px; } .ds-view button[aria-pressed='true'] { background: var(--panel, #f5f8fb); color: var(--ink, #0b2545); font-weight: 600; }"
+    },
+    {
+      "name": "Key Judgements Column",
+      "kind": "custom",
+      "refersTo": "judgements-column",
+      "description": "Mist panel with serif heading, as-of line, judgement sentences, then a hairline-gapped metric stack with shape-coded risk.",
+      "html": "<aside class=\"ds-judge\"><h1>Key judgements</h1><p class=\"ds-asof\">As of 2026-09-23 (UTC) · 117 articles in 7 days</p><ul><li>ETF / institutional leads the news flow: 28.5% attention over 7 days.</li><li>FinBERT sentiment averages +0.12.</li></ul><dl class=\"ds-metrics\"><div class=\"ds-metric\"><dt>Overall sentiment</dt><dd>+0.12<small>FinBERT · 7d</small></dd></div><div class=\"ds-metric\"><dt>BTC volatility risk</dt><dd><span class=\"ds-risk\"><svg width=\"16\" height=\"16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.5\" fill=\"#0ca30c\"/></svg>Normal</span><small>Realized RV · 59th percentile in 365 days</small></dd></div></dl></aside>",
+      "css": ".ds-judge { background: var(--panel, #f5f8fb); padding: 28px; width: 320px; font: 15px/1.5 'Source Sans 3', system-ui, sans-serif; color: var(--ink, #0b2545); } .ds-judge h1 { font: 600 24px/1.25 'Source Serif 4', Georgia, serif; margin: 0 0 6px; letter-spacing: -0.01em; } .ds-asof { color: var(--muted, #5b708a); font-size: 13px; margin: 0 0 20px; font-variant-numeric: tabular-nums; } .ds-judge ul { margin: 0 0 24px; padding-left: 18px; } .ds-judge li { margin-bottom: 12px; } .ds-metrics { display: grid; gap: 1px; background: var(--rule, #d6dee7); border: 1px solid var(--rule, #d6dee7); margin: 0; } .ds-metric { background: var(--surface, #fff); padding: 12px; } .ds-metric dt { font-size: 12px; color: var(--muted, #5b708a); } .ds-metric dd { margin: 2px 0 0; font-size: 20px; font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; } .ds-metric dd small { display: block; font-size: 12px; font-weight: 400; color: var(--muted, #5b708a); margin-top: 2px; } .ds-risk { display: inline-flex; align-items: center; gap: 8px; }"
+    },
+    {
+      "name": "Chart Tooltip",
+      "kind": "custom",
+      "refersTo": "tooltip",
+      "description": "The only floating, shadowed element: UTC date, then one tabular row per series.",
+      "html": "<div class=\"ds-tip\"><div class=\"ds-when\">23 Sept 2026 UTC</div><div class=\"ds-row\"><span><i style=\"background:#2a78d6\"></i>FinBERT 7d</span><strong>+0.12</strong></div><div class=\"ds-row\"><span><i style=\"background:#6250d6\"></i>BTC</span><strong>84k</strong></div></div>",
+      "css": ".ds-tip { background: var(--surface, #fff); border: 1px solid var(--rule, #d6dee7); box-shadow: 0 6px 18px rgba(11, 37, 69, 0.14); border-radius: 6px; padding: 8px 10px; font: 12px/1.5 'Source Sans 3', system-ui, sans-serif; min-width: 160px; display: inline-block; color: var(--ink, #0b2545); } .ds-when { color: var(--muted, #5b708a); margin-bottom: 4px; } .ds-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; } .ds-row span { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2, #3d5675); } .ds-row i { width: 14px; height: 2px; display: inline-block; border-radius: 1px; } .ds-row strong { font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Data Table",
+      "kind": "custom",
+      "refersTo": "table-header",
+      "description": "Sortable table behind every figure: sticky mist header, hairline frame, right-aligned tabular numbers.",
+      "html": "<div class=\"ds-table\"><table><thead><tr><th><button>Source</button></th><th class=\"n\"><button aria-sort=\"descending\">n</button></th><th class=\"n\"><button>Median |lag| (min)</button></th></tr></thead><tbody><tr><td>gdelt</td><td class=\"n\">42</td><td class=\"n\">142</td></tr><tr><td>sec</td><td class=\"n\">118</td><td class=\"n\">3</td></tr></tbody></table></div>",
+      "css": ".ds-table { overflow: auto; max-height: 420px; border: 1px solid var(--rule, #d6dee7); border-radius: 4px; font-family: 'Source Sans 3', system-ui, sans-serif; } .ds-table table { border-collapse: collapse; width: 100%; font-size: 13px; color: var(--ink, #0b2545); } .ds-table th, .ds-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--grid, #e8edf2); white-space: nowrap; } .ds-table th { position: sticky; top: 0; background: var(--panel, #f5f8fb); font-weight: 600; color: var(--ink-2, #3d5675); } .ds-table th button { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: inherit; cursor: pointer; } .ds-table th button:hover { color: var(--ink, #0b2545); } .ds-table th button:focus-visible { outline: 2px solid var(--focus, #2a78d6); outline-offset: 2px; border-radius: 2px; } .ds-table .n { text-align: right; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Series Legend",
+      "kind": "custom",
+      "description": "Wrapping legend of fixed-slot series keys; hidden series fade to 45%.",
+      "html": "<div class=\"ds-legend\"><button aria-pressed=\"true\"><i style=\"background:#2a78d6\"></i>Regulation</button><button aria-pressed=\"true\"><i style=\"background:#eb6834\"></i>ETF / institutional</button><button aria-pressed=\"true\"><i style=\"background:#1baf7a\"></i>Security / hacks</button><button aria-pressed=\"false\"><i style=\"background:#eda100\"></i>Stablecoins</button></div>",
+      "css": ".ds-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 12px 'Source Sans 3', system-ui, sans-serif; } .ds-legend button { background: none; border: 0; padding: 0; display: inline-flex; align-items: center; gap: 6px; font: inherit; color: var(--ink-2, #3d5675); cursor: pointer; } .ds-legend button:hover { color: var(--ink, #0b2545); } .ds-legend button:focus-visible { outline: 2px solid var(--focus, #2a78d6); outline-offset: 2px; border-radius: 2px; } .ds-legend button[aria-pressed='false'] { opacity: 0.45; } .ds-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Monetary Policy Report",
+    "overview": "The dashboard reads like a central bank's quarterly report, not a trading terminal. A navy masthead carries the report name, the section contents as tabs, and the language and theme switches. Below it, white report paper holds numbered exhibits. Each exhibit has a heavy rule on top, a serif title prefixed with its number (\"Exhibit 1.2\"), a one-line method subtitle, the figure, one sentence of judgement on what the figure means, and a small source line. The landing view leads with a 320px \"Key judgements\" column: plain sentences first, the supporting metrics stacked under them.\n\nDensity is moderate and document-like. Exhibits sit in a two-column grid with generous gutters and no boxes around them; separation comes from the top rule and white space, not from cards. The one recurring piece of chart furniture is the projection band: every time axis shades the validation period and, darker, the out-of-sample test period in pale mist, the way a policy report shades its forecast horizon. Colour lives in the data. The chrome stays navy, white, and grey.\n\nThe system rejects the crypto-dashboard default of a KPI tile grid with unexplained charts. A figure never ships without its sentence and its source.",
+    "keyCharacteristics": [
+      "Navy masthead, white paper, navy ink; dark mode turns to night navy with pale ink.",
+      "Numbered exhibits with a 3px ink top rule, serif title, judgement sentence, source line.",
+      "A Figure/Table switch on every exhibit, so every chart has a table behind it.",
+      "Valid/test projection bands on every time axis.",
+      "Eight fixed categorical series slots, re-tuned for dark mode.",
+      "Flat paper: one shadow in the whole system, on the floating tooltip."
+    ],
+    "rules": [
+      {
+        "name": "The Red Means Bad News Rule",
+        "body": "Red is used only for negative sentiment and critical risk. No series slot is red, and the volatility series is drawn in Ember Orange, not red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fixed Slot Rule",
+        "body": "Series colours are assigned by stable index (s1 to s8), never by rank or by what happens to be on screen. A ninth category goes to muted grey, not to a new hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink Chrome Rule",
+        "body": "Chrome (masthead, rules, chips, toggles) uses only navy, paper, and neutrals. Saturated colour appears only inside figures, legends, and the tags that point to them.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif Speaks, Sans Counts Rule",
+        "body": "Use the serif only for titles that name a part of the report. Every number, label, and control is in sans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "All numbers (metrics, axes, tables, timestamps) use `font-variant-numeric: tabular-nums`.",
+        "section": "typography"
+      },
+      {
+        "name": "The Exhibit Rule",
+        "body": "Every figure lives in an exhibit, in this order: number, title, method subtitle, Figure/Table switch, legend, figure, judgement sentence, source. Leave out a part only when it has no content. Never add a frame.",
+        "section": "layout"
+      },
+      {
+        "name": "The Projection Band Rule",
+        "body": "Every time axis shades the validation period and the test period with the mist bands, labelled \"Valid\" and \"Test\" above the plot. Days with no collected data are drawn as gaps, never as zero.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Paper Rule",
+        "body": "Surfaces never cast shadows. The tooltip is the only element that floats, so it is the only element with a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do give every figure an exhibit number, a judgement sentence, and a source line (The Exhibit Rule).",
+      "Do shade validation (16% mist) and test (32% mist) periods on every time axis, and label them \"Valid\" and \"Test\".",
+      "Do assign series colours by fixed slot s1 to s8, and use each slot's `-dark` value in dark mode.",
+      "Do pair colour with a second channel: shape for risk level, dash for the second reading of a quantity, a direct label at the line end.",
+      "Do set every number in Source Sans 3 with tabular figures, and label every date as UTC.",
+      "Do keep chrome navy, paper, and neutral; colour belongs to the data."
+    ],
+    "donts": [
+      "Don't build a grid of KPI tiles without sentences. Metrics appear only under the Key judgements sentences, as a stacked list.",
+      "Don't use red for anything other than negative sentiment or critical risk.",
+      "Don't draw days with no collected data as zero; leave a gap.",
+      "Don't box exhibits in cards or give surfaces shadows. Only the tooltip floats.",
+      "Don't use the serif for numbers, labels, or controls.",
+      "Don't round controls past 4px, or the tooltip past 6px."
+    ]
+  }
+}

@@ -12,7 +12,7 @@
 ## Cách 2 – phiên Codex riêng, review PR của Claude
 ```text
 $caveman full
-Review PR từ nhánh claude/* vào main (git diff main...claude/phase1). Đọc AGENTS.md + docs/DATA_CONTRACT.md trước.
+Review PR từ dev vào main (git diff main...dev). Đọc AGENTS.md + docs/DATA_CONTRACT.md trước.
 Chỉ REVIEW, không sửa code. Kiểm tra: point-in-time & leakage, đúng schema contract, timestamp/UTC, dedup, nhánh tiếng Việt dùng từ điển Việt (không dịch), test pass (pytest -q), code tối giản.
 Ghi kết quả vào docs/reviews/<yyyy-mm-dd>_claude_phaseN.md: Blocker / Should-fix / Nit, mỗi mục có file:dòng + đề xuất. Cuối file: "Merge được không: Có/Không".
 ```

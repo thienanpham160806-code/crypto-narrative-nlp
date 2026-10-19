@@ -9,7 +9,7 @@ thêm 15/30/45 khi cần đủ. Cache: data/raw/gkg/<lang>/<YYYYMMDD>_<mm>.jsonl
 Chạy: python -m data.news_gdelt --lang en ; audit giờ đăng: python -m data.news_gdelt --audit 300
 """
 from __future__ import annotations
-import argparse, html, io, json, re, sys, pathlib, unicodedata, zipfile
+import argparse, html, io, json, re, sys, pathlib, threading, time, unicodedata, zipfile
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -26,6 +26,7 @@ KEEP = {
                      r"stablecoin|blockchain|binance|\busdt\b", re.I),
 }
 TITLE = re.compile(r"<PAGE_TITLE>(.*?)</PAGE_TITLE>")
+STRIDE = 16
 
 
 def title_of(extras: str) -> str:
@@ -59,18 +60,48 @@ def cache_dir(lang: str) -> pathlib.Path:
 
 
 def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> int:
+    """Ngày lỗi mạng: ghi ERR vào progress.log, không ghi cache → lần chạy sau làm lại. Trả số dòng thu được."""
     from utils.http import Client
     get = get or Client(rps=workers).get
     days = pd.date_range(start, end, freq="D")
     todo = [(d, m) for d in days for m in minutes if not (cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl").exists()]
+    todo.sort(key=lambda dm: ((dm[0] - days[0]).days % STRIDE, dm[0]))   # rải đều mẫu: dừng giữa chừng vẫn phủ đủ kỳ
+    total, lock, log = len(days) * len(minutes), threading.Lock(), cache_dir(lang).parent / "progress.log"
+    done = [total - len(todo)]
+
+    def note(msg):
+        print(msg, flush=True)
+        with open(log, "a", encoding="utf-8") as f:
+            f.write(msg + "\n")
 
     def day(dm):
         d, m = dm
-        rows = [r for h in range(24) for r in fetch(f"{d:%Y%m%d}{h:02d}{m:02d}00", lang, get)]
         f = cache_dir(lang) / f"{d:%Y%m%d}_{m:02d}.jsonl"
+        part = f.with_suffix(".part")                      # giờ đã tải xong: mạng chập chờn không làm mất cả ngày
+        got = {}
+        if part.exists():
+            for line in part.read_text(encoding="utf-8").splitlines():
+                rec = json.loads(line)
+                got[rec["h"]] = rec["rows"]
+        try:
+            for h in range(24):
+                if h not in got:
+                    got[h] = fetch(f"{d:%Y%m%d}{h:02d}{m:02d}00", lang, get)
+                    with open(part, "a", encoding="utf-8") as p:
+                        p.write(json.dumps(dict(h=h, rows=got[h]), ensure_ascii=False) + "\n")
+        except Exception as e:
+            with lock:
+                note(f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} ERR {type(e).__name__} "
+                     f"({len(got)}/24 giờ đã lưu)")
+            return 0
+        rows = [r for h in range(24) for r in got[h]]
         f.with_suffix(".tmp").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
         f.with_suffix(".tmp").replace(f)
-        print(f"{lang} {d:%Y-%m-%d} :{m:02d} {len(rows)}", flush=True)
+        part.unlink(missing_ok=True)
+        with lock:
+            done[0] += 1
+            note(f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} {lang} {d:%Y-%m-%d} :{m:02d} rows={len(rows)} "
+                 f"done={done[0]}/{total} ({100 * done[0] / total:.1f}%)")
         return len(rows)
 
     with ThreadPoolExecutor(workers) as ex:
@@ -149,6 +180,14 @@ if __name__ == "__main__":
     ap.add_argument("--audit", type=int, default=0, help="số URL cần có giờ đăng (0 = thu GKG)")
     a = ap.parse_args()
     if a.audit:
-        print(audit(a.lang, a.audit), "urls có giờ đăng")
+        print(audit(a.lang, a.audit), "urls with published time")
     else:
-        collect(a.lang, a.start, a.end, a.minutes, a.workers)
+        from utils.awake import keep_awake_on_ac
+        keep_awake_on_ac()                            # cắm sạc: máy không tự ngủ khi đang thu
+        while True:                                   # chạy lại các ngày lỗi cho tới khi đủ
+            collect(a.lang, a.start, a.end, a.minutes, a.workers)
+            left = [d for d in pd.date_range(a.start, a.end) for m in a.minutes
+                    if not (cache_dir(a.lang) / f"{d:%Y%m%d}_{m:02d}.jsonl").exists()]
+            if not left:
+                break
+            time.sleep(120)

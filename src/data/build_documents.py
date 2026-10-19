@@ -1,8 +1,10 @@
 """Hợp nhất mọi nguồn → data/interim/documents.parquet (DATA_CONTRACT §1)
 + outputs/tables/corpus_stats.csv + outputs/tables/timestamp_accuracy.csv.
 
-public_ts_utc = min(published_at_utc hợp lệ, first_seen_utc). published hợp lệ khi không sau first_seen và không sớm
-hơn first_seen quá STALE (ngày đăng cũ của bài sửa lại / bài cũ GDELT mới thấy → dùng lúc thấy).
+public_ts_utc = min(published_at_utc hợp lệ, first_seen_utc). published hợp lệ khi không sau first_seen, không sớm
+hơn first_seen quá STALE, và CÙNG NGÀY UTC với first_seen: chữ ta có là bản thấy lúc first_seen; bài có thể đã sửa sau
+giờ đăng, nên không được lùi chữ đó sang ngày trước (rò rỉ qua nửa đêm). Khác ngày → dùng first_seen.
+URL chuẩn hóa: chỉ hạ chữ thường scheme + host, giữ path và query định danh, bỏ tham số tracking.
 Dedup: cùng URL chuẩn hóa, hoặc tiêu đề giống ≥ dedup_threshold với bản canonical trong DEDUP_DAYS ngày trước
 → cùng dup_group; canonical = bản public_ts sớm nhất. Không nối chuỗi (so với canonical, không so với bản trùng).
 Chạy: python -m data.build_documents
@@ -24,9 +26,15 @@ COLS = ["doc_id", "source", "url", "lang", "title", "body", "published_at_utc", 
         "public_ts_utc", "asset_tags", "dup_group", "is_canonical"]
 
 
+TRACKING = re.compile(r"^(utm_\w+|fbclid|gclid|mc_cid|mc_eid|ref|ref_src|cmpid|ocid|soc_src|soc_trk|guccounter|amp)$", re.I)
+
+
 def norm_url(u: str) -> str:
-    u = re.sub(r"^https?://(www\.|amp\.|m\.)?", "", str(u).strip().lower())
-    return re.sub(r"[?#].*$", "", u).rstrip("/")
+    from urllib.parse import parse_qsl, urlencode, urlsplit
+    p = urlsplit(str(u).strip())
+    host = re.sub(r"^(www\.|amp\.|m\.)", "", p.netloc.lower())
+    query = urlencode(sorted((k, v) for k, v in parse_qsl(p.query, keep_blank_values=True) if not TRACKING.match(k)))
+    return f"{host}{p.path.rstrip('/')}" + (f"?{query}" if query else "")
 
 
 def norm_title(t: str) -> str:
@@ -39,7 +47,7 @@ def tag(text: str) -> list[str]:
 
 
 def public_ts(pub: pd.Series, seen: pd.Series) -> pd.Series:
-    ok = pub.notna() & (seen.isna() | ((pub <= seen) & (pub >= seen - STALE)))
+    ok = pub.notna() & (seen.isna() | ((pub <= seen) & (pub >= seen - STALE) & (pub.dt.floor("D") == seen.dt.floor("D"))))
     return pub.where(ok).combine_first(seen)
 
 
@@ -134,7 +142,7 @@ def load_meta() -> pd.DataFrame:
 def main():
     gd = pd.concat([news_gdelt.load("en"), news_gdelt.load("vi")], ignore_index=True)
     meta = load_meta().drop_duplicates("url").set_index("url").published_at_utc
-    gd["published_at_utc"] = gd.url.map(meta)
+    gd["published_at_utc"] = pd.to_datetime(gd.url.map(meta.astype(object)), utc=True)
     gd.loc[gd.published_at_utc.notna(), "ts_source"] = "html_meta"
     rss, sec = news_rss.load(), news_sec.load()
     df = build([gd, rss, sec.drop(columns="file_date")])

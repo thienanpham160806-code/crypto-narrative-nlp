@@ -1,0 +1,76 @@
+asset,target,horizon,status,n_train,n_valid,n_test,valid_start,valid_end,test_start,test_end
+BNB,ret,1,coverage,556.0,121.0,189.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2026-01-02 00:00:00+00:00,2026-09-29 00:00:00+00:00
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,ret,1,strategy skipped: calendar gaps,,,,,,,
+BNB,rv,1,coverage,556.0,121.0,189.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2026-01-02 00:00:00+00:00,2026-09-29 00:00:00+00:00
+BTC,ret,1,coverage,891.0,182.0,272.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,ret,1,strategy skipped: calendar gaps,,,,,,,
+BTC,rv,1,coverage,890.0,182.0,272.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+ETH,ret,1,coverage,839.0,173.0,242.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,ret,1,strategy skipped: calendar gaps,,,,,,,
+ETH,rv,1,coverage,838.0,173.0,242.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+SOL,ret,1,coverage,716.0,148.0,171.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,ret,1,strategy skipped: calendar gaps,,,,,,,
+SOL,rv,1,coverage,716.0,148.0,171.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+XRP,ret,1,coverage,785.0,177.0,218.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,ret,1,strategy skipped: calendar gaps,,,,,,,
+XRP,rv,1,coverage,784.0,177.0,218.0,2025-07-02 00:00:00+00:00,2025-12-30 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-29 00:00:00+00:00
+BNB,ret,3,coverage,556.0,120.0,187.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2026-01-02 00:00:00+00:00,2026-09-26 00:00:00+00:00
+BNB,rv,3,coverage,555.0,120.0,187.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2026-01-02 00:00:00+00:00,2026-09-26 00:00:00+00:00
+BTC,ret,3,coverage,891.0,180.0,270.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+BTC,rv,3,coverage,890.0,180.0,270.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+ETH,ret,3,coverage,839.0,171.0,240.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+ETH,rv,3,coverage,838.0,171.0,240.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+SOL,ret,3,coverage,716.0,146.0,169.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+SOL,rv,3,coverage,715.0,146.0,169.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+XRP,ret,3,coverage,785.0,175.0,216.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+XRP,rv,3,coverage,784.0,175.0,216.0,2025-07-02 00:00:00+00:00,2025-12-28 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-27 00:00:00+00:00
+BNB,ret,7,coverage,556.0,117.0,184.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-02 00:00:00+00:00,2026-09-23 00:00:00+00:00
+BNB,rv,7,coverage,556.0,117.0,184.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2026-01-02 00:00:00+00:00,2026-09-23 00:00:00+00:00
+BTC,ret,7,coverage,891.0,176.0,266.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00
+BTC,rv,7,coverage,890.0,176.0,266.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00
+ETH,ret,7,coverage,839.0,167.0,237.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00
+ETH,rv,7,coverage,838.0,167.0,237.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00
+SOL,ret,7,coverage,716.0,144.0,165.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00
+SOL,rv,7,coverage,716.0,144.0,165.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00
+XRP,ret,7,coverage,785.0,171.0,212.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00
+XRP,rv,7,coverage,785.0,171.0,212.0,2025-07-02 00:00:00+00:00,2025-12-24 00:00:00+00:00,2025-12-31 00:00:00+00:00,2026-09-23 00:00:00+00:00

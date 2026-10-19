@@ -1,61 +1,35 @@
-# PORT từ disclosure-tone-car/src/textkit/llm_client.py – GIỮ: cache sha256, budget, rate limit, retry, fallback
-# Gemini↔Claude, temperature=0, parse_json. ĐỔI (việc của agent): bỏ PROMPT_VISION/FIX/LOCATE + transcribe_page/
-# locate/decide (OCR-specific), thêm NARRATIVE_SCHEMA + classify_narrative() cho zero-shot 8 narrative; cache_dir mặc định
-# → data/interim/llm_cache. Xem docs/PORTED.md.
-"""Tầng AI cho trích văn bản (v03 --llm): Gemini (mặc định) + Claude (dự phòng), cùng một giao diện.
+"""Tầng LLM zero-shot (tùy chọn, config.nlp.llm.enabled): Gemini (mặc định) + Claude (dự phòng), cùng một giao diện.
 
-Nguyên tắc phương pháp (bắt buộc – đề tài đo GIỌNG ĐIỆU, LLM viết lại sẽ làm nhiễm biến đo):
-  • LLM chỉ CHÉP NGUYÊN VĂN (vision) hoặc CHỈ SỬA LỖI NHẬN DẠNG KÝ TỰ/DẤU (text_fix); không diễn đạt lại, không sửa
-    chính tả của bản gốc, không tóm tắt, không thêm/bớt câu. temperature = 0. Prompt nêu rõ các điều này.
-  • Chỉ gửi ẢNH/TEXT CỦA TỪNG TRANG cần sửa, không bao giờ gửi cả PDF.
-  • Mọi phản hồi được cache ở data/vn/interim/llm_cache/<sha256(model+loại+prompt+text+ảnh)>.json → chạy lại không
-    tốn lượt gọi, kết quả tái lập được.
-  • Giới hạn: max_total_calls (lượt gọi thật, không tính cache) và requests_per_minute (gói miễn phí Gemini).
+Port từ disclosure-tone-car/src/textkit/llm_client.py – GIỮ: cache sha256, budget, rate limit, retry, fallback
+Gemini↔Claude, temperature=0, parse_json. ĐỔI: bỏ phần OCR (vision/text_fix/locate), thêm classify_narrative().
+  • Mọi phản hồi được cache ở data/interim/llm_cache/<sha256(model+loại+prompt)>.json → chạy lại không tốn lượt gọi.
+  • Giới hạn: max_total_calls (lượt gọi thật, không tính cache) và requests_per_minute.
   • API key: biến môi trường GEMINI_API_KEY / ANTHROPIC_API_KEY hoặc file .env (không commit).
-Model: tên model đặt trong config.yaml (vn.extract.llm.model_gemini / model_claude) – không hard-code.
-Claude: dùng model nhận temperature (Claude Haiku 4.5); các model Claude đời mới (Opus 5, Sonnet 5) đã bỏ tham số
-temperature (API trả 400) nên không đáp ứng được yêu cầu temperature = 0.
+Model đặt trong config.yaml (nlp.llm.model_gemini / model_claude). Claude: dùng model nhận temperature (Haiku 4.5).
 """
 from __future__ import annotations
-import base64, collections, hashlib, json, os, re, time, unicodedata
+import collections, hashlib, json, os, re, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-
-TRANSCRIBE_SCHEMA = {
+NARRATIVES = ["regulation", "etf_institutional", "security_hacks", "stablecoins", "defi", "ai_tokens",
+              "macro_monetary", "price_speculation", "other"]
+NARRATIVE_SCHEMA = {
     "type": "object",
-    "properties": {"page_text": {"type": "string"}, "is_chairman_letter": {"type": "boolean"},
+    "properties": {"narrative": {"type": "string", "enum": NARRATIVES},
+                   "sentiment": {"type": "string", "enum": ["positive", "negative", "neutral"]},
                    "confidence": {"type": "number"}},
-    "required": ["page_text", "is_chairman_letter", "confidence"],
+    "required": ["narrative", "sentiment", "confidence"],
 }
-LOCATE_SCHEMA = {"type": "object", "properties": {"start": {"type": ["integer", "null"]}, "end": {"type": ["integer", "null"]}},
-                 "required": ["start", "end"]}
-
-_RULES = (
-    "QUY TẮC BẮT BUỘC (văn bản dùng để đo giọng điệu trong một nghiên cứu khoa học):\n"
-    "- Chép NGUYÊN VĂN, đúng từng chữ như trong ảnh. KHÔNG diễn đạt lại, KHÔNG sửa lỗi chính tả hay ngữ pháp của bản gốc, "
-    "KHÔNG tóm tắt, KHÔNG thêm hoặc bớt câu, KHÔNG dịch, KHÔNG thêm lời bình.\n"
-    "- Chữ không đọc được thì ghi [?] thay cho chữ đó, không đoán.\n")
-PROMPT_VISION = (
-    "Bạn là công cụ nhận dạng chữ (OCR) cho trang báo cáo thường niên tiếng Việt trong ảnh.\n" + _RULES +
-    "- Chép phần chữ của trang theo thứ tự đọc tự nhiên (tiêu đề trước thân bài; hết cột trái rồi sang cột phải).\n"
-    "- Bỏ: tiêu đề/chân trang lặp lại (tên công ty, 'Báo cáo thường niên 20xx'), số trang, chú thích ảnh, chữ trong "
-    "biểu đồ và bảng số.\n"
-    "- is_chairman_letter = true nếu trang thuộc thư/thông điệp của lãnh đạo (Chủ tịch HĐQT, Tổng Giám đốc, Ban lãnh đạo) "
-    "gửi cổ đông. confidence ∈ [0,1] là mức chắc chắn về độ chính xác của bản chép.\n"
-    'Chỉ trả về JSON: {"page_text": "...", "is_chairman_letter": true/false, "confidence": số}.')
-PROMPT_FIX = (
-    "Dưới đây là văn bản OCR (Tesseract) của trang báo cáo thường niên tiếng Việt trong ảnh đính kèm.\n" + _RULES +
-    "- NHIỆM VỤ DUY NHẤT: sửa lỗi NHẬN DẠNG KÝ TỰ và DẤU tiếng Việt do OCR gây ra (vd 'hội đòng' → 'hội đồng', "
-    "'cô đông' → 'cổ đông') khi ảnh cho thấy rõ chữ đúng. GIỮ NGUYÊN từ ngữ, thứ tự từ, thứ tự câu, xuống dòng và dấu câu "
-    "của văn bản OCR; không xóa hoặc thêm đoạn nào.\n"
-    "- is_chairman_letter như định nghĩa: trang thuộc thư/thông điệp của lãnh đạo gửi cổ đông. confidence ∈ [0,1].\n"
-    'Chỉ trả về JSON: {"page_text": "...", "is_chairman_letter": true/false, "confidence": số}.\n\nVĂN BẢN OCR:\n')
-PROMPT_LOCATE = (
-    "Đây là khoảng 300 ký tự đầu của từng trang trong một báo cáo thường niên tiếng Việt. Trang nào BẮT ĐẦU và KẾT THÚC "
-    "thông điệp/thư của lãnh đạo gửi cổ đông (ưu tiên thư của Chủ tịch HĐQT; nếu không có thì thư chung Chủ tịch + TGĐ, "
-    "'Thông điệp Ban lãnh đạo' hoặc thư của TGĐ)? Không tính trang mục lục. "
-    'Chỉ trả về JSON {"start": số trang, "end": số trang}, hoặc {"start": null, "end": null} nếu không có.\n\n')
+PROMPT_NARRATIVE = (
+    "You label crypto news headlines for an academic study. Use only the headline text; do not use knowledge of what "
+    "happened later.\n"
+    "narrative: the main theme, one of: regulation (laws, regulators, lawsuits, bans), etf_institutional (ETFs, "
+    "institutional or corporate adoption), security_hacks (hacks, exploits, scams, fraud), stablecoins, defi, "
+    "ai_tokens (AI-related tokens/projects), macro_monetary (rates, inflation, central banks, macro), "
+    "price_speculation (price moves, predictions, trading), other.\n"
+    "sentiment: tone of the headline for crypto prices (positive / negative / neutral). confidence in [0,1].\n"
+    'Return only JSON: {"narrative": "...", "sentiment": "...", "confidence": number}.\n\nHEADLINE: ')
 
 
 class RetryableError(Exception):
@@ -91,18 +65,17 @@ def _load_env():
 
 
 def gemini_backend():
-    """Backend Gemini (SDK chính thức google-genai). Trả hàm (model, prompt, image, schema, max_tokens) → (text, usage)."""
+    """Backend Gemini (SDK chính thức google-genai). Trả hàm (model, prompt, schema, max_tokens) → (text, usage)."""
     from google import genai
     from google.genai import types, errors
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-    def call(model, prompt, image, schema, max_tokens):
-        parts = ([types.Part.from_bytes(data=image, mime_type="image/png")] if image else []) + [prompt]
+    def call(model, prompt, schema, max_tokens):
         cfg = types.GenerateContentConfig(
             temperature=0, max_output_tokens=max_tokens, response_mime_type="application/json",
             response_json_schema=schema, automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True))
         try:
-            r = client.models.generate_content(model=model, contents=parts, config=cfg)
+            r = client.models.generate_content(model=model, contents=[prompt], config=cfg)
         except errors.APIError as e:
             if e.code == 429 or (e.code or 0) >= 500:
                 raise RetryableError(f"gemini {e.code}: {str(e)[:200]}") from e
@@ -114,7 +87,7 @@ def gemini_backend():
         cand = r.candidates[0] if r.candidates else None
         fr = getattr(getattr(cand, "finish_reason", None), "name", None)
         if fr and fr not in ("STOP", "FINISH_REASON_UNSPECIFIED"):
-            # RECITATION: Gemini chặn chép nguyên văn nội dung trùng tài liệu công khai; SAFETY/MAX_TOKENS... → không thử lại
+            # SAFETY/MAX_TOKENS/RECITATION... → không thử lại
             raise LLMError(f"gemini finish_reason={fr}")
         u = r.usage_metadata
         return r.text, {"input_tokens": getattr(u, "prompt_token_count", None),
@@ -127,13 +100,10 @@ def claude_backend():
     import anthropic
     client = anthropic.Anthropic(max_retries=0)
 
-    def call(model, prompt, image, schema, max_tokens):
-        content = ([{"type": "image", "source": {"type": "base64", "media_type": "image/png",
-                                                  "data": base64.standard_b64encode(image).decode()}}] if image else [])
-        content.append({"type": "text", "text": prompt})
+    def call(model, prompt, schema, max_tokens):
         try:
             r = client.messages.create(model=model, max_tokens=max_tokens, temperature=0,
-                                       messages=[{"role": "user", "content": content}])
+                                       messages=[{"role": "user", "content": prompt}])
         except anthropic.RateLimitError as e:
             raise RetryableError(f"claude 429: {e}") from e
         except anthropic.APIStatusError as e:
@@ -189,11 +159,10 @@ class LLMClient:
         return self._built[provider]
 
     # ---------- lõi: cache + budget + rate limit + retry + fallback ----------
-    def _key(self, model, kind, prompt, image):
+    def _key(self, model, kind, prompt):
         h = hashlib.sha256()
         for part in (model, kind, prompt):
             h.update(part.encode("utf-8")); h.update(b"\x00")
-        h.update(image or b"")
         return h.hexdigest()
 
     def _pace(self):
@@ -214,12 +183,12 @@ class LLMClient:
                     raise
                 self.sleep(min(60, 2 ** (i + 1)))
 
-    def request(self, kind: str, prompt: str, image: bytes | None, schema: dict, max_tokens: int = 8192) -> dict:
-        """Gọi LLM (có cache). kind: 'vision' | 'text_fix' | 'locate'. Trả dict JSON + provider/model/cached."""
+    def request(self, kind: str, prompt: str, schema: dict, max_tokens: int = 8192) -> dict:
+        """Gọi LLM (có cache). Trả dict JSON + provider/model/cached."""
         last = None
         for prov in self.providers():
             model = self.cfg[f"model_{prov}"]
-            f = self.cache_dir / f"{self._key(model, kind, prompt, image)}.json"
+            f = self.cache_dir / f"{self._key(model, kind, prompt)}.json"
             if f.exists():
                 self.cache_hits += 1
                 return {**json.loads(f.read_text(encoding="utf-8")), "cached": True}
@@ -227,7 +196,7 @@ class LLMClient:
                 raise BudgetExceeded(f"đã dùng hết max_total_calls = {self.cfg.get('max_total_calls')}")
             try:
                 self.calls += 1
-                raw, usage = self._with_retry(self._backend(prov), model, prompt, image, schema, max_tokens)
+                raw, usage = self._with_retry(self._backend(prov), model, prompt, schema, max_tokens)
                 out = parse_json(raw)
             except BudgetExceeded:
                 raise
@@ -243,37 +212,9 @@ class LLMClient:
         raise LLMError(f"mọi provider đều lỗi hoặc không có API key: {last}")
 
     # ---------- API dùng trong pipeline ----------
-    def transcribe_page(self, image_bytes: bytes, ocr_text: str = "", mode: str = "vision") -> dict:
-        if mode == "vision":
-            out = self.request("vision", PROMPT_VISION, image_bytes, TRANSCRIBE_SCHEMA)
-        elif mode == "text_fix":
-            out = self.request("text_fix", PROMPT_FIX + (ocr_text or ""), image_bytes, TRANSCRIBE_SCHEMA)
-        else:
-            raise ValueError(mode)
-        out["page_text"] = unicodedata.normalize("NFC", out.get("page_text") or "")
+    def classify_narrative(self, headline: str) -> dict:
+        """Zero-shot narrative + sentiment cho một tiêu đề. Nhãn ngoài danh sách → 'other'."""
+        out = self.request("narrative", PROMPT_NARRATIVE + headline.strip(), NARRATIVE_SCHEMA, max_tokens=200)
+        if out.get("narrative") not in NARRATIVES:
+            out["narrative"] = "other"
         return out
-
-    def locate(self, snippet: str) -> dict:
-        return self.request("locate", PROMPT_LOCATE + snippet, None, LOCATE_SCHEMA, max_tokens=200)
-
-
-def decide(mode: str, ocr_text: str, llm_text: str, q_before: float, q_after: float, cfg: dict) -> tuple[bool, str]:
-    """Có dùng bản của LLM thay bản OCR/lớp chữ không? Trả (dùng?, lý do).
-    text_fix: độ tương đồng ký tự với bản OCR phải ≥ similarity_min, ngược lại coi là LLM 'viết lại' → loại, gắn cờ.
-    Cả hai chế độ: chỉ dùng khi chất lượng sau ≥ chất lượng trước (không làm tệ đi)."""
-    if not (llm_text or "").strip():
-        return False, "llm_empty"
-    if mode == "text_fix":
-        sim = similarity(ocr_text, llm_text)
-        if sim < cfg.get("similarity_min", 0.8):
-            return False, f"rewrite_suspected(sim={sim:.2f})"
-    if q_after < q_before:
-        return False, f"quality_not_improved({q_before:.2f}->{q_after:.2f})"
-    return True, "accepted"
-
-
-def similarity(a: str, b: str) -> float:
-    """Độ tương đồng ký tự 0..1 (rapidfuzz, không phân biệt hoa thường, gộp khoảng trắng)."""
-    from rapidfuzz import fuzz
-    n = lambda s: re.sub(r"\s+", " ", unicodedata.normalize("NFC", s or "").lower()).strip()
-    return fuzz.ratio(n(a), n(b)) / 100

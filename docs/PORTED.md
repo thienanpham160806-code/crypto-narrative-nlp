@@ -9,7 +9,7 @@
 | `src/features/lexicon/dictionaries.py` | `src/textkit/dictionaries.py` | ✅ | tải LM Master Dictionary vào `dict/` |
 | `dict/fin_vn.csv` | `dict/fin_vn.csv` (201 từ Việt hóa LM) | ✅ | **thêm `dict/crypto_vn.csv`** (sàn, rút thảm, lừa đảo, hack, phá giá, niêm yết, ETF, tiền mã hóa…) |
 | `src/features/finbert.py` | `src/analysis/a05_finbert.py` | ✅ tổng quát hóa | chạy trên documents |
-| `src/utils/llm_client.py` | `src/textkit/llm_client.py` | 🟡 copy nguyên | bỏ phần OCR, thêm `classify_narrative()` |
+| `src/utils/llm_client.py` | `src/textkit/llm_client.py` | ✅ đã port | bỏ OCR (vision/text_fix/locate, decide), thêm `classify_narrative()` (narrative + sentiment, JSON schema, cache) |
 | `src/evaluation/event_study.py` | `src/analysis/a02_event.py` | 🟡 copy nguyên | viết lại `main()` cho 24/7, T0 = bar sau `public_ts_utc` |
 | `tests/test_lexicon.py` | `tests/test_core.py` | ✅ 5 pass | — |
 
