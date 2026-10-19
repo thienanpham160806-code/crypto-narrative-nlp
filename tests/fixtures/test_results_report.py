@@ -1,5 +1,6 @@
 import pandas as pd
 
+from src.evaluation import report
 from src.evaluation.report import write_results
 
 
@@ -30,3 +31,36 @@ def test_results_does_not_claim_labels_without_validation_table(tmp_path):
 
     assert 'bảng kiểm định nhãn độc lập chưa có' in report
     assert 'FinBERT phân biệt sắc thái tốt hơn' not in report
+
+
+def test_paper_oos_loss_date_labels_do_not_overlap(tmp_path, monkeypatch):
+    import matplotlib.pyplot as plt
+
+    days = pd.date_range('2026-01-01', periods=270, freq='D', tz='UTC')
+    forecasts = pd.DataFrame([
+        {'asset': 'BTC', 'target': 'ret', 'horizon': 1, 'model': model,
+         'version': version, 'date': day, 'target_date': day,
+         'actual': .01, 'prediction': .009}
+        for model in ('EN', 'LGBM', 'XGB')
+        for version in ('market', 'attention', 'text')
+        for day in days
+    ])
+    monkeypatch.setattr(report, 'make_panel',
+                        lambda market, text: pd.DataFrame(columns=['asset', 'date']))
+    figures = []
+    close = plt.close
+    monkeypatch.setattr(plt, 'close', figures.append)
+
+    report.paper_figures(pd.DataFrame(), pd.DataFrame(), {'forecasts': forecasts}, tmp_path, 'REAL')
+    figure = next(fig for fig in figures if fig.axes[0].get_ylabel() == '30-observation MSE')
+    assert [axis.texts[0].get_text() for axis in figure.axes] == ['EN', 'LGBM', 'XGB']
+    figure.canvas.draw()
+    renderer = figure.canvas.get_renderer()
+    labels = [label for label in figure.axes[-1].get_xticklabels()
+              if label.get_visible() and label.get_text()]
+    bounds = sorted((label.get_window_extent(renderer) for label in labels),
+                    key=lambda box: box.x0)
+    assert 3 <= len(bounds) <= 5
+    assert all(left.x1 + 2 < right.x0 for left, right in zip(bounds, bounds[1:]))
+    for fig in figures:
+        close(fig)

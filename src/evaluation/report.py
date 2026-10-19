@@ -123,6 +123,7 @@ def coverage(market, text, config):
 def paper_figures(market, text, tables, directory, label):
     import matplotlib
     matplotlib.use('Agg')
+    import matplotlib.dates as mdates
     import matplotlib.pyplot as plt
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -172,7 +173,12 @@ def paper_figures(market, text, tables, directory, label):
                 part = part.sort_values('date').set_index('date')
                 loss = (part.actual-part.prediction).pow(2).rolling(30, min_periods=10).mean()
                 ax.plot(loss.index, loss, label=version)
-            ax.set_title(model); ax.set_ylabel('30-observation MSE'); ax.legend()
+            ax.set_ylabel('30-observation MSE')
+            ax.text(.02, .95, model, transform=ax.transAxes, va='top', fontweight='bold')
+            ax.legend()
+        date_locator = mdates.AutoDateLocator(minticks=3, maxticks=5)
+        axes[-1].xaxis.set_major_locator(date_locator)
+        axes[-1].xaxis.set_major_formatter(mdates.ConciseDateFormatter(date_locator))
         fig.suptitle(f'{mode}: BTC one-day OOS loss\nNo model selected on test')
         save(fig, 'oos_loss')
         fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
