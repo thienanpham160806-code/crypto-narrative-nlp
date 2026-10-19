@@ -1,0 +1,4 @@
+# Thanh ngôn ngữ GitHub: repo nghiên cứu Python; notebook là tài liệu, file sinh tự động không tính
+notebooks/*.ipynb linguist-documentation
+.impeccable/** linguist-generated
+dashboard/web/public/data/** linguist-generated

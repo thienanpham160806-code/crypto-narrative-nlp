@@ -36,3 +36,4 @@ outputs/tables/real/pytest-watch-*/
 data/interim/embeddings.npz
 data/interim/finbert_progress.csv
 .impeccable/review/
+.impeccable/mocks/
