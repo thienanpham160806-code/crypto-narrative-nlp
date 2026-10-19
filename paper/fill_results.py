@@ -272,12 +272,22 @@ def build_facts() -> tuple[dict, dict]:
             put("rob_same_n", same, None)
             put("rob_same_sign", bool(len(both) and same == len(both)), None)
             put("rob_sig10", int((r.pvalue < .10).sum()), None)
+        fb = rb[(rb.term == "sent_finbert") & (rb.period == "full")]
+        base = fb[fb.variant == "baseline"].set_index(["asset", "target", "horizon"]).coef
+        for v, k in (("source_weighted", "sw"), ("exclude_price_speculation", "ex")):
+            x = fb[fb.variant == v]
+            if len(x):
+                j = x.set_index(["asset", "target", "horizon"]).coef.to_frame("v").join(base.rename("b")).dropna()
+                put(f"rob_{k}_n", int(len(x)), None)
+                put(f"rob_{k}_sig_holm", int((x.p_holm < .10).sum()), None)
+                put(f"rob_{k}_sig_raw", int((x.pvalue < .10).sum()), None)
+                put(f"rob_{k}_same_sign", int((np.sign(j.v) == np.sign(j.b)).sum()), None)
     uw = read(REAL / "ucry_wald.csv")
     if len(uw):
         put("ucry_wald_sig_holm", int((uw.p_holm < .10).sum()), None)
     # fallback mặc định để biểu thức điều kiện không lỗi khi thiếu dữ liệu
     for k in ("evt_any_holm", "evt_car_post_holm", "evt_vol_post_holm", "evt_narr_holm", "evt_pre_car_sig", "asym_vol_holm_sig",
-              "gr_n_valid", "oos_n", "oos_better", "oos_sig10", "oos_sig_holm", "oos_infer_max", "gw_n", "gw_sig_holm", "hand_n", "gr_r2s_holm", "gr_s2r_holm", "gr_s2r_raw", "gr_rv_holm", "rob_n", "reg_holm_sig", "att_holm", "wald_sig10_holm"):
+              "gr_n_valid", "oos_n", "oos_better", "oos_sig10", "oos_sig_holm", "oos_infer_max", "gw_n", "gw_sig_holm", "hand_n", "gr_r2s_holm", "gr_s2r_holm", "gr_s2r_raw", "gr_rv_holm", "rob_sw_n", "rob_ex_n", "rob_sw_sig_holm", "rob_ex_sig_holm", "rob_n", "reg_holm_sig", "att_holm", "wald_sig10_holm"):
         V.setdefault(k, 0)
         F.setdefault(k, "0")
     V.setdefault("oos_better_share", 0.0)
@@ -595,10 +605,19 @@ def table_do_vung() -> str | None:
 
 
 def table_do_vung_khac() -> str | None:
-    st = D.robst
-    if not len(st) or st.status.astype(str).str.startswith("pending").any():
+    """Hệ số FinBERT → RV ngày t+1, toàn mẫu: chỉ số chính vs trọng số nguồn vs bỏ tin giá - đầu cơ."""
+    rb = D.rob
+    if not len(rb) or not {"source_weighted", "exclude_price_speculation"} <= set(rb.variant):
         return None
-    return None
+    r = rb[(rb.target == "rv") & (rb.horizon == 1) & (rb.term == "sent_finbert") & (rb.period == "full")]
+    rows = [["Tài sản", "Chỉ số chính", "Trọng số nguồn", "Bỏ tin giá - đầu cơ"]]
+    for a in ASSETS:
+        cells = []
+        for v in ("baseline", "source_weighted", "exclude_price_speculation"):
+            x = first(r, asset=a, variant=v)
+            cells.append("—" if x is None or pd.isna(x.coef) else f"{vn(x.coef, 5)}{stars(x.pvalue)} ({vn(x.se, 5)})")
+        rows.append([a, *cells])
+    return md(rows, "lrrr")
 
 
 TABLES = {"bang_mota": table_mota, "bang_phu": table_phu, "bang_dongho": table_dongho, "bang_nhan_yeu": table_nhan_yeu,
