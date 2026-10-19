@@ -1,12 +1,12 @@
-# Kết quả thật, bộ tin đang thu
+# Kết quả dữ liệu thật
 
-Bằng chứng dưới đây chỉ áp dụng cho dữ liệu đã thu. Tin cùng ngày được gom theo ngày khi kiểm định sự kiện.
+Bằng chứng dưới đây chỉ áp dụng cho dữ liệu đã xử lý. Tin cùng ngày được gom theo ngày khi kiểm định sự kiện.
 
 Coverage: corpus chung có 1352/1369 ngày có tin (98.76%); riêng BTC có 1351 ngày tin gắn mã (98.69%), 1 ngày mô hình dùng corpus chung; từ 2023-01-01 00:00:00+00:00 đến 2026-09-30 00:00:00+00:00. Core spec dùng 1344 ngày BTC, train/valid/test=890/182/272.
 
 Sự kiện giờ: 142646 tin canonical tiếng Anh, 150160 cặp tin–asset trên 1363 ngày; 140593 tin có FinBERT. Mẫu 2023-01-01 02:00:00+00:00 đến 2026-10-01 00:00:00+00:00.
 
-Bản documents hiện phủ 1352 ngày GKG và 503 ngày SEC; text_daily có thể chưa được build lại trên cùng ảnh chụp dữ liệu.
+Bản documents có tin trên 1352 ngày GKG và 503 ngày SEC; đây là số ngày thực sự có tin, không phải số ngày GKG đã thu.
 
 Phản ứng chung [0,4]h car: -0.006788 %, 1363 ngày, p t Holm=1.
 Phản ứng chung [0,4]h absret: 0.05448 %, 1363 ngày, p t Holm=1.

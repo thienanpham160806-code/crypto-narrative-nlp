@@ -274,8 +274,8 @@ def write_results(tables, output):
     forecasts = tables.get('forecasts', pd.DataFrame())
     granger = tables.get('granger', pd.DataFrame())
     regression = tables.get('regressions', pd.DataFrame())
-    lines = ['# Kết quả thật, bộ tin đang thu', '',
-             'Bằng chứng dưới đây chỉ áp dụng cho dữ liệu đã thu. Tin cùng ngày được gom theo ngày khi kiểm định sự kiện.', '']
+    lines = ['# Kết quả dữ liệu thật', '',
+             'Bằng chứng dưới đây chỉ áp dụng cho dữ liệu đã xử lý. Tin cùng ngày được gom theo ngày khi kiểm định sự kiện.', '']
     if not coverage_rows.empty:
         row = coverage_rows.loc[coverage_rows.asset.eq('BTC')].iloc[0]
         lines += [f'Coverage: corpus chung có {row.news_days}/{row.calendar_days} ngày có tin '
@@ -288,8 +288,8 @@ def write_results(tables, output):
         lines += [f'Sự kiện giờ: {row.canonical_en_articles} tin canonical tiếng Anh, '
                   f'{row.usable_event_rows} cặp tin–asset trên {row.usable_event_days} ngày; '
                   f'{row.scored_finbert_articles} tin có FinBERT. Mẫu {row.first_event} đến {row.last_event}.', '']
-        lines += [f'Bản documents hiện phủ {row.gdelt_article_days} ngày GKG và {row.sec_article_days} ngày SEC; '
-                  'text_daily có thể chưa được build lại trên cùng ảnh chụp dữ liệu.', '']
+        lines += [f'Bản documents có tin trên {row.gdelt_article_days} ngày GKG và {row.sec_article_days} ngày SEC; '
+                  'đây là số ngày thực sự có tin, không phải số ngày GKG đã thu.', '']
     if not tests.empty:
         for metric, unit in [('car', '%'), ('absret', '%'), ('volume', 'log điểm')]:
             row = tests.loc[(tests.grouping == 'all') & (tests.window == '[0,4]') & (tests.metric == metric)]
