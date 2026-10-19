@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import tempfile
 import zipfile
 from pathlib import Path
@@ -65,9 +66,18 @@ def set_fonts(rpr) -> None:
         rpr.insert(0, fonts)
     for a in ("ascii", "hAnsi", "eastAsia", "cs"):
         fonts.set(qn(f"w:{a}"), FONT)
+        fonts.attrib.pop(qn(f"w:{a}Theme"), None)   # font theme (Calibri Light ở Heading) đè lên Times New Roman
+
+
+def force_times(doc) -> None:
+    """Mọi style và mặc định tài liệu dùng Times New Roman, kể cả chữ trong bảng, header, chú thích."""
+    set_fonts(doc.styles.element.find(qn("w:docDefaults")).find(qn("w:rPrDefault")).find(qn("w:rPr")))
+    for rpr in doc.styles.element.iter(qn("w:rPr")):
+        set_fonts(rpr)
 
 
 def style_document(doc) -> None:
+    force_times(doc)
     s = doc.sections[0]
     s.page_width, s.page_height, s.orientation = Cm(21), Cm(29.7), WD_ORIENT.PORTRAIT
     s.left_margin = s.right_margin = s.top_margin = s.bottom_margin = Cm(2.5)
@@ -396,20 +406,35 @@ def build(filled: str, output: Path) -> None:
     doc.save(output)
 
 
-def package(source: Path, output: Path) -> None:
-    """Điền số liệu vào khuôn `source` rồi xuất Word."""
+SOFFICE = Path(r"C:\Program Files\LibreOffice\program\soffice.exe")
+
+
+def package(source: Path, output: Path, filled_md: Path | None = None) -> None:
+    """Điền số liệu vào khuôn `source` một lần; bản .md đã điền và Word dùng chung văn bản đó."""
     filled, _ = fill_results.render(Path(source).read_text(encoding="utf-8"),
                                     fill_results.parse_bib(fill_results.BIB))
+    if filled_md:
+        filled_md.write_text(filled, encoding="utf-8")
     build(filled, Path(output))
+
+
+def to_pdf(docx: Path) -> Path:
+    """Word → PDF bằng LibreOffice (cùng thư mục, cùng tên)."""
+    subprocess.run([str(SOFFICE), "--headless", "--convert-to", "pdf", "--outdir", str(docx.parent), str(docx)],
+                   check=True, capture_output=True)
+    return docx.with_suffix(".pdf")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--source", type=Path, default=ROOT / "paper" / "paper.md")
     ap.add_argument("--output", type=Path, default=ROOT / "paper" / "paper.docx")
+    ap.add_argument("--no-pdf", action="store_true")
     a = ap.parse_args()
-    package(a.source, a.output)
-    print(f"Đã ghi {a.output}")
+    package(a.source, a.output, a.output.with_suffix(".filled.md"))
+    print(f"Đã ghi {a.output.with_suffix('.filled.md')}, {a.output}")
+    if not a.no_pdf and SOFFICE.exists():
+        print(f"Đã ghi {to_pdf(a.output)}")
 
 
 if __name__ == "__main__":

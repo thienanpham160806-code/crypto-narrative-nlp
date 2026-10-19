@@ -25,3 +25,14 @@ dashboard/web/dist/
 .claude/settings.local.json
 # PDF tài liệu tham khảo tải tay (bản quyền nhà xuất bản)
 paper/sources/
+# log, cache và thư mục tạm khi chạy (không phải kết quả)
+*.log
+*.err
+*.out
+*.stdout.log
+*.stderr.log
+.test-tmp-*/
+outputs/tables/real/pytest-watch-*/
+data/interim/embeddings.npz
+data/interim/finbert_progress.csv
+.impeccable/review/

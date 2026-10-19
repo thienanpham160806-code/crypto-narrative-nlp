@@ -1,3 +1,3 @@
 variant,status
-source_weighted,pending document-level aggregation; cannot reconstruct from daily means
-exclude_price_speculation,pending document-level aggregation; cannot reconstruct from daily means
+source_weighted,provided
+exclude_price_speculation,provided

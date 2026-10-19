@@ -1,0 +1,301 @@
+﻿doc_id,public_ts_utc,source,title,label_sentiment,label_narrative
+b4ef9cf612933c9ac9dff86637160bcedbe50377,2023-01-01 07:00:00+00:00,gdelt,DeFi Under Attack: $1.5B Stolen in Top 5 Crypto Heists of 2022: Forbes,negative,security_hacks
+72445ed78339569784ab52afce07668fa994a130,2023-01-02 03:00:00+00:00,gdelt,UK Enforces Crypto Tax Break for Foreigners Using Local Brokers,neutral,regulation
+1fcbc4acaf35aaeae11927f78e440faf698bea76,2023-01-03 00:00:00+00:00,gdelt,Models and fundamentals: Where will Bitcoin price go in 2023?,neutral,price_speculation
+ac80874490b585cd9697ae734668fe4a18ed8c50,2023-01-03 22:00:00+00:00,gdelt,OG Bitcoin Core Developer Claims Hack Drained Nearly All His BTC,negative,security_hacks
+e501bdaf0e1e22bfc3cd15384942f0aa8c197151,2023-01-04 04:00:00+00:00,gdelt,"Ex-Crypto CEO Bankman-Fried pleads not guilty to fraud, other crimes",negative,other
+a606e5d684c84a5f87e3e31ae4abdcaf040a13c1,2023-01-04 22:00:00+00:00,gdelt,Indian government - Tax on cryptos leads to flight of funds,negative,regulation
+c5b94dc5c08fed54b0d97aade556eb498a75fba2,2023-01-06 00:00:00+00:00,gdelt,Not so jolly for Singapore-based crypto firm – lost more than US$ 8 million to a hack,negative,security_hacks
+c955eb208cf7d771cdcce8761d5bdc9d870f92c7,2023-01-06 04:00:00+00:00,gdelt,"Cryptocurrencies Price Prediction: Algorand, Crypto.com & Ethereum — Asian Wrap 06 January",neutral,price_speculation
+2f21a4ac425f62fdbdc5f858c0aac357e1debc80,2023-01-06 18:00:00+00:00,gdelt,"Big Potential for Rate That Crypto, Apecoin, and Decentraland to Give 100x Returns in 2023",positive,price_speculation
+f243e8d62109e5d073a48d8c50feb69675513864,2023-01-06 18:00:00+00:00,gdelt,"Solana's BONK Crashes 50% In 24 Hours, Is It Time To Get Out?",negative,price_speculation
+b4e477f9365faf1676e73a67c5fdf815c59b976c,2023-01-08 05:00:00+00:00,gdelt,EVs Are The Future And So is This Charging Payments and Carbon Credits Solution - Crypto Presale of the Century,positive,other
+f3be4a09f8ae677fdd17164fc6ad0069459282cd,2023-01-09 07:00:00+00:00,gdelt,"Ethereum Price Climbs Above $1,300, Is This A Clear Bullish Signal",positive,price_speculation
+60da8515db69f09b86902827376e81486b652462,2023-01-09 18:00:00+00:00,gdelt,French Markets Regulator Backs Faster Mandatory Crypto License,positive,regulation
+6a4e643381e90fe9b242904e621088fd88fd23cf,2023-01-09 19:00:00+00:00,gdelt,"Opinion: I now definitely won't go near crypto, but not because of the alleged FTX fraud",negative,defi
+f7bb323782a7b198d5e4971d204c76cbd77dc756,2023-01-18 14:00:00+00:00,gdelt,Ethereum's Having a Heyday -- and This Trend Suggests There's Much More to Come,positive,other
+59c9e78c8e12b63558df5898ac9b351606fb8667,2023-01-19 23:00:00+00:00,gdelt,Bitcoin is rallying again. Seriously?,positive,price_speculation
+7b31835e34da5d876c6ee043fec022a8bf85dc91,2023-02-04 02:00:00+00:00,gdelt,"Crypto Investor Charged with Market Manipulation, Defrauding Over $100 Million",negative,regulation
+c43db8b87edff1b279025b38d8c8b9c15054f628,2023-02-19 17:00:00+00:00,gdelt,The Majority Of Bitcoin Mining Is Fueled By Sustainable Energy,neutral,other
+ec32b89c4b39c0a819c0f3e089431012a5fec7a2,2023-02-20 18:00:00+00:00,gdelt,Binance Unveils New Fan Club Initiative with Exclusive Rewards,positive,other
+086c9a56a41b2eac2800bdc2dcae3f8c6cb36821,2023-03-06 16:00:00+00:00,gdelt,Silicon Valley's AI frenzy about generative AI and ChatGPT isn't just another crypto craze.,neutral,ai_tokens
+e0639f2ec6508a26a8b435fcbbdc20483557bb64,2023-03-07 03:00:00+00:00,gdelt,Solana Beach woman sentenced for stepfather's murder,negative,regulation
+4a054d62fa70b87fe5d686cc6aeb9cbf5c6dd9a6,2023-03-07 16:00:00+00:00,gdelt,"Blockchain Adoption: Nym, Chainsafe Bring Enhanced Privacy To Ethereum Validators",positive,other
+2c5a3853fbd7cb4aad81ed1f14a2d202a7b946ce,2023-03-23 15:00:00+00:00,gdelt,US celebrities charged with illegal crypto advertising,negative,regulation
+56f164a03c22a589edf6534b954a614714b5849f,2023-03-23 16:00:00+00:00,gdelt,Police: Crypto firm founder Do Kwon arrested in Montenegro,negative,regulation
+ef86a4c5511d64aabe2bbdc297b9b5dcd30fc5fe,2023-03-23 22:00:00+00:00,gdelt,"Polygon, ex-Meta executives defend Coinbase following SEC Wells notice",neutral,regulation
+381aa3bbd677ab63bdf1efaf971aba314b48f7fe,2023-03-24 00:00:00+00:00,gdelt,Santa Monica Warns Residents of Crypto Ponzi Scheme,negative,other
+e65184717f31c1ca72b325b259e6a287490ba912,2023-03-24 03:00:00+00:00,gdelt,For crypto password: Couple gets businessman robbed in Noida | Noida News,negative,other
+c9f821ec04b138b3bc92056e31c2ebf5597162df,2023-03-24 03:00:00+00:00,gdelt,"'Can't get their act together': Crypto firms slam SEC, Washington for lack of clarity on rules",neutral,regulation
+2fc208b03d3a0bd13e147ba5d8e80375068e1107,2023-03-24 15:00:00+00:00,gdelt,"Bitcoin, Ethereum Move Higher; Mask Network, Mina Among Top Gainers",positive,price_speculation
+5a86d3964ad5bc101337cbd89bd7a0d5dbab18d8,2023-03-24 19:00:00+00:00,gdelt,"Technology experts, musicians and artists discuss transformative potential of blockchain at Berklee panel",positive,other
+6c1e75702f9f523f86ff2c391244755b32834c41,2023-03-24 21:00:00+00:00,gdelt,Popular Crypto Analyst Says Bitcoin's Short-Term Volatility a Distraction From Upward Macro Trend,neutral,macro_monetary
+4ebf56dce1a1d19261404528b449bb5f69d2b7b6,2023-04-07 04:00:00+00:00,gdelt,Crypto International (CRI) Self Reported Market Capitalization Tops $2.08 Billion,neutral,regulation
+d7a3bb937a3d8758b4bd1107ef67e8fef04f9cbd,2023-04-07 05:00:00+00:00,gdelt,Ethereum 're-staking' protocol EigenLayer launches on testnet,positive,defi
+3d7e36465c39a4e5f3dafe0de57c28ec0762ba1b,2023-04-07 20:00:00+00:00,gdelt,Wrapped BNB (WBNB) Price Tops $311.06,neutral,price_speculation
+94424a8a5d58d5dd8fdfa82c7a7e1fc449d18b07,2023-04-23 16:00:00+00:00,gdelt,Three Whales Make Big Bets on ETH and BTC via DeFi Protocols,neutral,defi
+09174b95f1198671e83909b7568e39024db56533,2023-04-24 15:00:00+00:00,gdelt,Bitcoin's next all-time high identified as BTC follows pre-halving pattern like 'clockwork',neutral,defi
+7ce6477925980eae00ac9ed513762f763e5d53d7,2023-04-24 16:00:00+00:00,gdelt,Bitcoin price and the 2024 halving | Fortune Crypto,neutral,price_speculation
+9b20e9e13060e00961a3755920ed205fc96da1d4,2023-04-24 19:00:00+00:00,gdelt,Solana Saga: The DeFi phone you don't need,neutral,defi
+a3962902e97b3e14d9ecceef7d3cadfc1c3119f0,2023-04-25 16:00:00+00:00,gdelt,Coinbase is suing the SEC in the USA,neutral,regulation
+71a9d8aa5a6e8f8be5cb93187f04af707a64f939,2023-05-09 05:00:00+00:00,gdelt,Visa's Blockchain Based Innovations Can Take Small Businesses to the Next Level Seite 1,positive,other
+6e180cc908ec5321075fd734e91947bc65277eb4,2023-05-09 05:00:00+00:00,gdelt,Ethereum Achieves Market Cap of $222.12 Billion (ETH),positive,regulation
+24e1ba9f2d1d2f4dd48ed0f8610f135a6ee99bcb,2023-05-09 19:00:00+00:00,gdelt,"Goldman Sachs, Microsoft, Deloite And Others Join Forces On Blockchain Superhighway",neutral,etf_institutional
+198c47719c6cb1ab7ec13268f9bc3e210503d954,2023-05-09 20:00:00+00:00,gdelt,Hong Kong Warns Crypto Businesses Not to Expect Special Treatment as City Readies Regulation,neutral,regulation
+e92399db4c1e19400c850c3ff5cad83b4db1aacb,2023-05-10 01:00:00+00:00,gdelt,1K victims of crypto scam hubs transferred to Cavite – sen,negative,other
+ab45d9f1856bc4fc4549476daf0b980dc248be01,2023-05-10 18:00:00+00:00,gdelt,Venom to launch a blockchain hub in Kenya,positive,other
+714d0f6eba14c0574a641f09e1bc5aac89b5d76c,2023-05-11 00:00:00+00:00,gdelt,Binance to integrate Bitcoin lightning network,positive,other
+f1d8cf7bcd49e605fe3635387795b6c6624095b8,2023-05-11 00:00:00+00:00,gdelt,Marathon Digital Selects Abu Dhabi For Immersion Crypto Mining Expansion,positive,other
+ef7c3e32b4287124dd2948f65cc1e9e9b3f7d842,2023-05-11 05:00:00+00:00,gdelt,Two Mumbai citizens lose Rs 19 lakh to cryptocurrency cyber fraud,negative,security_hacks
+302c942b338fa38c810d4b6cf71cabbf591b7605,2023-05-11 05:00:00+00:00,gdelt,"Ethereum blockchain upgrade unlocks US$34 billion in Ether, what does it mean for crypto prices?",positive,regulation
+ac60cd792e2d83ad5d4d79b0dc39978a97083c15,2023-05-25 09:00:00+00:00,gdelt,"Norway should move faster on crypto rules, central bank says",neutral,regulation
+048efb818ba3d3127547a75b469e55374b92b55c,2023-05-25 11:00:00+00:00,gdelt,"Litecoin, Cosmos & Big Eyes Coin: Best Crypto Projects in 2023?",positive,other
+3ae6c6e136db13a11c1377de9e6ef2c9d9fede1d,2023-05-25 15:00:00+00:00,gdelt,Cboe Joins Goldman Sachs And BNP Paribas In The Formation Of A New Global Blockchain Network,neutral,etf_institutional
+8f53a553b7d6336e03fdadcce4b9262ce7e428f7,2023-05-26 04:00:00+00:00,gdelt,Rocket Pool ETH (RETH) Achieves Self Reported Market Cap of $639.56 Million,positive,price_speculation
+7ba8f776b2b13c6609c840ddb0a02166ae74bf75,2023-05-26 05:00:00+00:00,gdelt,Bitcoin-Based 'Space Pepes' Become Top-Traded NFT Collection,neutral,other
+e2960aec4a3a9c1336c4fffb90e2084aa0bfd43d,2023-05-26 11:00:00+00:00,gdelt,"RGB protocol may offer solution to Bitcoin's Ordinals jam, proponent claims",neutral,other
+b7b6596059ed5c72eaaf0a815888e73caf255c21,2023-05-27 02:00:00+00:00,gdelt,Ripple-SEC case could close in July while XRP investors will…,neutral,regulation
+d0c10949163a9e9ba77b72322e1a0c5c24cf2d38,2023-05-27 12:00:00+00:00,gdelt,Furniture purchases in the metaverse : How blockchain is enabling secure and decentralised transactions,neutral,other
+ad9168cdbfce236c7c72c1b46a8d83bdf23ca25e,2023-05-27 21:00:00+00:00,gdelt,Bitcoin is already improving the world,positive,other
+c430abf9daf8499effe18680b67d0771cf072ee1,2023-06-10 03:00:00+00:00,gdelt,Keeping up with Crypto: NFTs and the law,neutral,other
+772cbaad7c0334c9fe48fdebefc252a9abc16473,2023-06-10 07:00:00+00:00,gdelt,Crypto.com Ends Institutional Operations in the US,neutral,etf_institutional
+5f35fe6798c8b5a1eb04aee562de596dc3e3095c,2023-06-10 23:00:00+00:00,gdelt,"Five Cryptos Worth Buying in the Current Market Crash: WSM, Aidoge, Solana, Cardano, and BNB",negative,ai_tokens
+99cce986031441d43d86f32e12179dcd00879d5b,2023-06-11 15:00:00+00:00,gdelt,Cryptoqueen's link to murder of Bulgarians in SA,negative,other
+ad273eba3b24fcdced100af2620d5e503b168e82,2023-06-12 14:00:00+00:00,gdelt,"Is The Future Of Crypto In India With Dogetti, Bitcoin And Monero?",positive,other
+1f23e4bac17c900fa8a3012de1a930823b6a3047,2023-06-12 16:00:00+00:00,gdelt,"Onchain Data Points to Billions in Outflows from Binance Following SEC Lawsuit, CEO CZ Responds",negative,regulation
+ff1412e62075a6c08e73c35d1413e0642fd44db1,2023-06-12 19:00:00+00:00,gdelt,FLOKI Surging Again While Altcoins Keep Bleeding,negative,other
+e3d82cb0f8529ae3225e528171dcdcff2ab3aa46,2023-06-12 20:00:00+00:00,gdelt,"Ethereum Forms Weekly Golden Cross, But Is It Enough To Save Crypto?",neutral,other
+82d108f374d0d6a6b24b6c1d160609ab1cd7c445,2023-06-12 20:00:00+00:00,gdelt,"Binance.US Plunges As Market Makers Rush To Exit, Market Depth Down 80%",negative,other
+2615fb9be0b28a851c8603f5c45e2fb9f71083dc,2023-06-26 02:00:00+00:00,gdelt,RSK Smart Bitcoin (RBTC) Trading Up 15.3% Over Last Week,positive,other
+1153d7ec1cbf64d1aa5b4d15cd6d990bd5dcb202,2023-06-26 18:00:00+00:00,gdelt,Solana gears for likely rally with first test of Saga phone in China,positive,other
+2fb006538702ffe52d29486ae73e21cc7ed1e45f,2023-06-26 21:00:00+00:00,gdelt,Maxine Waters Solicits Feedback From Gary Gensler and Janet Yellen on Crypto Bill,neutral,regulation
+a22d13b23b9bcedd3b32c573d6bd637e7ee6cf7e,2023-06-27 04:00:00+00:00,gdelt,Jack Dorsey-backed Damus removed from App Store over Bitcoin tipping dispute,neutral,other
+4533abed44f225fd2fcb1b51be8fda76299360d5,2023-06-27 23:00:00+00:00,gdelt,Spain gives Ripio greenlight to offer crypto products,positive,other
+3ad71d1432904d6a36aa0a11209743c98058f083,2023-06-28 02:00:00+00:00,gdelt,Simplify Bitcoin Strategy PLUS Income ETF Plans Monthly Dividend of $0.15 (NASDAQ:MAXI),neutral,etf_institutional
+0d845027a6f92e83d99e336c8038ae37d4f6ec5e,2023-07-12 11:00:00+00:00,gdelt,How the FTX debacle made this company wary of crypto,neutral,other
+6002d4cc3a0dbad12ed348026532a8e6ba0faca0,2023-07-12 23:00:00+00:00,gdelt,Bitcoin Latinum (LTNM) Price Down 55.8% Over Last Week,negative,price_speculation
+9c40084c8563d99d989c4bc8b3df152efbcae884,2023-07-13 11:00:00+00:00,gdelt,EU regulator says 'no such thing as a safe crypto-asset',neutral,regulation
+ddb2cba647a9c21cc3e66c422333913a4cb003ff,2023-07-13 11:00:00+00:00,gdelt,Press Trust of India: Security challenges have evolved from 'dynamite to metaverse' and 'hawala to crypto currency': Shah,neutral,security_hacks
+1378187d25d799f9fe2407b47592c0c531a97725,2023-07-13 12:00:00+00:00,gdelt,FTX Token Goes From Oblivion To $1.60 In A Month. Can The Once Top Crypto Gainer Come Back From The Dead?,neutral,other
+8dfdf81203c5d8d8641c88414e21cda594fdd884,2023-07-13 22:00:00+00:00,gdelt,"Celsius Reorganization Not Affected by $4.7B Settlement With U.S., Bankrupt Crypto Lender Says",negative,price_speculation
+fccd8277d44ebc5ad4996d30c274cb7b08c615a5,2023-07-14 05:00:00+00:00,gdelt,"Huobi BTC Price Tops $31,501.50 on Major Exchanges (HBTC)",neutral,price_speculation
+5a6614605180bf33cd67323c7d2d6aa33fb733c2,2023-07-14 16:00:00+00:00,gdelt,"Ripple XRP Wins Case against SEC, Not a Security Asset",positive,security_hacks
+a229e50641b575f313230b9fd621ed23d64854f7,2023-07-14 17:00:00+00:00,gdelt,Puma drops $130 crypto sneakers in collaboration with Jay Z's Roc Nation,neutral,other
+b07deff6e638d8ba4e080011912cab2b62fffa34,2023-07-14 23:00:00+00:00,gdelt,"Binance CEO on FTX saga ""Not every firm on Wall Street is Madoff""",neutral,other
+a0b8e2f9cfef6fb4155524f8f39c73a8c0b9c604,2023-07-28 01:00:00+00:00,gdelt,Bitrefill Review 2023: Buy Gift Cards With Crypto Without KYC,neutral,other
+aaf63901aa0337ba754056ab895863a4cad602ac,2023-07-30 09:00:00+00:00,gdelt,Pro-XRP lawyer claims SEC prioritizes corporate capitalism over investors,neutral,regulation
+931bc3d708db9873953112f2e8bd618ddfd93ac1,2023-07-30 09:00:00+00:00,gdelt,I Accidentally Found The MOST POWERFUL CRYPTO TRADING TOOL!,neutral,other
+bb5d1c5be95a78e97729ffa6c232a134319bb497,2023-07-30 21:00:00+00:00,gdelt,Ankr Reward-Bearing Staked ETH Self Reported Market Cap Reaches $61.24 Million (aETHc),neutral,price_speculation
+b3851d869f1b1e989e5b1ac46bfb944763b88c88,2023-08-13 00:00:00+00:00,gdelt,"RSK Smart Bitcoin (RBTC) Price Reaches $29,301.00 on Exchanges",neutral,price_speculation
+68863383848a4c221a37019ccc6b03fa842b77e6,2023-08-13 09:00:00+00:00,gdelt,This week in tech: Alibaba's rosy quarter; PayPal's stablecoin; a plunge at Roblox By Investing.com,negative,stablecoins
+01c48a4fc0d88cbc6bb6cd7e2ae1678f77b696a4,2023-08-13 11:00:00+00:00,gdelt,crypto: How crypto is the Modern Path to financial independence,neutral,other
+ee1e174e548a4b0c0a95084ea4a773f5776a3950,2023-08-13 12:00:00+00:00,gdelt,Crypto Snack (SNACK) Price Reaches $0.0033,neutral,price_speculation
+6b551c8a1be8608a9ca3841eef6019f7378ac360,2023-08-14 04:00:00+00:00,gdelt,Bitcoin SV (BSV) Trading Up 0.1% This Week,neutral,other
+a8ef813ecbedce8fb7e2699f6577153aaa3b8a6c,2023-08-14 18:00:00+00:00,gdelt,"Bitcoin address with 1,005 BTC suddenly wakes up after nearly 13 years",neutral,other
+abe955198bc74c94da613d0ddf55c62277677fdc,2023-08-15 01:00:00+00:00,gdelt,Tether Gold (XAUT)  Trading 1.3% Lower  Over Last 7 Days,neutral,other
+97b4d495d076ec12462c6f2f4b214d601951e7ce,2023-08-15 13:00:00+00:00,gdelt,ePIC Blockchain Announces Enterprise Distribution Partnership with SunnySide Digital,positive,other
+c15c6f12ed4d8c41eb39e7712bf98b601161ca57,2023-08-15 23:00:00+00:00,gdelt,Joe Kernen Tries to Get Kelly Evans To Buy Bitcoin Instead of 4% Bonds,neutral,price_speculation
+e59292f239fc8c0e76d12666630028e3f363f132,2023-08-29 01:00:00+00:00,gdelt,Crypto bull run: Traders share their plans for the 'tornado' to come,neutral,price_speculation
+27cdd4b7bc39e0117e227cf5a0f563c0dc2796ae,2023-08-29 07:00:00+00:00,gdelt,binance: Binance sets up Polish entity for residents of Belgium after regulatory action,neutral,regulation
+565b6546c21a8cb6c8d82efb585f5126c73f7967,2023-08-29 11:00:00+00:00,gdelt,"Academic Labs Unveils Its Cutting-Edge Edtech Platform, Revolutionizing the Education with AI and Crypto",positive,ai_tokens
+532ca2d8aa1f58d3d8ad28c26bec75613388fd8a,2023-08-29 18:00:00+00:00,gdelt,Bitcoin shows Resilience despite Feds indicating rate hikes,neutral,other
+ce740eabb3fe82c32a064f6e0c2814634ea6886e,2023-08-29 18:00:00+00:00,gdelt,Treasury proposes crypto tax reporting rule. What it means,neutral,regulation
+1a5101ddf4ca89ae872ca52d12232705567430d8,2023-08-30 06:00:00+00:00,gdelt,Bitget Presents Raksha Bandhan With Crypto: Win Tokens and Trips,neutral,other
+09b0768167c1ffef14eb19805c4488b70d572490,2023-08-30 09:00:00+00:00,gdelt,From Tweets to Transactions: X Moves Closer to Crypto and Fiat Payments,neutral,other
+f40fa4e09ba67b9a8cd39eb03c72601700bf8909,2023-08-30 19:00:00+00:00,gdelt,Excited About the Recent Uptrend of Coinbase? Don't Be,neutral,other
+1639c2c8427e8fad4f9c154f1f24466e98f246b4,2023-08-31 00:00:00+00:00,gdelt,Solana Price Prediction: SOL Breaches $21.6 – Is Solana the New Ethereum Killer?,neutral,price_speculation
+7cbeb8e12566a2dd628876b81663764d820416f4,2023-08-31 11:00:00+00:00,gdelt,Binance to End BUSD Support by February 2024,positive,other
+acfea2c488344ca2f35042e63fbf7ab30ee19cc1,2023-08-31 14:00:00+00:00,gdelt,Nexo Taps Mastercard to Launch a Dual Mode Crypto Card,positive,other
+70a91929d55903ca4d33c2eefa891d2f34d444e1,2023-08-31 19:00:00+00:00,gdelt,Proposed Regulations Would Impose New Reporting Requirements on Transactions Involving Cryptocurrency and Other Digital Assets | Lowenstein Sandler LLP,neutral,regulation
+d81898add53d2f77ee6b11a8cb2ce0af252f01c4,2023-08-31 20:00:00+00:00,gdelt,"Brazilian crypto streamer loses $60K after showing private keys, recovers it",neutral,other
+08f18fb2c16ebeb40859b3ab7186dc9adf52b560,2023-09-14 12:00:00+00:00,gdelt,FTX digital assets sale gets the green light from court – Cryptopolitan,neutral,regulation
+f858a0a29712002eb7fe7906b69c956c34f95be0,2023-09-14 20:00:00+00:00,gdelt,"India, Nigeria, and Vietnam Lead Chainalysis Global Crypto Adoption Index",positive,other
+7b365212a620d29de530ca564aa363c055ee093d,2023-09-14 22:00:00+00:00,gdelt,Cryptocurrency Market to grow by USD 1.81 billion from 2022 to 2027 | Growth Driven by Rising investment in digital assets- Technavio,neutral,regulation
+e76f0a09a25cd7c7269506d93a48ffdbb6be99b9,2023-09-15 03:00:00+00:00,gdelt,"World Blockchain Summit Dubai: Empowering Visions, Uniting Realties and Redefining the Decentralized Frontier",neutral,defi
+8a32579465b9dc98193ab1ddb0ddc0d56daf6604,2023-09-15 12:00:00+00:00,gdelt,"With Execs Leaving and Market Share Declining, Can Binance Survive?",neutral,other
+a56dfff746337c4c4edd94925e23f5e53181b0a5,2023-09-15 13:00:00+00:00,gdelt,Tradecurve rebrands to Tradecurve markets: Introduces a new era beyond traditional crypto exchanges,neutral,other
+191efb3257e2f176b19bc336e297cfc44055b770,2023-09-15 16:00:00+00:00,gdelt,Former Celsius executive pleads guilty to crypto fraud,negative,regulation
+f28fa7112059ab6c94cbb306af425ba6361649e8,2023-09-30 12:00:00+00:00,gdelt,'Rich Dad Poor Dad' Author Names Bitcoin as Antidote to Hyperinflation,neutral,macro_monetary
+9ed68057e61434d7ab317983314da3b1e6acd453,2023-09-30 16:00:00+00:00,gdelt,Brazil Develops Blockchain Network To Support ID Rollout,positive,other
+4c6ac9c47196a1f4bf190dd8321624b2edd7a6ce,2023-09-30 18:00:00+00:00,gdelt,Scam tempts potential victims with promises of Bitcoin,negative,other
+519e96a296cc3c1efb4d74e7351b7cbc6ba56e59,2023-10-02 05:00:00+00:00,gdelt,Bitcoin Bulls Aim Big After Recent Surge To $28K,neutral,ai_tokens
+e64b74225b974833b72d75dfe5c81e8215fad736,2023-10-02 09:00:00+00:00,gdelt,Crypto Exchange Coinbase Obtains License in Singapore,neutral,regulation
+027aad503449b1c116828d66f79866e5f4bed642,2023-10-02 11:00:00+00:00,gdelt,"The Blockchain Oasis of Oman: BITMAIN, Exahertz, and Moonwalk Systems forge unprecedented tech partnership",neutral,other
+6cc2db029c423368e4bdd1a743a319b49486e001,2023-10-02 16:00:00+00:00,gdelt,"Bitcoin (BTC) Surges As Upcoming Two Quarters Hold Potential to Become Catalysts for Digital Assets Market, Analysis Claims",positive,price_speculation
+da1e37ffa6a9796d0292230f3c2543c87511ede2,2023-10-02 18:00:00+00:00,gdelt,Grayscale Files to Convert Ethereum Trust to Spot Ethereum ETF,neutral,etf_institutional
+c1bb36f08260e32d33c78fea95e498dc66a6d1e8,2023-10-02 22:00:00+00:00,gdelt,"Volatility Shares cancels ETH-ETF futures launch, 'didn't see the opportunity at this point in time'",positive,etf_institutional
+6b8eeb7e2a7d6543e99309a8cfba3074cc8f2a03,2023-10-17 01:00:00+00:00,gdelt,"BlackRock CEO Larry Fink Calls Bitcoin Pump A ""Flight to Quality""",neutral,etf_institutional
+ef1ea3eaaac0ce952df31035934f6a8d0a20ebbe,2023-10-17 01:00:00+00:00,gdelt,The Fake Bitcoin ETF Approval News Liquidated Over $74 Million,neutral,etf_institutional
+a52b11199a30fcdfec9c4bd7a3e5cf1933fa335a,2023-10-17 10:00:00+00:00,gdelt,Deaton Asserts Hinman Instructed to Limit Questions to Seven for Ethereum Co-founder,neutral,other
+7680364d36bd3571343d5a1b8dd92b9ac95f9461,2023-10-17 11:00:00+00:00,gdelt,"Stock Market Today: Dow Set to Open Lower; J&J, Bank of America, Goldman Sachs, and More Premarket Movers; Oil Under Pressure; Bitcoin Price Rises Again",positive,etf_institutional
+36efda4f7e8dcc7d7e4c87e1df140e4496d12aa5,2023-10-17 11:00:00+00:00,gdelt,Is Bitcoin Ifex 360 Ai the Best Crypto Trading Platform? Read This Review Before You Invest – hawr-digital.de,positive,ai_tokens
+8a93fb3aee01dbf756ede9e78935c4a46c344d27,2023-10-17 14:00:00+00:00,gdelt,Bitcoin Adoption Is Driving The Rebirth Of El Salvador: Vice President,positive,other
+62e805758f4be8804676ae9dae88cae7da955928,2023-10-17 15:00:00+00:00,gdelt,"Sugar Land man pleads guilty in $520,000 cryptocurrency scheme – Houston Public Media",neutral,regulation
+693dafa33bde2202bb616a7fc2a7f6ab1aeebf47,2023-10-18 05:00:00+00:00,gdelt,Hong Kong's attitude toward crypto sours after JPEX saga: Survey,neutral,other
+f063b4d19605f59d0d8544e8e779f1811126f6b4,2023-10-18 13:00:00+00:00,gdelt,"Republican, Democrat lawmakers urge Biden White House to crack down on crypto after Hamas attack on Israel",negative,other
+fe899b30a22a6f8bb5a7ab41608bf7b868687f60,2023-10-18 15:00:00+00:00,gdelt,Impact on XRP price as Roblox refutes integration rumors,positive,price_speculation
+60b269b384793b27f097b20fb3cea39bfa89c5c5,2023-10-18 17:00:00+00:00,gdelt,"Bitcoin ETF Could Boost Crypto Market by $1 Trillion, Analysts Say",neutral,etf_institutional
+a54d229fa296c4dcb19a905a4b9dcd469ccfa67a,2023-11-01 13:00:00+00:00,gdelt,Galaxy Digital and Invesco Bitcoin Spot ETF Join BlackRock On The DTCC,neutral,etf_institutional
+fd0926e42ef5464260b0e269ffd78c24d843ee65,2023-11-01 13:00:00+00:00,gdelt,XRP Whale Activity Peaks At 3-Month High As Smart Money Buys,neutral,other
+e3f704f157864a155a664685831ac41108fedea8,2023-11-01 19:00:00+00:00,gdelt,Bitcoin (BTC) Price Flat as FOMC Leaves Rates Unchanged; Powell Press Conference Upcoming,neutral,price_speculation
+ac9c27265db8a6799a2c0f0e7cd6513ef8240e20,2023-11-02 13:00:00+00:00,gdelt,ProShares launches ether futures ETF for crypto bears,positive,etf_institutional
+1d1acee6c00b27e6d9e017ddfe99362b0b176710,2023-11-02 14:00:00+00:00,gdelt,"How to protect crypto from hacks, bull market trend confirmed",negative,security_hacks
+b825374c1a861ce940cc9431dfdb682f6e5f698a,2023-11-02 23:00:00+00:00,gdelt,Why the Charges SBF Doesn't Face Matter For Crypto,neutral,other
+60b52c6166595f177d8f3d95d8ac15e08e67ae9a,2023-11-03 01:00:00+00:00,gdelt,FTX founder Sam Bankman-Fried convicted of bilking crypto investors,neutral,other
+e077eb5611494df2df0c2b6bc27c592f9b5140f8,2023-11-03 09:00:00+00:00,gdelt,"Rugby World Cup and crypto: Two worlds, same principles",neutral,other
+5a6fa0daffb65ea6c016b281144b41dab9ed964c,2023-11-03 19:00:00+00:00,gdelt,New Zealand Courts Deny Collective Legal Representation for Cryptopia Account Holders,neutral,regulation
+5c9ad80bdc6b5d04e05b5a9aeebbad6f88241f4e,2023-11-03 22:00:00+00:00,gdelt,EleKtra-Leak Campaign Uses AWS Cloud Keys Found on Public GitHub Repositories to Run Cryptomining Operation,neutral,other
+167a13b4b052f2dde34e8adf3275fc89b10f4c16,2023-11-17 01:00:00+00:00,gdelt,"An ETF is More Important to Bitcoin Than to Ethereum, Says Bitwise",neutral,etf_institutional
+da31ad9fb4e038a7345c733814f2a9a8ce5af67e,2023-11-17 09:00:00+00:00,gdelt,"BlackRock Files for Ethereum ETF, Doubling Down on Crypto Bets",negative,etf_institutional
+8d234d57ecca472997e9935d7a4fe75c51541587,2023-11-17 22:00:00+00:00,gdelt,Bitcoin Spot ETFs may not use Bitcoin?,neutral,etf_institutional
+342f6648409f5d271457279d3cfcb9d739eb97b2,2023-12-03 11:00:00+00:00,gdelt,"Mind-Blowing Bitcoin (BTC) $600 Million of Shorts Destroyed as Price Hits $39,700",neutral,price_speculation
+bf0c4ce1c630b43eddb9ef4a0dc125c776791ad6,2023-12-04 02:00:00+00:00,gdelt,"Bitcoin breaks $40,000 as momentum builds; reaches its highest since April 2022",neutral,other
+552955fc58adcc326a387a57dcd347701857fb8d,2023-12-04 02:00:00+00:00,gdelt,Binance's VIP traders got sneak peek of record US crypto fine at Singapore dinner,neutral,price_speculation
+c84e34e743a4a74032da4440d14fb57bc7e2e210,2023-12-04 08:00:00+00:00,gdelt,"OKX Announces Sponsorship of Key Events at India Blockchain Week, Will Co-Host Developer Events Showcasing Web3 Innovations",neutral,other
+b594c910e62689ddf28d73edd45de5e22b049467,2023-12-04 10:00:00+00:00,gdelt,South Korean financial authorities solicit reports on unlicensed crypto exchanges,neutral,regulation
+ae85aabacbadebb7cbcc6389d43c75c53d931c46,2023-12-04 12:00:00+00:00,gdelt,"Bitcoin surges above $40,000 amid positive market sentiment",positive,price_speculation
+97ffb45128c75f06777173dc3530bc131c5a3a5a,2023-12-04 16:00:00+00:00,gdelt,"Bitcoin Rally Propels El Salvador's Holdings Into Profit, Says President",positive,price_speculation
+2ccc3e6727aacec0d20be674d120d2df656dec6b,2023-12-04 16:00:00+00:00,gdelt,Will Bitcoin's bull run peak in 2024? This expert says no,neutral,price_speculation
+28bbd95edf2f7d0f8aaaba45888eef9cdd5536ba,2023-12-04 20:00:00+00:00,gdelt,Notorious B.I.G. Immortalized in Ethereum Metaverse Game The Sandbox,neutral,other
+f923a8be58c0b6893b8500ca554bb8f38cb22ed4,2023-12-05 06:00:00+00:00,gdelt,Wrapped BNB (WBNB) Reaches Market Cap of $606.47 Million,neutral,price_speculation
+fe10906183dcd3774fee25164527ac97bf53702d,2023-12-05 10:00:00+00:00,gdelt,"Coinbase's Rally Still Has Legs, Chart Analyst Says",positive,other
+6ed76d24110369263fbbe3a3b8b40da4d2defb82,2023-12-05 12:00:00+00:00,gdelt,"UAE Business: TII unveils blockchain carbon emissions tracking, trading platform",positive,other
+67d1f53277f241ddaf8aa768172a706fa923ec0b,2023-12-05 13:00:00+00:00,gdelt,"XRP Price Set To Skyrocket 1,100% On This Signal: Crypto Analyst",neutral,price_speculation
+65ec3fb50b2208c35105a3dbc2e14bfb8aafcee6,2023-12-19 06:00:00+00:00,gdelt,KuCoin's Alicia Kao Champions Global Collaboration and Positive Outlook for the Crypto Industry at Taipei Blockchain Week,neutral,other
+4e173d0766e991dadf572ff2144922457ccbadb0,2023-12-19 13:00:00+00:00,gdelt,Bitcoin Bounces Back on Fresh Hopes for a Spot Bitcoin ETF,neutral,etf_institutional
+c0544a79c799d8ff80b95a2a9151f729da6bd01b,2023-12-20 04:00:00+00:00,gdelt,"Nano, a blockchain trading platform, redefines digital asset trading",neutral,defi
+aca0b7b5a2ec2579155f5705d38ccc56d2cac32b,2023-12-20 10:00:00+00:00,gdelt,Failed crypto exchange FTX's debtors and liquidators reach a global settlement,neutral,other
+71775903c0af09055d38cbcd740bbff077169166,2023-12-20 14:00:00+00:00,gdelt,"Banks, Tech, Crypto: The Biggest Winners and Losers in Congress",neutral,other
+59d1396e4174ed8104d72eecc2d48ef946888a16,2023-12-21 04:00:00+00:00,gdelt,"inSure DeFi (SURE) Hits 24 Hour Volume of $192,962.25",neutral,defi
+33bbb6853d28d357dcd3eeb11970f6e07b7b5ece,2023-12-21 08:00:00+00:00,gdelt,$45K Remains Major Resistance for Bitcoin (BTC) Bulls,neutral,other
+c7b710a468efcde6991cfd1a1f6dad1656eee360,2023-12-21 12:00:00+00:00,gdelt,Did FTX Secretly Help Binance Send Tokens To Binance.US For Wash Trading?,neutral,other
+a3b536468372f5ee7ab70efe79700b842d9ba7ed,2023-12-21 15:00:00+00:00,gdelt,Short squeeze alert for December 21: Two cryptocurrencies with potential to skyrocket,positive,other
+e477ef2a770011922b23c41e393a406bdc7844c7,2023-12-21 18:00:00+00:00,gdelt,Solana Up 12% and Dogwifhat Surges as Bitcoin Dips Under $44K,negative,price_speculation
+168fe7f86ad401d61eaa08587d7643255d59277d,2024-01-04 13:00:00+00:00,gdelt,Bitcoin Depository Receipts (BTC DRs): A New Offering for Institutional Investors,neutral,etf_institutional
+54efb518104bb1e6ef311cfbf1bf1591e1c08f56,2024-01-04 17:00:00+00:00,gdelt,Baystreet.ca - Goldman Sachs Plans For Role In Crypto ETFs,neutral,etf_institutional
+972d6d94af6c2af717bf87d7d65bb9e7059f2a20,2024-01-04 22:00:00+00:00,gdelt,Tether Reaches Market Capitalization of $92.55 Billion (USDT),neutral,stablecoins
+bcf44a9c76123fd6f08d5d59119ce78a4fc39509,2024-01-05 00:00:00+00:00,gdelt,Celsius Network to Unstake All Ethereum Holdings to Pay Back Creditors,neutral,other
+a4526628ec8b2196c8b1158f7684f5727877e554,2024-01-05 20:00:00+00:00,gdelt,Bitcoin ETF By VanEck To Benefit BTC Core Developers With 5% Profit Donation,neutral,etf_institutional
+84f988de29e46072284e54692d5141ec1846192c,2024-01-05 23:00:00+00:00,gdelt,Crypto slips while stocks post a mild recovery after a rough start to 2024,neutral,other
+4db423bd7a13d714344a30f54e25c653e60c5434,2024-01-06 08:00:00+00:00,gdelt,XRP price falls to two-month lows despite Grayscale adding Ripple to its Digital Large Cap Fund,negative,price_speculation
+6a78bcdbcc3f1a9fd989693470367840f9d1eaaa,2024-01-06 13:00:00+00:00,gdelt,"Insider Leak Reveals Huge BlackRock Bitcoin ETF Bazooka Will 'Blow Expectations Out Of The Water' After $1.6 Trillion Ethereum, XRP, Solana And Crypto Price Boom",neutral,etf_institutional
+7647175681c8b343e5a3002c3e8e853b8165b227,2024-01-06 20:00:00+00:00,gdelt,Bitcoin ETFs may be approved next week following eleventh-hour document updates,neutral,etf_institutional
+280de70dec6242433191b6afc2a87ddca800c57f,2024-01-21 05:00:00+00:00,gdelt,"X launches dedicated Payments account, crypto community speculates",positive,other
+70c49fe6cb157ff3df32af0e55ff567a0bab8258,2024-01-21 10:00:00+00:00,gdelt,"Riding the Wave of Artificial Intelligence, Crypto",neutral,ai_tokens
+24adbf865361b405afb8220f219a59e711e5e587,2024-01-22 05:00:00+00:00,gdelt,Pastor Said God Told Him To Remodel Home After Selling $1.3M Worth Of 'Worthless Crypto' To Followers,neutral,other
+4dfce54800cecfb9e1ff7fcf2c37f95fadb6e7b4,2024-01-22 08:00:00+00:00,gdelt,Wanted crypto boss Do Kwon's Terraform files for US bankruptcy,negative,other
+f7c8ab735a8c467d7cb018d07292e628414a308c,2024-01-22 09:00:00+00:00,gdelt,Cryptos That Could Go 100x!! This DePIN Report Reveals It All!,positive,price_speculation
+dbc6b14281690b33c2681c84a085ebd968739b58,2024-01-22 22:00:00+00:00,gdelt,Ripple Wins Big: US Banks Expected To Adopt XRP For International Payments,neutral,other
+655c38c0f7f84e9a5331ce05b614e3b489c00ffe,2024-02-05 12:00:00+00:00,gdelt,"Blockchain Technology Market is set to grow by USD 11.05 billion from 2022-2027, Accenture Plc, Amazon.com Inc., Amcon Soft, Capgemini Service SAS among major players",neutral,regulation
+dcef0a60756a7fd29448dece4fed86fbde28647d,2024-02-05 16:00:00+00:00,gdelt,"Web Registry GoDaddy, Ethereum Name Service Connect Domain Names With Crypto Wallets",neutral,security_hacks
+67b2730b21193ebabb41edcd4823b276d6e465a7,2024-02-05 16:00:00+00:00,gdelt,Oobit Raises $25M for Crypto Payments App in Series A Funding Round Led by Tether,neutral,other
+6efa91ab8fc1d35d6e77321682858454db294d7a,2024-02-05 23:00:00+00:00,gdelt,"Bitcoin CDD Shows Bullish Breakout, Rally Returning In Full Flow?",positive,price_speculation
+a053c7f1bb68a42bc4c2267222da3cbc97af54a8,2024-02-06 02:00:00+00:00,gdelt,Why Gmoney Took Out a $1 Million Loan on a CryptoPunks NFT,neutral,other
+4999b5fb27623386b7ff0e785f44e776a3502c48,2024-02-06 06:00:00+00:00,gdelt,Chainlink Eyes $20 Milestone; Bitcoin Minetrix Presale Hits $10M,neutral,price_speculation
+5971ee1efc1c01011009c05df4036935ccb408e6,2024-02-06 13:00:00+00:00,gdelt,"US Treasury's Yellen To Urge Congress For Legislation On Stablecoins, Crypto Spot Markets",neutral,stablecoins
+a83b0ed2e27d2ddde34d2168bdaf41ffa1616101,2024-02-06 13:00:00+00:00,gdelt,Solana mainnet down almost a year after last major outage,negative,other
+96a85f0170d2e17d3b8ce2434a035bf8646969b1,2024-02-07 03:00:00+00:00,gdelt,"XRP Buy Signal Goes Off, Analyst Says This Is How Long Uptrend Will Last",neutral,other
+ca378635da7a91c114532a065ab0bceecabe036a,2024-02-07 12:00:00+00:00,gdelt,"South Korea To Probe OKX Amid Crypto Crackdown, What's Next?",neutral,other
+fc074ff7dc912e05c67b6c69cce7225940536996,2024-02-07 20:00:00+00:00,gdelt,Tether Gold (XAUT) Hits Self Reported Market Capitalization of $98.62 Million,neutral,price_speculation
+70abc64f2aaa58bd450fb58d87405996e9c20439,2024-02-07 20:00:00+00:00,gdelt,South Korea's Crackdown On Crypto Crime: Life Sentence For Offenders,neutral,other
+d22053fc60588f5d4fd4a7fc7bf9d0c8c31490a3,2024-02-22 07:00:00+00:00,gdelt,Coinbase argues for spot Ether ETFs as analysts warn of 'concentration risk',negative,etf_institutional
+fb2b4241e3c801461e325412c4bd2d03ac87d5b5,2024-02-22 09:00:00+00:00,gdelt,"Ethereum Code Audits Are a Possible Use Case for AI, Vitalik Buterin Says",neutral,ai_tokens
+bce20c6dc2237bf78ed63a8c4e061986c8f7487b,2024-02-22 13:00:00+00:00,gdelt,New AI Crypto Presale Raises $500k,neutral,ai_tokens
+67fefeae80724f87a325a6638939e324c9807789,2024-02-22 16:00:00+00:00,gdelt,"Visa and Mastercard: A boon for wallet holders, a threat to crypto exchanges?",neutral,other
+21d10b5567444a7421945474cb5457e332589245,2024-02-22 16:00:00+00:00,gdelt,"XRP Price Plunges As Ripple v. SEC Lawsuit Sails Past Discovery Stage, Are Dips Profitable?",negative,regulation
+0c46cc1ed75163cf3198b763dda5cd74a8723465,2024-02-22 17:00:00+00:00,gdelt,Bitcoin Halving: Friend Or Foe? Expert Unveils When Exactly 'We Could See A Big Dip',positive,other
+cebe4e42a563ea272513ee442617f3afc05cbab1,2024-02-22 22:00:00+00:00,gdelt,"Reddit IPO filing reveals treasury exposure to Bitcoin, Ethereum",neutral,etf_institutional
+3cea07448c43653f9cc5a45a621e5ff6e2f85f72,2024-03-01 22:00:00+00:00,gdelt,"Bitcoin layer 2s among catalysts of this bull cycle, Bitcoin OG says",neutral,other
+cb46649ecc9a890276b17fc05bfaf42a17c5bc3e,2024-03-08 09:00:00+00:00,gdelt,Take Five: Another bout of bitcoin fever - 2024-03-08,neutral,other
+d6d0a60a5a094611001fccae224c6aecfcf92901,2024-03-08 14:00:00+00:00,gdelt,"1 Top Cryptocurrency to Buy Before It Soars 3,353%, According to Cathie Wood",positive,price_speculation
+842446e1cf344641b8a0bd485c6d3ff25f1b4f44,2024-03-08 14:00:00+00:00,gdelt,"WOO X lists $VOYA token of Merlin, Bitcoin's largest Layer 2 solution",neutral,other
+c907fad12c0f3340b2112b862c1775df48e1c54a,2024-03-09 10:00:00+00:00,gdelt,"Retik Finance (RETIK) Multichain DeFi Platform: Overview, Performance, Future Prospects",positive,defi
+9b197e049c395fef34e0ff1282e7d2b33af352ce,2024-03-09 19:00:00+00:00,gdelt,DOGWIFHAT Price Prediction & The Next AltCoin Set to Soar,neutral,price_speculation
+aee205355864dee5211e2ebc87d5c66a3d99464d,2024-03-10 14:00:00+00:00,gdelt,Bitcoin Dogs' hot ICO enters penultimate stage with $9.4M raised,neutral,other
+24918b98c00dc383a60263946268931f65bfd43e,2024-03-10 18:00:00+00:00,gdelt,"Bitcoin Will See Significant Inflows From Large Corporations and Others in Q2 2024, Says Bitwise CIO Matt Hougan",neutral,other
+d477d21af88dd1da24eec03bbf321c1f502366ee,2024-03-24 06:00:00+00:00,gdelt,Japanese Crypto Influencer Calls Ethereum Improvement Proposal 4844 a 'Layer 1 Middle Ground',neutral,other
+cf0ece41fd4fc04bacec1dc4592e88bfc86c6a44,2024-03-25 08:00:00+00:00,gdelt,Will Be Pivotal For Ripple And XRP,neutral,other
+f796f535561fe21160bfb37524b14656ed207b8e,2024-04-09 02:00:00+00:00,gdelt,"Policymakers, Industry Leaders To Gather in Washington, DC for Annual Bitcoin Policy Summit",neutral,regulation
+68449749fa6fb720359051c5b547ba192cf56128,2024-04-09 15:00:00+00:00,gdelt,"Cardano Slips to 10th Position, Underperforming in a Surging Crypto Market",neutral,other
+69eb575a36265ef432f70b53da52d95f516d6db5,2024-04-09 18:00:00+00:00,gdelt,"ProShares Files To List Two Spot Ethereum ETFs, Approval Odd Is High",neutral,etf_institutional
+a79fd5aad8338285553ff863ff2670af9aedb39d,2024-04-10 07:00:00+00:00,gdelt,Bitcoin Reportedly Hindering El Salvador's Credit Opportunities With the IMF,neutral,other
+70aba987abaa0229dea29b557fcdd0855c9df88d,2024-04-10 09:00:00+00:00,gdelt,Bitcoin Depot (NASDAQ:BTM) & Yiren Digital (NYSE:YRD) Critical Analysis,neutral,other
+d2676ff287820ce99d8427d18fb03f63501b3bc3,2024-04-10 11:00:00+00:00,gdelt,Nomic and Babylon Unveil stBTC: Unlocking Bitcoin's Potential in DeFi,positive,defi
+c4286b01e835040a993f9b2f69bf66b2c83cb6e5,2024-04-10 13:00:00+00:00,gdelt,ApeFest 4: Lisbon's Leap into the Crypto Limelight with Bored Ape Yacht Club,neutral,other
+227888b23badb7f574098e972199420cfc3b0df4,2024-04-10 13:00:00+00:00,gdelt,"CPI: JPMorgan, Other Banks Estimates Higher Inflation, Bitcoin To Fall Below $60,000?",negative,macro_monetary
+f1802c2ded6e34638be212d4c657b421e264da68,2024-04-10 14:00:00+00:00,gdelt,TRM Labs Unveils Behavioral Intelligence: Pioneering the Third Generation in Blockchain Investigations,positive,other
+c98b34249a2f536a9d5b7ee17098db33326d49d4,2024-04-25 14:00:00+00:00,gdelt,How Is Bitcoin Halving Adjusting The Market?,neutral,other
+cff47c928c386541963e223f3848df605ba47f70,2024-04-25 20:00:00+00:00,gdelt,"Spot Ethereum ETF Applications in US Will Be Likely Rejected by SEC, Experts Say",neutral,etf_institutional
+70e0bdb0815850b4c1ab0b69bc6fdcf8bd9d341f,2024-04-26 01:00:00+00:00,gdelt,"Bitcoin Wins Inflation Rate Battle With Gold, Now Scarcest",neutral,macro_monetary
+f9a3a36e59ebdd804a4cd9d1265bc4f77069bf7e,2024-04-26 12:00:00+00:00,gdelt,"Hedera Price Skyrockets on Major Partnership, Milei Moneda Sells 64 Million MEDA Tokens in Crypto Presale",neutral,price_speculation
+5781c0fb394050ecebab21d026391011665e7d72,2024-04-26 13:00:00+00:00,gdelt,Leak Reveals Another Huge Wall Street Bitcoin ETF Price Earthquake Could Be About To Hit Crypto,neutral,etf_institutional
+7682bb095179db87725c476debd8fe1efe111f2d,2024-04-26 15:00:00+00:00,gdelt,UK authorises police to seize illicit crypto without arrests,positive,price_speculation
+9819e3fd64bf380c7cb2343a537f1ca56267acb3,2024-04-26 15:00:00+00:00,gdelt,Short squeeze alert for next week: Two cryptocurrencies with potential to skyrocket,positive,other
+242e43317fa542e2b03a968ffe79a0193c71762c,2024-04-26 20:00:00+00:00,gdelt,Mainland China Investors Blocked from Accessing New Hong Kong Bitcoin ETFs,neutral,etf_institutional
+1fc81806193531bc658f2a1e2e63b3146b573acc,2024-05-11 20:00:00+00:00,gdelt,"Charles Hoskinson Criticizes ""Incompetent"" WEF Contributor Stance on Bitcoin",neutral,other
+9aede6aba037d8009a05ebf802cecded09378cd2,2024-05-27 03:00:00+00:00,gdelt,Bitcoin Diamond (BCD) Price Down 1.7% Over Last Week,negative,price_speculation
+7ae84cf3f399293a8500297b7daecbb1c8a8c217,2024-05-27 08:00:00+00:00,gdelt,Binance's nightmare in Nigeria deepens after exec collapses in court,neutral,regulation
+783d5d5fc4d31a52a4c1f2418b0069c3d4ef55d5,2024-05-27 12:00:00+00:00,gdelt,MicroStrategy's CEO Emphasizes Bitcoin Adoption and Impairment Changes,positive,other
+f72143cae9a41d49f47cb2f4164d4209f23d25e1,2024-05-27 18:00:00+00:00,gdelt,"Retail activity dominates Bitcoin, overshadowing institutional moves",neutral,etf_institutional
+f9bda6e2eb45c8bcb66ecc98d5d632e5a0a7bf91,2024-05-28 19:00:00+00:00,gdelt,Unlock Steady Passive Income with Crypto Staking: The Ultimate Guide to CryptoHeap,neutral,defi
+21bf3adac5ce7a69a42c6cc29bac0e15d0f002f8,2024-06-12 12:00:00+00:00,gdelt,Crypto Stocks Bounce Back And Bitcoin Price Recovers From Monthly Low Ahead Of Fed Meeting,neutral,macro_monetary
+f17e69d123612cf1b21ca3e1e21a3197627dfd9e,2024-06-14 11:00:00+00:00,gdelt,Russia's Bitcoin Gamble: A Bold Move or a Risky Investment? - 3ajlnews donations crypto,negative,other
+ef8462ae06fe39b47362d4bf7d435327c6efc545,2024-06-14 17:00:00+00:00,gdelt,FG warns Nigerians against Investing in Davido's crypto token,positive,price_speculation
+f15f286d764ae0f88a29969388d1c32f1e3af35e,2024-06-28 20:00:00+00:00,gdelt,21Shares files application for spot Solana ETF,neutral,etf_institutional
+38dee8e8d1f748fa3d6c0e2b3694e1e63a496a12,2024-06-28 20:00:00+00:00,gdelt,Elections Across Europe Won't Hinder Bloc's Crypto Ambitions,neutral,other
+b23f4865d0637a1e20fd84ce6f1cd43f25f0d68c,2024-06-29 06:00:00+00:00,gdelt,"Bitcoin Soars to $20,000, Ether Rebounds After Weekend Selloff - 3ajlnews donations crypto",neutral,price_speculation
+ff0162dcfef35c170886b0e9d6323556d25a90c3,2024-06-29 09:00:00+00:00,gdelt,"Cryptocurrency Market Sees Gains, Chainlink (LINK) Leads the Pack - 3ajlnews donations crypto",positive,price_speculation
+f48af9c5180748ca7f65d62019f1a2899bd7451a,2024-06-29 20:00:00+00:00,gdelt,Crypto Analyst Says Ethereum Competitor Fantom (FTM) Could Jump To $1.2,neutral,other
+d07d5d2cf2428f9c61087a22e01bbc4e27923909,2024-06-30 18:00:00+00:00,gdelt,inSure DeFi (SURE) Price Reaches $0.0051 on Major Exchanges,neutral,defi
+772cc95269136be12ccfa1c71880dffddc2fc853,2024-06-30 19:00:00+00:00,gdelt,Bitcoin Price Down 3.8% Over Last 7 Days (BTC),negative,price_speculation
+0686517ea754e2ef0111f88eb13eac96e748554e,2024-07-30 02:00:00+00:00,gdelt,"Wrapped Bitcoin (WBTC) Price Hits $66,754.30 on Exchanges",neutral,price_speculation
+a22a5896f0329d0a8d2f8ce58ee8ea5844075aee,2024-08-15 00:00:00+00:00,gdelt,Goldman Sachs Bitcoin ETF Manages $420M,neutral,etf_institutional
+791d2dd03dc1626c20862e66454a06ff368297f4,2024-08-17 04:00:00+00:00,gdelt,Lido Staked ETH (stETH) Price Down 0.1% This Week,negative,price_speculation
+c143b491e06a6b953a13e1dbb14bec30d6a917f7,2024-08-17 13:00:00+00:00,gdelt,Bitcoin's 'Next Stop'—China Could Be About To Blow Janet Yellen's $1 Trillion Crypto Price Bombshell Out Of The Water,negative,price_speculation
+ed44f599b9802ce575c8206405486f67d6149d2a,2024-09-01 13:00:00+00:00,gdelt,YUSD Stablecoin (YUSD) Self Reported Market Capitalization Achieves $216.47 Million,positive,stablecoins
+0c0a3b9b1e0955c8c6a749735e0bb1f211d4c590,2024-09-16 15:00:00+00:00,gdelt,Crypto firm Circle Internet Financial announces move to New York,neutral,other
+17523caba83160d0bf11dd7a7089b2a30c42c7ab,2024-10-02 08:00:00+00:00,gdelt,"Bitcoin tanks, gold rebounds as Israel vows Iran 'will pay' for attack",negative,macro_monetary
+e3f1a5ae0f4a338fad563e3a0bd53ddfb1daa1f4,2024-10-02 19:00:00+00:00,gdelt,US blockchain-based carbon platform announces Mexican franchise «  Carbon Pulse,neutral,other
+1e899bd31b39bebbe6679b0e59e4d3f6e0da1391,2024-10-18 15:00:00+00:00,gdelt,Covalent's EWM Light Client: The Key to Securing Ethereum's Future Through Preserving Historical Data,positive,other
+dd297f60c8b91f378fe8c4c06b3f006b2d813272,2024-11-19 21:00:00+00:00,gdelt,"""Ready for a debate with any representative of the BJP"": Supriya Sule challenges allegation of 'Bitcoin transaction'",neutral,other
+da5601fc8dbb7071569a4ae7cc201b5a38959c78,2024-12-05 08:00:00+00:00,gdelt,"Cellulose Ether & Its Derivatives Market Size Estimation,",neutral,other
+01ef10d08bafd44b33a860d5644411df4c1de7c1,2024-12-05 12:00:00+00:00,gdelt,Cryptocurrency scams: Australians turned into money mules chasing crypto cash,negative,other
+0e37d52b14c165e964ecc996c45c698bcad3a2c2,2024-12-21 02:00:00+00:00,gdelt,Binance Futures Launches CGPT/USDT Perpetual Contracts,positive,stablecoins
+f7fbfb1605b96fb77ac9d211ed152e8843994b26,2025-01-22 08:00:00+00:00,gdelt,"BCH Miner offers free mining services, the best choice for cryptocurrency enthusiasts",neutral,other
+155c0ff86c399c52226d920ee4733c3665b27b39,2025-01-22 17:00:00+00:00,gdelt,Whale Sell-Off These 2 Top DeFi Tokens: Opportunity for Buyers?,negative,defi
+9ef5ef0438f4f613d35768169e69d8f39929c359,2025-01-22 20:00:00+00:00,gdelt,"Trump Pardoned Silk Road Creator, Ross Ulbricht, As Part of Massive US Crypto Future",positive,other
+279c5a986bb00339cb2cbc3087829d5294ed1fcc,2025-03-11 09:00:00+00:00,gdelt,PrimeXBT Merges Crypto and Traditional Markets with MT5 Integration,positive,other
+80ebf4a468357f6e2d79e4d81a8fa71cf98d0c24,2025-03-11 16:00:00+00:00,gdelt,"U.S. Strategic Reserve a 'Monumental Endorsement' of Bitcoin (BTC), H.C. Wainwright Says",positive,etf_institutional
+84aa3a765626b48bea56ab35b33a8b3c5c0ac0de,2025-03-27 15:00:00+00:00,gdelt,"Should You Buy Bitcoin While It's Under $90,000?",negative,price_speculation
+7fbd45b815067654bc15717bab4af3c07f56c221,2025-04-28 10:00:00+00:00,gdelt,"TOKEN2049 Dubai Hits 15,000-Ticket Sell-Out - Largest Crypto Gathering of 2025",positive,ai_tokens
+c3129e382060c933391cea196cf555c297964502,2025-04-28 16:00:00+00:00,gdelt,"Ivorypay launches Duffle, its consumer-focused crypto payment app",positive,other
+f58a427f640e91750f71f4498b41f614ef3bf046,2025-04-28 19:00:00+00:00,gdelt,Fiat vs crypto: What every modern investor should understand,neutral,other
+f4f739ecd839b0c2a813f86c8e1bab8272c6baa9,2025-05-14 00:00:00+00:00,gdelt,Coinbase Stock Jumps 25% After S&P 500 Inclusion News,neutral,other
+86d42ecf7f8599ec8dc0e0a7411799be8971f5b9,2025-05-14 00:00:00+00:00,gdelt,"Coinbase Gains 22%, Its Greatest Rise Since The Election And S&P 500 Addition.",positive,price_speculation
+f002ec9edc968694281de36086450712b5671816,2025-05-14 11:00:00+00:00,gdelt,Should Investors Worry About The Future Of XRP?,negative,other
+4c7c1f07d200fd6cf957f3be0202931fc5866860,2025-05-14 13:00:00+00:00,gdelt,New 'Chihuahua Stealer' Targets Browser Data and Crypto Wallets,negative,security_hacks
+fd20d8545ed4698f28cafa45f6515809c0008d3f,2025-05-30 13:00:00+00:00,gdelt,Reform to Launch Gamechanging 'Strategic Crypto Reserve' in Digital Assets Bill – Guido Fawkes,positive,regulation
+3bfb3b1ff731ac9898721434ca841f3f635a26a5,2025-05-30 19:00:00+00:00,gdelt,Beyond profit: How blockchain technology can be used for the public good,neutral,other
+c02415057e09c340073ab81c9637f1f8c08e9a62,2025-05-30 22:00:00+00:00,gdelt,Accepting Crypto Payments in Portugal: A Strategic Advantage for Forward-Looking Businesses,positive,other
+16e4163fa707caf579acd1e8c6bf563cdaaafd64,2025-07-17 04:00:00+00:00,gdelt,Crypto Week Crashes as Battles Threaten Digital Asset Oversight,negative,regulation
+6dde09f52dd70785f7917814c975e4da5f711aee,2025-07-17 07:00:00+00:00,gdelt,"Cryptocurrencies Price Prediction: Chainlink, Floki & Binance — Asian Wrap 17 July",neutral,price_speculation
+1911431511e59463cce2f92c87eefb3b6dfce24a,2025-07-17 11:00:00+00:00,gdelt,"Vaultz Capital's CEO on strategy, Bitcoin's future & new fundraising",positive,price_speculation
+eee5b704f28d3f9490a88a006ea84548bb9d09a2,2025-07-17 16:00:00+00:00,gdelt,Big Pharma In The Crypto Game: $60M Investment For BNB Treasury Strategy,neutral,etf_institutional
+21d7c02772764194532dc27804b5578092d4e178,2025-07-17 18:00:00+00:00,gdelt,Peter Schiff Dismisses Bitcoin's Scarcity: 'The Supply of Bitcoin Is Actually Meaningless',negative,other
+3a543ec7e751115658aacfb0cc909e423e755d83,2025-07-17 23:00:00+00:00,gdelt,Crypto week update: U.S. House sends stablecoins bill to Trump,neutral,stablecoins
+c8621218fc8617110fd2ef3d3f7138a2c5c0923f,2025-08-18 07:00:00+00:00,gdelt,Renewable Bitcoin mining strengthens Australia's power grid,positive,other
+a8294fc2236375c2b56f039ec618a68a595a8afb,2025-08-18 12:00:00+00:00,gdelt,"Wall Street Issues Serious $6.6 Trillion Crypto Warning As Price Crash Fears Hit Bitcoin, Ethereum And XRP",negative,price_speculation
+1b25580243aacfffc80bd37fc51f0b78d904399c,2025-09-03 09:00:00+00:00,gdelt,"EU should seek safeguards from foreign stablecoins, ECB says",neutral,stablecoins
+d87a53be4f54c0c68b22aec05948a72bfaa7d32c,2025-09-03 14:00:00+00:00,gdelt,Binance Unveils 'Humans of Binance' Series to Showcase Real Stories of Crypto Empowerment Worldwide,positive,other
+7a605daadf3c91d664a90b6741e2ceefa3d48c3a,2025-09-19 15:00:00+00:00,gdelt,Cathie Wood's Next Crypto Pick? Soccer Owner Turned Solana Treasury,neutral,etf_institutional
+825e10db91b6aeecf1c9525e416d10162914e9b4,2025-10-05 07:00:00+00:00,gdelt,XRP Soars Past $3 as Traders Anticipate $4 Amid Bitcoin Surge,positive,price_speculation
+785307156aa75df732a7dfe3c60285086a5c18c1,2025-10-05 16:00:00+00:00,gdelt,"Crypto, Hawala and shell foundations: How Khalistani and Islamist groups exploit charities abroad to fund terror",negative,security_hacks
+95d5efbcf232e87e0c9f0ef7873205eb7706224e,2025-10-21 08:00:00+00:00,gdelt,"Binance Coin Rises 3%, Aster Climbs 4.98%, and BullZilla's 3,100",positive,price_speculation
+6aa6471d94c7283cf986767c26ff8621cb4a42ec,2025-10-21 13:00:00+00:00,gdelt,"SharpLink Reports Total ETH Holdings Rise to 859,853 as of October 19, 2025; Total ETH and Cash Holdings of $3.5 Billion",positive,regulation
+1b981a5578dd63d225272055af091bc6e6b49229,2025-10-21 19:00:00+00:00,gdelt,This Could Be Your Last Chance to Grab the Best 100X Crypto to Buy as,positive,price_speculation
+377879f348cb9a5b2f42c14d5eb443f8ea62152f,2025-10-21 21:00:00+00:00,gdelt,Could A Rotation Out Of Gold Into BTC Double Bitcoin's Valuation?,neutral,price_speculation
+e5b45a478bcafd684270d0e4c2b56a34be71d0df,2025-11-22 15:00:00+00:00,gdelt,"Bitcoin Treasuries to Move Beyond HODL to Yield, Hedging and Share Buybacks as NAV Discount Bites",neutral,defi
+32dfbb036914cc4e6cd6cfb6a7e2a36aaa481056,2025-12-08 07:00:00+00:00,gdelt,"ETH, ADA, XRP Lead Gains as Bitcoin Edges Higher on Fed Rate Cut Expectations",positive,macro_monetary
+adfaf3d0c3d041164de7c56f088112574a4989c7,2025-12-08 11:00:00+00:00,gdelt,"Coinbase Plots Full Comeback in India, Fiat Support Expected in 2026",positive,other
+86b54119ee6b31155c60fae7d38bf4963706b148,2025-12-24 02:00:00+00:00,gdelt,Monero Vs ZCash: Which Privacy Crypto Will Win in 2026?,neutral,other
+171e6f9c6bb9acc5624b127b58d81871e7a765c0,2025-12-24 23:00:00+00:00,gdelt,Bitcoin bulls eye possible tailwind as U.S. dollar index continues to leg lower,neutral,macro_monetary
