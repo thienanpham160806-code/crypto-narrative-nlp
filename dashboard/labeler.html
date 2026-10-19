@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gán nhãn tiêu đề</title>
+<style>
+  :root { --bg:#f6f5f1; --panel:#fff; --ink:#1b1c1e; --ink2:#5b5f66; --rule:#d9d6cf; --acc:#1f4e79; --neg:#a3352b; --neu:#6b6f76; --pos:#2f6b3a; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#121314; --panel:#1b1c1e; --ink:#ececea; --ink2:#a4a8ae; --rule:#34363a; --acc:#8cb4dc; --neg:#e07a6f; --neu:#a4a8ae; --pos:#7fbf8a; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+  h1 { font-size:18px; margin:0; font-weight:600; }
+  button, label.file { font:inherit; font-size:14px; padding:7px 12px; border:1px solid var(--rule); background:var(--panel); color:var(--ink); border-radius:6px; cursor:pointer; }
+  button:hover, label.file:hover { border-color:var(--ink2); }
+  button.primary { background:var(--acc); color:var(--panel); border-color:var(--acc); }
+  input[type=file] { display:none; }
+  .bar { margin:20px 0 8px; height:6px; background:var(--rule); border-radius:3px; overflow:hidden; }
+  .bar > div { height:100%; background:var(--acc); width:0; transition:width .15s; }
+  .meta { display:flex; justify-content:space-between; font-size:14px; color:var(--ink2); font-variant-numeric:tabular-nums; }
+  .card { background:var(--panel); border:1px solid var(--rule); border-radius:8px; padding:24px; margin-top:12px; }
+  .date { font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums; }
+  .title { font-size:22px; line-height:1.4; margin:8px 0 0; }
+  .group { margin-top:22px; }
+  .group h2 { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink2); margin:0 0 8px; font-weight:600; }
+  .opts { display:flex; flex-wrap:wrap; gap:8px; }
+  .opt { display:flex; gap:8px; align-items:center; }
+  .opt kbd { font:600 12px ui-monospace, Consolas, monospace; border:1px solid var(--rule); border-radius:4px; padding:1px 6px; color:var(--ink2); }
+  .opt.on { border-color:var(--acc); box-shadow: inset 0 0 0 1px var(--acc); }
+  .opt.on kbd { color:var(--acc); border-color:var(--acc); }
+  .s-negative.on { border-color:var(--neg); box-shadow: inset 0 0 0 1px var(--neg); }
+  .s-positive.on { border-color:var(--pos); box-shadow: inset 0 0 0 1px var(--pos); }
+  .nav { display:flex; justify-content:space-between; align-items:center; margin-top:16px; gap:8px; flex-wrap:wrap; }
+  .help { font-size:13px; color:var(--ink2); margin-top:20px; }
+  .empty { margin-top:48px; color:var(--ink2); }
+  .warn { color:var(--neg); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Gán nhãn tiêu đề tin tức</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <label class="file">Chọn file CSV<input type="file" id="file" accept=".csv,text/csv"></label>
+      <button class="primary" id="export" disabled>Xuất CSV</button>
+    </div>
+  </header>
+
+  <div id="app" hidden>
+    <div class="bar"><div id="fill"></div></div>
+    <div class="meta"><span id="pos">0/0</span><span id="done">0 đã gán đủ</span></div>
+    <div class="card">
+      <div class="date" id="date"></div>
+      <p class="title" id="title"></p>
+      <div class="group"><h2>Cảm xúc</h2><div class="opts" id="sent"></div></div>
+      <div class="group"><h2>Câu chuyện thị trường</h2><div class="opts" id="narr"></div></div>
+    </div>
+    <div class="nav">
+      <button id="prev">← Trước</button>
+      <label style="font-size:14px;color:var(--ink2)"><input type="checkbox" id="auto" checked> Tự sang câu sau khi gán đủ 2 nhãn</label>
+      <button id="next">Sau →</button>
+    </div>
+    <p class="help">Phím: 1 negative · 2 neutral · 3 positive · Q regulation · W etf_institutional · E security_hacks · R stablecoins · T defi · Y ai_tokens · U macro_monetary · I price_speculation · O other · ←/→ chuyển câu · Enter: câu chưa gán tiếp theo · Backspace: xóa nhãn câu hiện tại. Nhãn được lưu tạm trong trình duyệt; bấm "Xuất CSV" để ghi file.</p>
+  </div>
+  <p class="empty" id="empty">Chọn file <b>data/interim/validation_sample.csv</b> để bắt đầu. Hướng dẫn gán nhãn: docs/LABELING_GUIDE.md.</p>
+  <p class="warn" id="err"></p>
+</main>
+<script>
+const SENT = [["1","negative"],["2","neutral"],["3","positive"]];
+const NARR = [["Q","regulation"],["W","etf_institutional"],["E","security_hacks"],["R","stablecoins"],["T","defi"],
+              ["Y","ai_tokens"],["U","macro_monetary"],["I","price_speculation"],["O","other"]];
+let rows = [], header = [], i = 0, key = "", fileName = "validation_sample.csv", eol = "\n";
+
+function parseCSV(text) {               // RFC 4180: trường có ngoặc kép, dấu phẩy và xuống dòng bên trong
+  const out = []; let row = [], f = "", q = false;
+  for (let k = 0; k < text.length; k++) {
+    const c = text[k];
+    if (q) {
+      if (c === '"') { if (text[k + 1] === '"') { f += '"'; k++; } else q = false; }
+      else f += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(f); f = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[k + 1] === "\n") k++;
+      row.push(f); f = ""; if (row.length > 1 || row[0] !== "") out.push(row); row = [];
+    } else f += c;
+  }
+  if (f !== "" || row.length) { row.push(f); out.push(row); }
+  return out;
+}
+const cell = v => /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+const col = name => header.indexOf(name);
+const store = {
+  load() { try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch { return {}; } },
+  save() { try { const m = {}; rows.forEach(r => { const s = r[col("label_sentiment")], n = r[col("label_narrative")];
+           if (s || n) m[r[col("doc_id")]] = [s, n]; }); localStorage.setItem(key, JSON.stringify(m)); } catch {} }
+};
+
+document.getElementById("file").addEventListener("change", async e => {
+  const file = e.target.files[0]; if (!file) return;
+  fileName = file.name;
+  let text = await file.text();
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  eol = text.includes("\r\n") ? "\r\n" : "\n";
+  const data = parseCSV(text);
+  header = data[0]; rows = data.slice(1).map(r => header.map((_, j) => r[j] ?? ""));
+  const need = ["doc_id", "public_ts_utc", "title", "label_sentiment", "label_narrative"].filter(c => col(c) < 0);
+  const err = document.getElementById("err");
+  if (need.length) { err.textContent = "File thiếu cột: " + need.join(", "); return; }
+  err.textContent = "";
+  key = "labeler:" + rows.length + ":" + rows[0][col("doc_id")];
+  const saved = store.load();
+  rows.forEach(r => { const s = saved[r[col("doc_id")]]; if (s) { r[col("label_sentiment")] ||= s[0]; r[col("label_narrative")] ||= s[1]; } });
+  i = Math.max(0, rows.findIndex(r => !complete(r)));
+  document.getElementById("app").hidden = false;
+  document.getElementById("empty").hidden = true;
+  document.getElementById("export").disabled = false;
+  render();
+});
+
+const complete = r => r[col("label_sentiment")] && r[col("label_narrative")];
+
+function options(el, list, field) {
+  el.innerHTML = "";
+  for (const [k, name] of list) {
+    const b = document.createElement("button");
+    b.className = "opt s-" + name + (rows[i][col(field)] === name ? " on" : "");
+    b.innerHTML = `<kbd>${k}</kbd>${name}`;
+    b.onclick = () => set(field, name);
+    el.appendChild(b);
+  }
+}
+
+function render() {
+  const r = rows[i];
+  document.getElementById("date").textContent = r[col("public_ts_utc")];
+  document.getElementById("title").textContent = r[col("title")];
+  options(document.getElementById("sent"), SENT, "label_sentiment");
+  options(document.getElementById("narr"), NARR, "label_narrative");
+  const n = rows.filter(complete).length;
+  document.getElementById("pos").textContent = `${i + 1}/${rows.length}`;
+  document.getElementById("done").textContent = `${n} đã gán đủ`;
+  document.getElementById("fill").style.width = (100 * n / rows.length) + "%";
+}
+
+function set(field, name) {
+  const r = rows[i], c = col(field);
+  r[c] = r[c] === name ? "" : name;
+  store.save();
+  if (document.getElementById("auto").checked && complete(r) && i < rows.length - 1) i++;
+  render();
+}
+const go = d => { i = Math.min(rows.length - 1, Math.max(0, i + d)); render(); };
+
+document.getElementById("prev").onclick = () => go(-1);
+document.getElementById("next").onclick = () => go(1);
+document.addEventListener("keydown", e => {
+  if (!rows.length || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toUpperCase();
+  const s = SENT.find(x => x[0] === k), n = NARR.find(x => x[0] === k);
+  if (s) set("label_sentiment", s[1]);
+  else if (n) set("label_narrative", n[1]);
+  else if (e.key === "ArrowLeft") go(-1);
+  else if (e.key === "ArrowRight") go(1);
+  else if (e.key === "Enter") { const j = rows.findIndex((r, x) => x > i && !complete(r)); if (j >= 0) { i = j; render(); } }
+  else if (e.key === "Backspace") { rows[i][col("label_sentiment")] = ""; rows[i][col("label_narrative")] = ""; store.save(); render(); }
+  else return;
+  e.preventDefault();
+});
+
+document.getElementById("export").onclick = () => {
+  const body = [header, ...rows].map(r => r.map(cell).join(",")).join(eol) + eol;
+  const blob = new Blob(["﻿" + body], { type: "text/csv;charset=utf-8" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: fileName });
+  a.click(); URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
