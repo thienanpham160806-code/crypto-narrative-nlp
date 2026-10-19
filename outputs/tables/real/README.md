@@ -31,13 +31,13 @@ RQ4: text-to-market significance indicates a predictive lead, while the reverse 
 
 RQ4: ADF tests a unit-root null and KPSS tests a level-stationarity null. Conflicting outcomes call for specification review; KPSS p-values are lookup-table bounds.
 
-### robustness.csv (1800 rows)
+### robustness.csv (5400 rows)
 
 RQ1–RQ3: compare pre/post January 2025 and horizon sensitivity with momentum and raw document count. A break dummy cannot repair changing news coverage.
 
 ### robustness_status.csv (2 rows)
 
-Document-weighted and price-excluded sensitivity requires reaggregation from canonical articles. Pending means no economic conclusion from that variant.
+Both sensitivity variants were reaggregated from canonical articles and marked provided. Compare them with the baseline on development observations; associations are not causal effects.
 
 ### quantiles.csv (45 rows)
 
