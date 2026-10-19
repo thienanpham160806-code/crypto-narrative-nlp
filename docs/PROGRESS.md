@@ -42,3 +42,4 @@
 Vercel CLI 63.1.0 (Node.js 24.15.0)
 Deploying crypto-narrative-report
 2026-10-19 08:31 | Codex | real rebuild | real/ chạy lại trên 100.00% ngày GKG; RUN_DONE ok, pytest offline qua.
+2026-10-19 15:40 | Codex | full-GKG publication | Replaced 112.8 MB event CSV in three unpublished commits with 19.8 MB UTF-8 gzip; future watcher stages archive only; 86 offline tests pass; dev pushed; PR #5 opened; Vercel root corrected to dashboard/web | Verify fresh Vercel preview, then merge PR #5 into main | RUN_DONE ok on 1369/1369 GKG days; corpus news coverage 1352/1369 days
