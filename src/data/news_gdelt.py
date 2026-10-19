@@ -109,7 +109,7 @@ def collect(lang: str, start, end, minutes=(0,), workers: int = 8, get=None) -> 
 
 
 def load(lang: str) -> pd.DataFrame:
-    fs = [pd.read_json(f, lines=True, dtype=False) for f in sorted(cache_dir(lang).glob("*.jsonl")) if f.stat().st_size]
+    fs = [pd.read_json(f, lines=True, dtype=False, convert_dates=False) for f in sorted(cache_dir(lang).glob("*.jsonl")) if f.stat().st_size]
     df = pd.concat(fs) if fs else pd.DataFrame(columns=["date", "domain", "url", "title"])
     df["first_seen_utc"] = pd.to_datetime(df.date.astype(str), format="%Y%m%d%H%M%S", utc=True)
     df = df.sort_values("first_seen_utc").drop_duplicates("url").drop(columns="date")
