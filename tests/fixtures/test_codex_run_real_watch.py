@@ -106,6 +106,21 @@ def test_publish_fast_forward_with_other_agent_work(tmp_path, monkeypatch):
     assert 'real/ chạy lại trên 100.00%' in (tmp_path/'docs/PROGRESS.md').read_text(encoding='utf-8')
 
 
+def test_event_observations_archive_replaces_stale_copy(tmp_path):
+    import gzip
+
+    raw = tmp_path/'event_observations.csv'
+    raw.write_text('asset,car\nBTC,0.1\n', encoding='utf-8')
+    archive = run_real.archive_event_observations(tmp_path)
+    with gzip.open(archive, 'rt', encoding='utf-8') as source:
+        assert source.read() == raw.read_text(encoding='utf-8')
+    first = archive.read_bytes()
+    assert run_real.archive_event_observations(tmp_path).read_bytes() == first
+    raw.write_text('asset,car\nETH,0.2\n', encoding='utf-8')
+    with gzip.open(run_real.archive_event_observations(tmp_path), 'rt', encoding='utf-8') as source:
+        assert source.read() == 'asset,car\nETH,0.2\n'
+
+
 @pytest.mark.skipif(os.name != 'nt', reason='Windows execution state only')
 def test_sleep_inhibition_is_released_after_run():
     flags = []

@@ -2,11 +2,13 @@
 import argparse
 import ctypes
 from datetime import datetime, timezone
+import gzip
 import hashlib
 import json
 import logging
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -89,6 +91,19 @@ def write_done(path, snapshot, failed):
     return result
 
 
+def archive_event_observations(output):
+    raw = Path(output)/'event_observations.csv'
+    archive = raw.with_suffix('.csv.gz')
+    if not raw.is_file() or (archive.is_file() and archive.stat().st_mtime_ns >= raw.stat().st_mtime_ns):
+        return archive
+    temporary = archive.with_suffix('.gz.tmp')
+    with raw.open('rb') as source, temporary.open('wb') as target:
+        with gzip.GzipFile(filename='', mode='wb', fileobj=target, mtime=0) as compressed:
+            shutil.copyfileobj(source, compressed, 4 * 1024 * 1024)
+    temporary.replace(archive)
+    return archive
+
+
 def publish_results(output):
     """Publish only owned generated files once the shared tracked tree is clear."""
     output = Path(output)
@@ -98,7 +113,9 @@ def publish_results(output):
         return
     if marker.is_file() and json.loads(marker.read_text(encoding='utf-8')).get('input_sha256') == done['input_sha256']:
         return
-    paths = [*output.glob('*.csv'), output/'README.md', output/'RESULTS.md',
+    archive = archive_event_observations(output)
+    paths = [*(path for path in output.glob('*.csv') if path.name != 'event_observations.csv'),
+             archive, output/'README.md', output/'RESULTS.md',
              output/'run_metadata.json', output/'RUN_DONE.json', ROOT/'notebooks/main.ipynb',
              *(ROOT/'outputs/figures/real').glob('*.png'),
              *(ROOT/'outputs/figures/real').glob('*.svg')]

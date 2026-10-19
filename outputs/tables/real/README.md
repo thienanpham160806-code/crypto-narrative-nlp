@@ -97,7 +97,9 @@ RQ3: UCRY-controlled regressions use only dates with released weekly observation
 
 RQ2/RQ3: the asymmetry test conditions on weekly uncertainty where available. Its sample differs from the main table; unavailable post-2024 UCRY is never extrapolated.
 
-### event_observations.csv (150160 rows)
+### event_observations.csv.gz (150160 rows)
+
+The publication stores this large event-level CSV as UTF-8 gzip. `run_real.py` keeps an untracked local `.csv` for `paper/fill_results.py`; after a fresh clone, extract the archive before rebuilding the paper without rerunning the analysis.
 
 Each row is a canonical English article and tagged asset, or BTC for untagged market news. CAR uses an hourly BTC market model for altcoins and a past-hour mean for BTC; overlapping articles share market shocks.
 

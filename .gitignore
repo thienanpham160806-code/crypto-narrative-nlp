@@ -2,6 +2,7 @@
 data/raw/*
 !data/raw/.gitkeep
 *.parquet
+outputs/tables/real/event_observations.csv
 !data/processed/sample_*.parquet
 data/interim/llm_cache/
 # từ điển tải ngoài (giấy phép riêng, không phân phối lại)
