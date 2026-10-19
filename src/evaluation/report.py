@@ -273,6 +273,8 @@ def write_results(tables, output):
     timing = tables.get('event_timing', pd.DataFrame())
     forecasts = tables.get('forecasts', pd.DataFrame())
     granger = tables.get('granger', pd.DataFrame())
+    gw = tables.get('gw', pd.DataFrame())
+    mcs = tables.get('mcs', pd.DataFrame())
     regression = tables.get('regressions', pd.DataFrame())
     lines = ['# Kết quả dữ liệu thật', '',
              'Bằng chứng dưới đây chỉ áp dụng cho dữ liệu đã xử lý. Tin cùng ngày được gom theo ngày khi kiểm định sự kiện.', '']
@@ -309,9 +311,28 @@ def write_results(tables, output):
             for row in selected.itertuples()) + '.')
     else:
         lines.append('Đã có: chưa đủ hồi quy BTC h=1 để so các bộ chấm.')
-    lines += ['Chưa đủ: cần nhãn kiểm định độc lập và mẫu tin dày hơn để xếp hạng độ chính xác.',
-              'Nghĩa kinh tế: chênh hệ số dự báo không chứng minh FinBERT đọc tin đúng hơn từ điển.', '',
-              '## RQ2: tin xấu và tin tốt', '']
+    validation_path = Path(output).parent/'sentiment_validation.csv'
+    validation = pd.read_csv(validation_path) if validation_path.is_file() else pd.DataFrame()
+    hand_n = 0
+    if {'task', 'method', 'n', 'auc'} <= set(validation.columns):
+        hand = validation.loc[(validation.task == 'sentiment') &
+                              validation.method.isin(['FinBERT', 'LM', 'Harvard IV-4'])]
+        if set(hand.method) == {'FinBERT', 'LM', 'Harvard IV-4'}:
+            by_method = hand.set_index('method')
+            hand_n = int(by_method.loc['FinBERT', 'n'])
+            lines.append(f'Đã có: {hand_n} tiêu đề gán nhãn độc lập; '
+                         f'AUC FinBERT={by_method.loc["FinBERT", "auc"]:.3f}, '
+                         f'LM={by_method.loc["LM", "auc"]:.3f}, '
+                         f'Harvard IV-4={by_method.loc["Harvard IV-4", "auc"]:.3f}.')
+    if hand_n:
+        lines += [f'Giới hạn: bộ nhãn tay có {hand_n} tiêu đề; hồi quy dự báo theo ngày '
+                  'không thay thế kiểm định độ chính xác phân loại.',
+                  'Nghĩa kinh tế: AUC FinBERT cao hơn trên bộ nhãn độc lập, '
+                  'nhưng chênh hệ số dự báo không chứng minh lợi ích giao dịch.']
+    else:
+        lines += ['Chưa đủ: bảng kiểm định nhãn độc lập chưa có trong đầu ra.',
+                  'Nghĩa kinh tế: chênh hệ số dự báo không đo độ chính xác phân loại.']
+    lines += ['', '## RQ2: tin xấu và tin tốt', '']
     row = asymmetry.loc[(asymmetry.tone == 'finbert_tercile') & (asymmetry.window == '[0,4]') &
                         (asymmetry.metric == 'car')] if not asymmetry.empty else pd.DataFrame()
     if not row.empty:
@@ -327,7 +348,8 @@ def write_results(tables, output):
         lines.append(f'Biến động tuyệt đối [0,1]h xấu trừ tốt = {number(item.negative_minus_positive*100)} điểm %, '
                      f'Holm t={number(item.p_t_holm)}, Holm Wilcoxon={number(item.p_wilcoxon_holm)}; '
                      'hai kiểm định chưa đồng thuận.')
-    lines += ['Chưa đủ: nhiều giờ có tin chồng lấp; Wald và phân vị theo ngày vẫn phụ thuộc coverage thưa.',
+    lines += ['Giới hạn: nhiều tin chồng lấp trong cùng giờ; kết quả Wald và phân vị theo ngày '
+              'không tách được tác động của từng tin.',
               'Nghĩa kinh tế: CAR khác nhau là phản ứng giá có điều kiện, chưa xác định tác động nhân quả của sắc thái tin.', '',
               '## RQ3: narrative', '']
     for narrative in ('regulation', 'security_hacks', 'etf_institutional'):
@@ -336,7 +358,8 @@ def write_results(tables, output):
         lines.append(f'Đã có: {narrative} CAR [0,4]h = {number(row.iloc[0]["mean"]*100)}%, '
                      f'{int(row.iloc[0].n_days)} ngày, p t={number(row.iloc[0].p_t)}, Holm={number(row.iloc[0].p_t_holm)}.' if not row.empty else
                      f'Đã có: {narrative} chưa đủ 5 ngày sự kiện dùng được.')
-    lines += ['Chưa đủ: cần hiệu chỉnh nhiều kiểm định và kiểm soát tin trùng giờ để so thứ hạng narrative.',
+    lines += ['Giới hạn: đã hiệu chỉnh Holm, nhưng tin trùng giờ và sai số phân loại narrative '
+              'vẫn cản trở việc xếp thứ hạng tác động.',
               'Nghĩa kinh tế: nhóm có CAR lớn hơn chỉ là liên hệ trong mẫu tin đã thu.', '',
               '## RQ4: tin dẫn giá hay giá đi trước tin', '']
     pre = tests.loc[(tests.grouping == 'all') & (tests.window == '[-4,-2]') &
@@ -357,8 +380,10 @@ def write_results(tables, output):
                          f'sau Holm={getattr(item, "significance_changed_holm", np.nan)}; '
                          f'kiểm định chênh lệch ghép cặp Holm p={number(getattr(item, "p_paired_t_holm", np.nan))}.')
     available = granger.pvalue.notna().sum() if not granger.empty else 0
-    lines += [f'Chưa đủ: {available} kiểm định Granger dùng được; VAR chỉ chạy trên đoạn ngày liên tục ≥30.',
-              'Nghĩa kinh tế: CAR trước T0 gợi ý giá đã phản ánh thông tin sớm hoặc sai số giờ công bố; không chứng minh rò rỉ.', '',
+    lines += [f'Đã có: {available} kiểm định Granger trên đoạn ngày liên tục ít nhất 30 quan sát; '
+              'quan hệ dẫn trước không chứng minh nhân quả.',
+              'Nghĩa kinh tế: CAR trước T0 không có ý nghĩa sau Holm; sai số giờ công bố '
+              'và tin trùng thời điểm không cho phép kết luận giá đi trước tin.', '',
               '## RQ5: dự báo ngoài mẫu', '']
     fan_input = forecasts.loc[(forecasts.asset == 'BTC') & (forecasts.target == 'rv') &
                               (forecasts.horizon == 1) & (forecasts.model == 'EN') &
@@ -379,8 +404,11 @@ def write_results(tables, output):
         item = row.iloc[0]
         lines.append(f'EN/text BTC RV h=1: R² CT={number(item.r2_oos_ct)}, RMSE={number(item.rmse)}; '
                      f'DM Holm p={number(getattr(item, "dm_p_holm", np.nan))}.')
-    lines += ['Chưa đủ: ngày test có tin rời rạc; DM/GW/MCS cần đoạn liên tục. Dải fan theo sai số có thể xuống dưới RV=0.',
-              'Nghĩa kinh tế: dự báo thật có thể xuất cho dashboard; lợi ích của text chỉ đáng tin nếu kiểm định ghép cặp có đủ đoạn liên tục.', '']
+    lines += [f'Giới hạn: GW có {len(gw)} kết quả và MCS có {len(mcs)} hàng mô hình; '
+              'độ dài đoạn dự báo chung thay đổi theo tài sản và mục tiêu. '
+              'Dải fan theo sai số có thể xuống dưới RV=0.',
+              'Nghĩa kinh tế: dự báo thật có thể xuất cho dashboard, nhưng chưa có bằng chứng '
+              'sau hiệu chỉnh Holm rằng văn bản cải thiện dự báo ngoài mẫu.', '']
     audit_path = Path(output).parent/'timestamp_accuracy.csv'
     audit = pd.read_csv(audit_path) if audit_path.is_file() else pd.DataFrame()
     gdelt = audit.loc[audit.source.eq('gdelt')] if not audit.empty else pd.DataFrame()
@@ -388,5 +416,6 @@ def write_results(tables, output):
         item = gdelt.iloc[0]
         lines.append(f'Giới hạn thời điểm: GDELT seendate trễ tuyệt đối trung vị '
                      f'{number(item.median_abs_lag_min)} phút trong {int(item.n_pairs)} cặp audit.')
-    lines += ['GDELT đang thu tiếp; các p-value chưa giải quyết lựa chọn mẫu tin và nhiều sự kiện trùng ngày.', '']
+    lines += ['Độ phủ trên là số ngày có tin trong mẫu đã xử lý; các p-value chưa giải quyết '
+              'việc chỉ lấy một lô GKG mỗi giờ và nhiều sự kiện trùng ngày.', '']
     (Path(output)/'RESULTS.md').write_text('\n'.join(lines), encoding='utf-8')
