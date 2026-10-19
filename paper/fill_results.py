@@ -114,6 +114,8 @@ def build_facts() -> tuple[dict, dict]:
         F["pct_news_days"] = vn(btc.pct_days_with_news, 1)
         for k in ("train", "valid", "test"):
             put(f"btc_{k}", int(btc[f"model_{k}_days"]), vn(btc[f"model_{k}_days"], 0))
+        for r in cov.itertuples():
+            put(f"pct_{r.asset.lower()}", float(r.pct_days_with_asset_news), vn(r.pct_days_with_asset_news, 1))
     ec = D.evcov
     if len(ec):
         put("n_canon_en", int(ec.canonical_en_articles.iloc[0]), vn(ec.canonical_en_articles.iloc[0], 0))
@@ -214,6 +216,11 @@ def build_facts() -> tuple[dict, dict]:
         ok = gr[(gr.pvalue.notna())] if "pvalue" in gr else gr.iloc[0:0]
         put("gr_n_valid", int(len(ok)), None)
         put("gr_n_sig", int((ok.pvalue < .05).sum()), None)
+        ret = ok[ok.outcome == "ret"]
+        put("gr_r2s_holm", int(((ret.caused != "ret") & (ret.p_holm < .05)).sum()), None)   # lợi suất → cảm xúc
+        put("gr_s2r_holm", int(((ret.caused == "ret") & (ret.p_holm < .05)).sum()), None)   # cảm xúc → lợi suất
+        put("gr_s2r_raw", int(((ret.caused == "ret") & (ret.pvalue < .05)).sum()), None)
+        put("gr_rv_holm", int(((ok.outcome == "rv") & (ok.p_holm < .05)).sum()), None)
     # dự báo ngoài mẫu
     o = D.oos
     if len(o):
@@ -255,7 +262,7 @@ def build_facts() -> tuple[dict, dict]:
         put("ucry_wald_sig_holm", int((uw.p_holm < .10).sum()), None)
     # fallback mặc định để biểu thức điều kiện không lỗi khi thiếu dữ liệu
     for k in ("evt_any_holm", "evt_car_post_holm", "evt_vol_post_holm", "evt_narr_holm", "evt_pre_car_sig", "asym_vol_holm_sig",
-              "gr_n_valid", "oos_n", "oos_better", "oos_sig10", "oos_sig_holm", "oos_infer_max", "gw_n", "gw_sig_holm", "hand_n", "rob_n", "reg_holm_sig", "att_holm", "wald_sig10_holm"):
+              "gr_n_valid", "oos_n", "oos_better", "oos_sig10", "oos_sig_holm", "oos_infer_max", "gw_n", "gw_sig_holm", "hand_n", "gr_r2s_holm", "gr_s2r_holm", "gr_s2r_raw", "gr_rv_holm", "rob_n", "reg_holm_sig", "att_holm", "wald_sig10_holm"):
         V.setdefault(k, 0)
         F.setdefault(k, "0")
     V.setdefault("oos_better_share", 0.0)

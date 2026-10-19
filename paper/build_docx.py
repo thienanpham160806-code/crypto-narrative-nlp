@@ -65,9 +65,18 @@ def set_fonts(rpr) -> None:
         rpr.insert(0, fonts)
     for a in ("ascii", "hAnsi", "eastAsia", "cs"):
         fonts.set(qn(f"w:{a}"), FONT)
+        fonts.attrib.pop(qn(f"w:{a}Theme"), None)   # font theme (Calibri Light ở Heading) đè lên Times New Roman
+
+
+def force_times(doc) -> None:
+    """Mọi style và mặc định tài liệu dùng Times New Roman, kể cả chữ trong bảng, header, chú thích."""
+    set_fonts(doc.styles.element.find(qn("w:docDefaults")).find(qn("w:rPrDefault")).find(qn("w:rPr")))
+    for rpr in doc.styles.element.iter(qn("w:rPr")):
+        set_fonts(rpr)
 
 
 def style_document(doc) -> None:
+    force_times(doc)
     s = doc.sections[0]
     s.page_width, s.page_height, s.orientation = Cm(21), Cm(29.7), WD_ORIENT.PORTRAIT
     s.left_margin = s.right_margin = s.top_margin = s.bottom_margin = Cm(2.5)
