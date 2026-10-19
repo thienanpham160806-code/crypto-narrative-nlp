@@ -43,7 +43,6 @@ def render(filled: str) -> str:
                           f'<span class="eq-no">({number})</span></div>')
     out = out.replace(f'src="{FIG}', 'src="/outputs/figures/real/')
     head = (f'<h1>{html.escape(fm["title_vi"])}</h1><p class="subtitle">{html.escape(fm["title_en"])}</p>'
-            f'<p class="byline">{html.escape(fm["author"])} · {html.escape(fm["affiliation"])}</p>'
             f'<p class="kw"><b>JEL:</b> {html.escape(fm["jel"])} · <b>Từ khóa:</b> {html.escape(fm["keywords_vi"])} · '
             f'<b>Keywords:</b> {html.escape(fm["keywords_en"])}</p>')
     return head + out
