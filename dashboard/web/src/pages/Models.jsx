@@ -5,7 +5,7 @@ import Table from '../Table.jsx'
 
 const L = {
   vi: {
-    cov: ['Độ phủ dữ liệu cho mô hình', 'Số ngày có tin và có FinBERT, số ngày dùng được cho phát triển và test'],
+    cov: ['Độ phủ dữ liệu cho mô hình', 'Ngày tin gắn từng mã và số ngày mô hình dùng corpus chung'],
     oos: ['So sánh ngoài mẫu: market-only vs market+text', 'RMSE và R² ngoài mẫu (Campbell–Thompson), walk-forward'],
     wald: ['Bất đối xứng tin xấu / tin tốt (RQ2)', 'Wald H₀: β⁻ = β⁺ trong hồi quy dự báo HAC'],
     granger: ['Lead-lag sentiment ↔ thị trường (RQ4)', 'VAR/Granger hai chiều; p đã hiệu chỉnh Holm và BH'],
@@ -16,7 +16,7 @@ const L = {
     src: 'Nguồn: outputs/tables/real (mô hình của Codex trên text_daily thật).',
   },
   en: {
-    cov: ['Model data coverage', 'Days with news and FinBERT, days usable for development and test'],
+    cov: ['Model data coverage', 'Asset-tagged news days and model days using the shared corpus'],
     oos: ['Out-of-sample: market-only vs market+text', 'RMSE and out-of-sample R² (Campbell–Thompson), walk-forward'],
     wald: ['Bad-news / good-news asymmetry (RQ2)', 'Wald H₀: β⁻ = β⁺ in HAC predictive regressions'],
     granger: ['Sentiment ↔ market lead-lag (RQ4)', 'Two-way VAR/Granger; Holm and BH adjusted p'],
@@ -40,8 +40,10 @@ export default function Models() {
   return (
     <div className="exhibits full">
       <Exhibit no="5.1" title={l.cov[0]} sub={`${l.cov[1]}. ${snap}`} span2 judgement={l.jCov} source={l.src}
-        table={<Table rows={m.coverage ?? []} cols={[{ key: 'asset', label: t.col.asset }, { key: 'news_days', label: t.col.newsDays, num: true },
-          { key: 'pct_days_with_news', label: t.col.pctDays, num: true, format: (v) => fmt(lang, v, 1) }, { key: 'finbert_days', label: t.col.fbDays, num: true },
+        table={<Table rows={m.coverage ?? []} cols={[{ key: 'asset', label: t.col.asset },
+          { key: 'asset_news_days', label: lang === 'vi' ? 'Ngày tin gắn mã' : 'Asset news days', num: true },
+          { key: 'pct_days_with_asset_news', label: lang === 'vi' ? '% tin gắn mã' : '% asset news', num: true, format: (v) => fmt(lang, v, 1) },
+          { key: 'fallback_model_days', label: lang === 'vi' ? 'Ngày dùng ALL' : 'Days using ALL', num: true },
           { key: 'model_development_days', label: t.col.devDays, num: true }, { key: 'model_test_days', label: t.col.testDays, num: true }]} />} />
       <Exhibit no="5.2" title={l.oos[0]} sub={l.oos[1]} span2 judgement={l.jOos} source={l.src}
         table={<Table empty={t.modelPending} rows={m.oos ?? []} cols={[{ key: 'asset', label: t.col.asset }, { key: 'target', label: t.col.target }, { key: 'horizon', label: 'h', num: true },

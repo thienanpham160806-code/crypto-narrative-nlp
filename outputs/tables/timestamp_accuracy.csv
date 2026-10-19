@@ -1,5 +1,5 @@
 source,comparison,n_pairs,median_lag_min,median_abs_lag_min,p90_abs_lag_min,pct_abs_gt_1h,pct_day_shift,n_docs,pct_published,pct_has_time
-gdelt,published vs first_seen,42,128.625,141.53333333333333,885.1916666666666,78.57142857142857,16.666666666666664,41038.0,0.10234416881914324,100.0
+gdelt,published vs first_seen,42,128.625,141.53333333333333,885.1916666666666,78.57142857142857,16.666666666666664,162936.0,0.025776992193253793,100.0
 sec,published vs first_seen,0,,,,,,2053.0,100.0,100.0
 vn:gdelt,published vs first_seen,0,,,,,,14.0,0.0,
 gdelt,rss pubDate vs gdelt seendate (cùng URL),0,,,,,,,,
