@@ -38,3 +38,6 @@
 2026-10-18 19:05 | Codex | completed-branch merge | PR #3 merged Claude C1 and related work into main; PR #2 broad dev snapshot rejected by auto-review; PR #4 stale Codex branch closed after PROGRESS conflict and old synthetic table paths | Keep Codex work on dev until FinBERT rebuild and refreshed real tables are ready | 85 offline tests passed; Vercel Git preview fails because project root is repo root and vite is not installed there
 2026-10-18 12:31 | claude | rebuild_watch | GKG 1369/1369 ngày; rebuild documents→narratives→doc_scores→text_daily + corpus_stats/timestamp_accuracy xong; ghi REBUILD_DONE.json (text_daily e5d4aa2a6eb0)
 2026-10-18 12:54 | Codex | real rebuild | real/ chạy lại trên 100.00% ngày GKG; RUN_DONE ok, pytest offline qua.
+2026-10-19 07:57 | claude | rebuild_watch | điền paper/redeploy lỗi: npx --no-install vercel deploy --prod --yes lỗi 1: <claude-code-hint v="1" type="plugin" value="vercel@claude-plugins-official" />
+Vercel CLI 63.1.0 (Node.js 24.15.0)
+Deploying crypto-narrative-report
