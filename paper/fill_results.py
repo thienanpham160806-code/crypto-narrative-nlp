@@ -229,6 +229,15 @@ def build_facts() -> tuple[dict, dict]:
         put("oos_sig10", sig, None)
         put("oos_sig_holm", int(((j.market_dm_p_holm_t < .10) | (j.market_cw_p_holm_t < .10)).sum()), None)
         put("oos_infer_max", int(j.inference_nobs_t.max()), None)
+    gw = D.gw
+    if len(gw) and "gw_p_holm" in gw:
+        gw = gw[gw.gw_p_holm.notna()]
+        put("gw_n", int(len(gw)), None)
+        put("gw_sig_holm", int((gw.gw_p_holm < .10).sum()), None)
+        put("gw_nobs_min", int(gw.nobs.min()), vn(gw.nobs.min(), 0))
+        put("gw_nobs_max", int(gw.nobs.max()), vn(gw.nobs.max(), 0))
+    h = D.hand
+    put("hand_n", int(h.n.max()) if len(h) and "n" in h else 0, None)
     # độ vững
     rb = D.rob
     if len(rb):
@@ -246,7 +255,7 @@ def build_facts() -> tuple[dict, dict]:
         put("ucry_wald_sig_holm", int((uw.p_holm < .10).sum()), None)
     # fallback mặc định để biểu thức điều kiện không lỗi khi thiếu dữ liệu
     for k in ("evt_any_holm", "evt_car_post_holm", "evt_vol_post_holm", "evt_narr_holm", "evt_pre_car_sig", "asym_vol_holm_sig",
-              "gr_n_valid", "oos_n", "oos_better", "oos_sig10", "oos_sig_holm", "oos_infer_max", "rob_n", "reg_holm_sig", "att_holm", "wald_sig10_holm"):
+              "gr_n_valid", "oos_n", "oos_better", "oos_sig10", "oos_sig_holm", "oos_infer_max", "gw_n", "gw_sig_holm", "hand_n", "rob_n", "reg_holm_sig", "att_holm", "wald_sig10_holm"):
         V.setdefault(k, 0)
         F.setdefault(k, "0")
     V.setdefault("oos_better_share", 0.0)
@@ -407,18 +416,14 @@ def table_nhan_yeu() -> str | None:
     for _, r in w.sort_values("method", key=lambda s: s.map(lambda x: order.get(x, 9))).iterrows():
         rows.append([("Loughran - McDonald" if r.method in ("LM", "Loughran–McDonald") else str(r.method)), vn(r.n, 0), vn(r.accuracy, 3),
                      vn(r.macro_f1, 3), vn(r.auc, 3), vn(r.pct_decided, 1)])
-    return md(rows, "lrrrrr")
-
-
-def table_nhan_tay() -> str | None:
     h = D.hand
-    if not len(h) or "accuracy" not in h or not (h.get("n", pd.Series([0])).fillna(0) > 0).any():
-        return None
-    rows = [["Nhiệm vụ", "Thước đo", "Số tin", "Độ chính xác", "F1 trung bình", "AUC"]]
-    for _, r in h[h.n > 0].iterrows():
-        rows.append([str(r.task), str(r.method), vn(r.n, 0), vn(r.accuracy, 3), vn(r.macro_f1, 3),
-                     vn(r.get("auc"), 3)])
-    return md(rows, "llrrrr")
+    if len(h) and "accuracy" in h and (h.n.fillna(0) > 0).any():   # 300 tiêu đề gán tay → Panel B cùng bảng
+        rows.insert(1, ["**Panel A. Nhãn yếu CryptoPanic**", "", "", "", "", ""])
+        rows.append(["**Panel B. Nhãn thủ công**", "", "", "", "", ""])
+        for _, r in h[h.n > 0].iterrows():
+            rows.append([str(r.method), vn(r.n, 0), vn(r.accuracy, 3), vn(r.macro_f1, 3), vn(r.get("auc"), 3),
+                         vn(r.get("pct_decided"), 1)])
+    return md(rows, "lrrrrr")
 
 
 def table_hoiquy() -> str | None:
@@ -540,10 +545,12 @@ def table_dubao_ben_vung() -> str | None:
     gw = D.gw
     if not len(gw) or "gw_p_holm" not in gw or not gw.gw_p_holm.notna().any():
         return None
-    rows = [["Tài sản", "Biến mục tiêu", "Mô hình", "Số quan sát", "p Holm (GW)"]]
-    for _, r in gw[gw.gw_p_holm.notna()].iterrows():
-        rows.append([r.asset, str(r.target), str(r.model), vn(r.nobs, 0), pstr(r.gw_p_holm)])
-    return md(rows, "lllrr")
+    rows = [["Tài sản", "Biến mục tiêu", "Độ trễ h", "Số quan sát", "Elastic Net", "XGBoost", "LightGBM"]]
+    for (a, tg, h), g in gw.groupby(["asset", "target", "horizon"], sort=False):
+        p = {r.model: f"{pstr(r.gw_p_holm)}{stars(r.gw_p_holm)}" for r in g.itertuples()}
+        rows.append([a, "RV" if tg == "rv" else "Lợi suất", vn(h, 0), vn(g.nobs.max(), 0),
+                     *(p.get(m, "—") for m in ("EN", "XGB", "LGBM"))])
+    return md(rows, "lllrrrr")
 
 
 def table_do_vung() -> str | None:
@@ -571,7 +578,7 @@ def table_do_vung_khac() -> str | None:
 
 
 TABLES = {"bang_mota": table_mota, "bang_phu": table_phu, "bang_dongho": table_dongho, "bang_nhan_yeu": table_nhan_yeu,
-          "bang_nhan_tay": table_nhan_tay, "bang_hoiquy": table_hoiquy, "bang_narrative": table_narrative,
+          "bang_hoiquy": table_hoiquy, "bang_narrative": table_narrative,
           "bang_wald": table_wald, "bang_bat_doi_xung": table_bat_doi_xung, "bang_granger_ket_qua": table_granger_kq,
           "bang_do_nhay": table_do_nhay, "bang_dubao": table_dubao, "bang_dubao_ben_vung": table_dubao_ben_vung,
           "bang_do_vung": table_do_vung, "bang_do_vung_khac": table_do_vung_khac}
