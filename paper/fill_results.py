@@ -794,6 +794,12 @@ def expand_ifs(text: str, V: dict, errors: list[str]) -> str:
     return text
 
 
+def english_numbers(text: str) -> str:
+    """Số kiểu Việt → kiểu Anh: 142.646 → 142,646 và 0,712 → 0.712 (đổi đồng thời, qua ký tự tạm)."""
+    text = re.sub(r"(?<=\d)\.(?=\d{3}(?!\d))", "\0", text)
+    return re.sub(r"(?<=\d),(?=\d)", ".", text).replace("\0", ",")
+
+
 def render(template: str, bib: dict) -> tuple[str, dict]:
     V, F = build_facts()
     errors, missing = [], []
@@ -826,7 +832,7 @@ def render(template: str, bib: dict) -> tuple[str, dict]:
     text = text.replace("[[REFERENCES]]", refs)
     head, rest = text.split("## ABSTRACT", 1)
     abs_, tail = rest.split("## 1. ", 1)
-    text = head + "## ABSTRACT" + re.sub(r"(\d),(\d)", r"\1.\2", abs_) + "## 1. " + tail
+    text = head + "## ABSTRACT" + english_numbers(abs_) + "## 1. " + tail
     text = text.replace("= < ", "< ")
     return text, {"errors": errors, "missing": missing, "pending": pending, "bad_cites": bad, "unused": unused, "facts": V}
 
