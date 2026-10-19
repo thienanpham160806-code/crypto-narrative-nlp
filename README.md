@@ -28,12 +28,31 @@ Trong mẫu hiện tại, chưa có bằng chứng sau hiệu chỉnh kiểm đ�
 - Nguồn có sẵn text (GDELT, RSS, SEC EDGAR) thì lấy text, không OCR.
 Chi tiết: [`docs/PORTED.md`](docs/PORTED.md).
 
-## Pipeline
-```
-GDELT / RSS / SEC / tin VN → dedup + UTC + asset tag → documents
-  → LM · Harvard · FinBERT · VietScorer · LDA/BERTopic/zero-shot → doc_scores
-  → text_daily (sentiment, attention_k) ⨝ market_daily (Binance) → HAC · VAR/Granger · EN/XGB/LGBM walk-forward
-  → outputs/ (tables, figures) → dashboard/ + paper/
+## Kiến trúc
+
+Tin tiếng Anh tạo chỉ số ngày; SEC EDGAR chỉ phục vụ nghiên cứu sự kiện theo giờ, còn tin tiếng Việt được chấm ở nhánh phụ. Mọi phép gán ngày và mốc sự kiện dựa trên `public_ts_utc` (UTC).
+
+```mermaid
+flowchart LR
+    NEWS["GDELT GKG / RSS<br/>tin tiếng Anh"] --> CLEAN["Dedup · asset tags<br/>public_ts_utc"]
+    CLEAN --> DOCS["documents.parquet"]
+    DOCS --> NLP["LM · Harvard IV-4 · FinBERT<br/>chủ đề / narrative"]
+    NLP --> SCORES["doc_scores.parquet"]
+    DOCS --> AGG["Tổng hợp theo ngày UTC"]
+    SCORES --> AGG
+    AGG --> TEXT["text_daily.parquet<br/>source-weighted / ex-price"]
+    BINANCE["Binance<br/>nến ngày và giờ"] --> MARKET["market_daily.parquet<br/>return · RV · volume"]
+    TEXT --> PANEL["Panel tài sản-ngày"]
+    MARKET --> PANEL
+    PANEL --> MODELS["HAC · Wald · quantile · VAR/Granger<br/>walk-forward EN / XGB / LGBM · robustness"]
+    DOCS --> EVENT["Event study theo giờ<br/>T0 từ public_ts_utc"]
+    SCORES --> EVENT
+    SEC["SEC EDGAR"] --> EVENT
+    BINANCE --> EVENT
+    VN["Tin tiếng Việt"] --> VIET["VietScorer<br/>nhánh phụ"]
+    MODELS --> OUT["Bảng và hình thực nghiệm"]
+    EVENT --> OUT
+    OUT --> USE["Notebook · paper · dashboard"]
 ```
 
 ## Chạy
