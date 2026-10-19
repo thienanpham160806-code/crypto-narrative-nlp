@@ -30,6 +30,15 @@ def test_template_has_five_part_structure_without_subsections():
     assert tags == [str(i) for i in range(1, len(tags) + 1)]
 
 
+@needs_real
+def test_filled_abstracts_are_about_200_words():
+    filled, _ = fill_results.render(template(), fill_results.parse_bib(fill_results.BIB))
+    vi = filled.split("## TÓM TẮT", 1)[1].split("## ABSTRACT", 1)[0]
+    en = filled.split("## ABSTRACT", 1)[1].split("## 1. Giới thiệu", 1)[0]
+    assert 170 <= len(vi.split()) <= 230
+    assert 170 <= len(en.split()) <= 230
+
+
 def test_every_table_and_figure_is_referenced_in_text():
     body = re.sub(r"^\*\*(Bảng|Hình) \d+\*\*$", "", template(), flags=re.M)
     for label in re.findall(r"^\*\*((?:Bảng|Hình) \d+)\*\*$", template(), flags=re.M):
