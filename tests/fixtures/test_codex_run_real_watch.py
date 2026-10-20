@@ -7,6 +7,7 @@ import subprocess
 import pytest
 
 from src.models import run_real
+from src.models import run as model_run
 
 
 def files(tmp_path, *, days=4, total=4):
@@ -119,6 +120,44 @@ def test_event_observations_archive_replaces_stale_copy(tmp_path):
     raw.write_text('asset,car\nETH,0.2\n', encoding='utf-8')
     with gzip.open(run_real.archive_event_observations(tmp_path), 'rt', encoding='utf-8') as source:
         assert source.read() == 'asset,car\nETH,0.2\n'
+
+
+def test_analysis_key_covers_normalized_config_inputs_and_source(tmp_path):
+    source = tmp_path/'src'
+    source.mkdir()
+    code = source/'model.py'
+    code.write_text('x = 1\n', encoding='utf-8')
+    data = tmp_path/'input.parquet'
+    data.write_bytes(b'first')
+    initial = model_run.analysis_key([data], {'b': 2, 'a': 1}, root=tmp_path)
+    assert initial == model_run.analysis_key([data], {'a': 1, 'b': 2}, root=tmp_path)
+    data.write_bytes(b'second')
+    changed_input = model_run.analysis_key([data], {'a': 1, 'b': 2}, root=tmp_path)
+    assert changed_input != initial
+    code.write_text('x = 2\n', encoding='utf-8')
+    assert model_run.analysis_key([data], {'a': 1, 'b': 2}, root=tmp_path) != changed_input
+
+
+def test_missing_manual_input_exits_nonzero(tmp_path, monkeypatch):
+    config = tmp_path/'config.yaml'
+    config.write_text('seed: 42\n', encoding='utf-8')
+    monkeypatch.setattr(model_run, 'ROOT', tmp_path)
+    monkeypatch.setattr('sys.argv', ['run.py', '--market', str(tmp_path/'absent.parquet'),
+                                    '--text', str(tmp_path/'missing.parquet'), '--config', str(config)])
+    with pytest.raises(FileNotFoundError, match='Missing mandatory input'):
+        model_run.main(real=False)
+
+
+def test_watcher_does_not_publish_manual_run_done(tmp_path, monkeypatch):
+    output = tmp_path/'outputs/tables/real'
+    output.mkdir(parents=True)
+    (output/'RUN_DONE.json').write_text('{}', encoding='utf-8')
+    monkeypatch.setattr(run_real, 'ROOT', tmp_path)
+    monkeypatch.setattr(run_real, 'stable_snapshot', lambda *args, **kwargs: (None, 'old sentinel'))
+    monkeypatch.setattr(run_real, 'publish_results', lambda *args: pytest.fail('published manual run'))
+    monkeypatch.setattr(run_real.time, 'sleep', lambda _: (_ for _ in ()).throw(RuntimeError('stop')))
+    with pytest.raises(RuntimeError, match='stop'):
+        run_real.watch(poll_seconds=1)
 
 
 @pytest.mark.skipif(os.name != 'nt', reason='Windows execution state only')

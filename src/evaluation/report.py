@@ -30,11 +30,12 @@ MEANING = {
     'ucry_regressions': 'RQ3: UCRY-controlled regressions use only dates with released weekly observations, in a separate common sample. Retrospective indices lack vintages and cannot justify live forecast claims.',
     'ucry_wald': 'RQ2/RQ3: the asymmetry test conditions on weekly uncertainty where available. Its sample differs from the main table; unavailable post-2024 UCRY is never extrapolated.',
     'event_observations': 'Each row is a canonical English article and tagged asset, or BTC for untagged market news. CAR uses an hourly BTC market model for altcoins and a past-hour mean for BTC; overlapping articles share market shocks.',
-    'event_tests': 'Hourly reactions are tested on event-day means, so multiple articles on one day form one cluster. BMP-style CAR is estimation-error standardized and day clustered. The −24h placebo omits [0,24], whose inclusive endpoint would overlap T0.',
+    'event_tests': 'Hourly reactions use calendar-lag Bartlett HAC(7) on event-day means, with seven-day block bootstrap for nine preregistered tests. BMP-style CAR and Wilcoxon are supplementary. A shifted placebo window ends before T0.',
     'event_asymmetry': 'Negative-minus-positive compares same-day FinBERT and LM terciles on days where both occur. Its paired day test asks whether bad-news reaction differs from good-news reaction.',
     'event_timing_pairs': 'The same GDELT article is aligned once to published time and once to first-seen time. Pairwise CAR changes quantify timestamp sensitivity without changing the article sample.',
     'event_timing': 'A changed significance flag shows the timing choice can alter a nominal conclusion. This small audited subset cannot calibrate the full corpus.',
     'event_coverage': 'Article count, scored count, usable event days and training-only tercile cutoffs limit the scope of hourly inference.',
+    'event_text_scope': 'Market-wide untagged news falls back to BTC; coin-specific tagged news is counted separately. Fallback percentages refer to usable event rows, not calendar days.',
 }
 
 
@@ -109,6 +110,7 @@ def coverage(market, text, config):
                          pct_days_with_asset_news=100*asset_news_days/len(frame),
                          usable_model_days=len(usable),
                          fallback_model_days=fallback_model_days,
+                         fallback_model_pct=100*fallback_model_days/len(usable) if len(usable) else np.nan,
                          finbert_days=len(scored), pct_days_with_finbert=100*len(scored)/len(frame),
                          model_development_days=int(usable.target_date.le(cutoff).sum()),
                          model_test_days=int((usable.target_date.gt(cutoff) & usable.date.ge(cutoff)).sum()),
@@ -228,7 +230,7 @@ def write_report(market, text, config, tables, output, figures, real=False):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     tables['coverage'] = coverage(market, text, config)
-    label = 'REAL (partial corpus; provenance audit required)' if real else 'SYNTHETIC (code validation only)'
+    label = 'REAL (observed corpus; provenance audit required)' if real else 'SYNTHETIC (code validation only)'
     for name, table in tables.items():
         table.to_csv(output/f'{name}.csv', index=False, encoding='utf-8')
     paths = paper_figures(market, text, tables, figures, label)
@@ -277,6 +279,7 @@ def write_results(tables, output):
     tests = tables.get('event_tests', pd.DataFrame())
     asymmetry = tables.get('event_asymmetry', pd.DataFrame())
     timing = tables.get('event_timing', pd.DataFrame())
+    scope = tables.get('event_text_scope', pd.DataFrame())
     forecasts = tables.get('forecasts', pd.DataFrame())
     granger = tables.get('granger', pd.DataFrame())
     gw = tables.get('gw', pd.DataFrame())
@@ -291,6 +294,10 @@ def write_results(tables, output):
                   f'({row.pct_days_with_asset_news:.2f}%), {row.fallback_model_days} ngày mô hình dùng corpus chung; '
                   f'từ {row.news_start} đến {row.news_end}. Core spec dùng {row.usable_model_days} ngày BTC, '
                   f'train/valid/test={row.model_train_days}/{row.model_valid_days}/{row.model_test_days}.', '']
+        lines += ['Robustness text ngày: ' + '; '.join(
+            f'{item.asset} fallback {item.fallback_model_days}/{item.usable_model_days} ngày mô hình '
+            f'({number(item.fallback_model_pct)}%)' for item in coverage_rows.itertuples()) +
+            '. Cờ missing_coin_text tách text riêng coin khỏi corpus chung.', '']
     if not event.empty:
         row = event.iloc[0]
         lines += [f'Sự kiện giờ: {row.canonical_en_articles} tin canonical tiếng Anh, '
@@ -298,16 +305,57 @@ def write_results(tables, output):
                   f'{row.scored_finbert_articles} tin có FinBERT. Mẫu {row.first_event} đến {row.last_event}.', '']
         lines += [f'Bản documents có tin trên {row.gdelt_article_days} ngày GKG và {row.sec_article_days} ngày SEC; '
                   'đây là số ngày thực sự có tin, không phải số ngày GKG đã thu.', '']
+    if not scope.empty:
+        for item in scope.itertuples():
+            lines.append(f'Text {item.asset}: tỷ lệ fallback tin thị trường chung '
+                         f'{number(item.fallback_pct)}% cặp tin–asset; '
+                         'cờ missing_coin_text trong event_observations.csv.')
+        lines.append('')
     if not tests.empty:
         for metric, unit in [('car', '%'), ('absret', '%'), ('volume', 'log điểm')]:
-            row = tests.loc[(tests.grouping == 'all') & (tests.window == '[0,4]') & (tests.metric == metric)]
+            row = tests.loc[(tests.grouping == 'all') & (tests.window == '[0,3]') & (tests.metric == metric)]
             if not row.empty:
                 item = row.iloc[0]
                 amount = item['mean']*100 if metric != 'volume' else item['mean']
-                lines.append(f'Phản ứng chung [0,4]h {metric}: {number(amount)} {unit}, '
-                             f'{item.n_days} ngày, p t Holm={number(item.p_t_holm)}.')
+                lines.append(f'Phản ứng chung 4 nến [0,3] {metric}: {number(amount)} {unit}, '
+                             f'{item.n_days} ngày, HAC p={number(item.p_t)}, '
+                             f'Holm họ 9={number(item.p_primary_holm)}, '
+                             f'bootstrap 95%=[{number(item.bootstrap_ci_low)}, {number(item.bootstrap_ci_high)}], '
+                             f'MDE≈{number(item.mde)} {"log điểm" if metric == "volume" else "log return"}.')
         lines.append('Abnormal volume là chênh log(1+USD volume) so với 144 giờ ước lượng trước tin; '
                      'abnormal |return| là chênh tổng độ lớn lợi suất log.\n')
+        baseline_path = Path(output)/'event_car_before_prereg.csv'
+        if baseline_path.is_file():
+            baseline = pd.read_csv(baseline_path)
+            lines += ['### So sánh CAR trước và sau sửa căn nến', '',
+                      'Số cũ dùng return lệch một nến và cửa sổ 1/4/24 giờ gồm 2/5/25 nến; '
+                      'số mới dùng 1/4/24 nến. P cũ là t thường với Holm họ lớn; '
+                      'p mới là HAC(7) với Holm họ 9 cho nhóm chung.', '']
+            for hours, window in [(1, '[0,0]'), (4, '[0,3]'), (24, '[0,23]')]:
+                old = baseline.loc[baseline.grouping.eq('all') & baseline.hours.eq(hours)]
+                new = tests.loc[(tests.grouping == 'all') & tests.metric.eq('car') & tests.window.eq(window)]
+                if old.empty or new.empty:
+                    continue
+                before, after = old.iloc[0], new.iloc[0]
+                previous = before.old_p_holm < .05
+                current = after.p_primary_holm < .05
+                lines.append(f'CAR {hours} giờ: cũ {number(before.old_car*100)}%, '
+                             f'mới {number(after["mean"]*100)}%; '
+                             f'dấu {"đổi" if np.sign(before.old_car) != np.sign(after["mean"]) else "giữ"}; '
+                             f'kết luận ý nghĩa sau Holm {"giữ" if previous == current else "đổi"} '
+                             f'(cũ {previous}, mới {current}).')
+            old_asymmetry = Path(output)/'event_asymmetry_before_prereg.csv'
+            contrast = asymmetry.loc[asymmetry.tone.eq('finbert_tercile') &
+                                     asymmetry.window.eq('[0,3]') & asymmetry.metric.eq('car')]
+            if old_asymmetry.is_file() and not contrast.empty:
+                old = pd.read_csv(old_asymmetry).iloc[0]
+                new = contrast.iloc[0]
+                lines.append(f'Tương phản tốt−xấu CAR 4 giờ (khám phá): cũ '
+                             f'{number(-old.negative_minus_positive*100)} điểm %, Holm={number(old.p_t_holm)}; '
+                             f'mới {number(new.positive_minus_negative*100)} điểm %, '
+                             f'Holm họ lớn={number(new.p_t_holm)}. '
+                             f'Kết luận ý nghĩa sau Holm {"đổi" if (old.p_t_holm < .05) != (new.p_t_holm < .05) else "giữ"}.')
+            lines.append('')
     lines += ['## RQ1: FinBERT và từ điển', '']
     selected = regression.loc[(regression.asset == 'BTC') & (regression.target == 'ret') &
                               (regression.horizon == 1) & (regression.term.isin(['sent_finbert', 'sent_lm', 'sent_hv']))] if not regression.empty else pd.DataFrame()
@@ -339,42 +387,48 @@ def write_results(tables, output):
         lines += ['Chưa đủ: bảng kiểm định nhãn độc lập chưa có trong đầu ra.',
                   'Nghĩa kinh tế: chênh hệ số dự báo không đo độ chính xác phân loại.']
     lines += ['', '## RQ2: tin xấu và tin tốt', '']
-    row = asymmetry.loc[(asymmetry.tone == 'finbert_tercile') & (asymmetry.window == '[0,4]') &
+    row = asymmetry.loc[(asymmetry.tone == 'finbert_tercile') & (asymmetry.window == '[0,3]') &
                         (asymmetry.metric == 'car')] if not asymmetry.empty else pd.DataFrame()
     if not row.empty:
         item = row.iloc[0]
-        lines.append(f'Đã có: CAR [0,4]h FinBERT xấu trừ tốt = {number(item.negative_minus_positive*100)} điểm %, '
-                     f'{item.n_days} ngày ghép cặp, p t={number(item.p_t)}, Holm={number(item.p_t_holm)}; xem event_asymmetry.csv.')
+        lines.append(f'Đã có (khám phá): CAR 4 nến [0,3] FinBERT tốt trừ xấu = {number(item.positive_minus_negative*100)} điểm %, '
+                     f'{item.n_days} ngày ghép cặp, HAC p={number(item.p_t)}, Holm họ lớn={number(item.p_t_holm)}; xem event_asymmetry.csv.')
     else:
         lines.append('Đã có: chưa đủ ngày ghép cặp hai nhóm FinBERT.')
-    short = asymmetry.loc[(asymmetry.tone == 'finbert_tercile') & (asymmetry.window == '[0,1]') &
+    short = asymmetry.loc[(asymmetry.tone == 'finbert_tercile') & (asymmetry.window == '[0,0]') &
                           (asymmetry.metric == 'absret')] if not asymmetry.empty else pd.DataFrame()
     if not short.empty:
         item = short.iloc[0]
-        lines.append(f'Biến động tuyệt đối [0,1]h xấu trừ tốt = {number(item.negative_minus_positive*100)} điểm %, '
-                     f'Holm t={number(item.p_t_holm)}, Holm Wilcoxon={number(item.p_wilcoxon_holm)}; '
-                     'hai kiểm định chưa đồng thuận.')
+        lines.append(f'Biến động tuyệt đối 1 nến [0,0] xấu trừ tốt = {number(item.negative_minus_positive*100)} điểm %, '
+                     f'Holm HAC={number(item.p_t_holm)}, Holm Wilcoxon={number(item.p_wilcoxon_holm)}; '
+                     f'hai kiểm định {"đồng thuận" if (item.p_t_holm < .05) == (item.p_wilcoxon_holm < .05) else "chưa đồng thuận"}.')
     lines += ['Giới hạn: nhiều tin chồng lấp trong cùng giờ; kết quả Wald và phân vị theo ngày '
               'không tách được tác động của từng tin.',
               'Nghĩa kinh tế: CAR khác nhau là phản ứng giá có điều kiện, chưa xác định tác động nhân quả của sắc thái tin.', '',
               '## RQ3: narrative', '']
     for narrative in ('regulation', 'security_hacks', 'etf_institutional'):
         row = tests.loc[(tests.grouping == 'narrative') & (tests.group == narrative) &
-                        (tests.window == '[0,4]') & (tests.metric == 'car')] if not tests.empty else pd.DataFrame()
-        lines.append(f'Đã có: {narrative} CAR [0,4]h = {number(row.iloc[0]["mean"]*100)}%, '
-                     f'{int(row.iloc[0].n_days)} ngày, p t={number(row.iloc[0].p_t)}, Holm={number(row.iloc[0].p_t_holm)}.' if not row.empty else
+                        (tests.window == '[0,3]') & (tests.metric == 'car')] if not tests.empty else pd.DataFrame()
+        lines.append(f'Đã có: {narrative} CAR 4 nến [0,3] = {number(row.iloc[0]["mean"]*100)}%, '
+                     f'{int(row.iloc[0].n_days)} ngày, HAC p={number(row.iloc[0].p_t)}, Holm họ lớn={number(row.iloc[0].p_t_holm)}.' if not row.empty else
                      f'Đã có: {narrative} chưa đủ 5 ngày sự kiện dùng được.')
     lines += ['Giới hạn: đã hiệu chỉnh Holm, nhưng tin trùng giờ và sai số phân loại narrative '
               'vẫn cản trở việc xếp thứ hạng tác động.',
               'Nghĩa kinh tế: nhóm có CAR lớn hơn chỉ là liên hệ trong mẫu tin đã thu.', '',
               '## RQ4: tin dẫn giá hay giá đi trước tin', '']
-    pre = tests.loc[(tests.grouping == 'all') & (tests.window == '[-4,-2]') &
+    pre = tests.loc[(tests.grouping == 'all') & (tests.window == '[-4,-1]') &
                     (tests.metric == 'car')] if not tests.empty else pd.DataFrame()
     if not pre.empty:
         item = pre.iloc[0]
-        lines.append(f'Đã có: CAR trước tin nghiêm ngặt [-4,-2]h = {number(item["mean"]*100)}%, '
-                     f'{item.n_days} ngày, p t={number(item.p_t)}, Holm={number(item.p_t_holm)}. '
-                     '[-4,0]h có cả nến T0 nên không thuần trước tin.')
+        lines.append(f'Đã có: CAR trước tin [-4,-1] = {number(item["mean"]*100)}%, '
+                     f'{item.n_days} ngày, HAC p={number(item.p_t)}, Holm họ lớn={number(item.p_t_holm)}.')
+        before_volume = tests.loc[(tests.grouping == 'all') & (tests.window == '[-4,-1]') &
+                                  (tests.metric == 'volume')]
+        if not before_volume.empty:
+            item = before_volume.iloc[0]
+            lines.append(f'Abnormal volume trước tin [-4,-1] = {number(item["mean"])} log điểm, '
+                         f'HAC p={number(item.p_t)}, Holm họ lớn={number(item.p_t_holm)}; '
+                         'hoạt động trước T0 có thể phản ánh tin khác, thời điểm công bố sai hoặc diễn biến nội sinh.')
     if not timing.empty:
         for item in timing.itertuples():
             lines.append(f'Độ nhạy giờ [{item.window.replace("_", ",")}]: {item.n_unique_articles} tin, '

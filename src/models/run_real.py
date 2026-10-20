@@ -17,7 +17,7 @@ import time
 import pandas as pd
 import yaml
 
-from src.models.run import main as legacy_main, run_analysis
+from src.models.run import main as legacy_main, run_analysis, analysis_key
 from src.evaluation.hourly_event import hourly_prices
 from src.evaluation.report import write_results
 from src.utils.common import ROOT
@@ -84,6 +84,7 @@ def stable_snapshot(sentinel, text_path, documents_path, run_done, allow_partial
 def write_done(path, snapshot, failed):
     result = {'finished_utc': datetime.now(timezone.utc).isoformat(),
               'input_sha256': snapshot['text_sha256'],
+              'run_key': snapshot.get('run_key'),
               'coverage_pct': round(100 * snapshot['gkg_days'] / snapshot['gkg_total'], 4),
               'status': 'failed' if 'analysis' in failed else 'partial' if failed else 'ok',
               'failed_steps': failed}
@@ -111,8 +112,10 @@ def publish_results(output):
     marker = output/'PUBLISH_DONE.json'
     if done['status'] != 'ok':
         return
-    if marker.is_file() and json.loads(marker.read_text(encoding='utf-8')).get('input_sha256') == done['input_sha256']:
-        return
+    if marker.is_file():
+        published = json.loads(marker.read_text(encoding='utf-8'))
+        if published.get('run_key', published.get('input_sha256')) == done.get('run_key', done['input_sha256']):
+            return
     archive = archive_event_observations(output)
     paths = [*(path for path in output.glob('*.csv') if path.name != 'event_observations.csv'),
              archive, output/'README.md', output/'RESULTS.md',
@@ -150,7 +153,7 @@ def publish_results(output):
         if not ahead:
             logging.info('Real outputs already on origin/dev')
     subprocess.run(['git', 'push', 'origin', 'dev'], cwd=ROOT, check=True)
-    marker.write_text(json.dumps({'input_sha256': done['input_sha256'],
+    marker.write_text(json.dumps({'input_sha256': done['input_sha256'], 'run_key': done.get('run_key'),
                                   'published_utc': datetime.now(timezone.utc).isoformat()}) + '\n',
                       encoding='utf-8')
     logging.info('Published real outputs for %s', done['input_sha256'][:12])
@@ -174,6 +177,13 @@ def run_cycle(snapshot, output=ROOT/'outputs/tables/real'):
     tables = {}
     try:
         config = yaml.safe_load((ROOT/'config/config.yaml').read_text(encoding='utf-8'))
+        inputs = [ROOT/'data/processed/market_daily.parquet', ROOT/'data/processed/text_daily.parquet',
+                  ROOT/'data/interim/documents.parquet', ROOT/'data/interim/doc_scores.parquet']
+        inputs += sorted((ROOT/'data/raw').glob('*_1h_*.parquet'))
+        inputs += [path for path in (ROOT/'data/processed/ucry_daily.parquet',
+                                    ROOT/'data/processed/text_daily_source_weighted.parquet',
+                                    ROOT/'data/processed/text_daily_exclude_price.parquet') if path.is_file()]
+        snapshot['run_key'] = analysis_key(inputs, config)
         market = pd.read_parquet(ROOT/'data/processed/market_daily.parquet')
         text = pd.read_parquet(ROOT/'data/processed/text_daily.parquet')
         ucry_path = ROOT/'data/processed/ucry_daily.parquet'
@@ -221,10 +231,6 @@ def run_cycle(snapshot, output=ROOT/'outputs/tables/real'):
     result = write_done(output/'RUN_DONE.json', snapshot, failed)
     logging.info('RUN_DONE status=%s coverage=%.2f%% failed=%s', result['status'],
                  result['coverage_pct'], failed)
-    try:
-        publish_results(output)
-    except Exception:
-        logging.exception('Git publication deferred; model results remain available')
     return result
 
 
@@ -252,6 +258,7 @@ def watch(poll_seconds=120, allow_partial=False):
             logging.info('Stable rebuild detected: %s', candidate['finished_utc'])
             try:
                 run_cycle(candidate, output)
+                publish_results(output)
             except Exception:
                 logging.exception('Run cycle failed before RUN_DONE; retrying next poll')
             if (output/'RUN_DONE.json').is_file():
@@ -260,11 +267,6 @@ def watch(poll_seconds=120, allow_partial=False):
         else:
             logging.info('First stable poll: %s; checking again', candidate['finished_utc'])
             previous = candidate['fingerprint']
-        try:
-            if (output/'RUN_DONE.json').is_file():
-                publish_results(output)
-        except Exception:
-            logging.exception('Git publication retry failed')
         time.sleep(poll_seconds)
 
 

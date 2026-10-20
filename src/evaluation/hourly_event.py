@@ -9,7 +9,7 @@ from statsmodels.stats.multitest import multipletests
 from src.utils.common import ROOT
 
 
-WINDOWS = ((0, 1), (0, 4), (0, 24), (-4, 0), (-4, -2))
+WINDOWS = ((0, 0), (0, 3), (0, 23), (-4, -1))
 ASSETS = ('BTC', 'ETH', 'SOL', 'BNB', 'XRP')
 
 
@@ -27,6 +27,7 @@ def event_documents(documents, scores, train_end):
     docs['lm_tone'] = pd.Series(np.select([docs.lm_net.lt(0), docs.lm_net.eq(0)],
                                          ['negative', 'neutral'], default='positive'), index=docs.index)
     docs.loc[docs.lm_net.isna(), 'lm_tone'] = None
+    docs['text_scope'] = docs.asset_tags.map(lambda tags: 'coin_specific' if len(tags) else 'market_wide')
     docs['asset'] = docs.asset_tags.map(lambda tags: list(tags) if len(tags) else ['BTC'])
     return docs.explode('asset').loc[lambda frame: frame.asset.isin(ASSETS)].reset_index(drop=True), cuts
 
@@ -55,7 +56,7 @@ def event_observations(documents, prices, timestamp='public_ts_utc'):
         aligned = frame.reindex(grid)
         close = aligned.close.to_numpy(float)
         log_volume = np.log1p((aligned.close*aligned.volume).to_numpy(float))
-        returns = np.r_[np.diff(np.log(close)), np.nan]
+        returns = np.r_[np.nan, np.diff(np.log(close))]
         arrays[asset] = (returns, log_volume)
     btc_returns = arrays['BTC'][0]
     rows = []
@@ -67,7 +68,7 @@ def event_observations(documents, prices, timestamp='public_ts_utc'):
         if ts.tzinfo is None:
             raise ValueError('Event timestamps must be timezone-aware UTC')
         i0 = int(np.searchsorted(grid_ns, ts.value, side='right'))
-        if i0 < 168 or i0+25 >= len(grid):
+        if i0 < 168 or i0+23 >= len(grid):
             continue
         ret, volume = arrays[doc.asset]
         key = (doc.asset, i0)
@@ -94,7 +95,9 @@ def event_observations(documents, prices, timestamp='public_ts_utc'):
         if fit is None:
             continue
         alpha, beta, sigma, abs_base, vol_base, n_est, x_mean, x_ss = fit
+        text_scope = getattr(doc, 'text_scope', 'coin_specific')
         row = dict(doc_id=doc.doc_id, asset=doc.asset, source=doc.source,
+                   text_scope=text_scope, missing_coin_text=text_scope == 'market_wide',
                    public_ts_utc=doc.public_ts_utc, published_at_utc=doc.published_at_utc,
                    first_seen_utc=doc.first_seen_utc, t0=grid[i0], event_day=grid[i0].floor('D'),
                    narrative=doc.narrative, finbert_tercile=doc.finbert_tercile,
@@ -118,14 +121,48 @@ def event_observations(documents, prices, timestamp='public_ts_utc'):
             row[f'scar_{suffix}'] = car/(sigma*np.sqrt(variance)) if sigma > 0 else np.nan
             row[f'absret_{suffix}'] = float(np.sum(np.abs(y)-abs_base))
             row[f'volume_{suffix}'] = float(np.mean(v-vol_base))
-            # A 24-hour shift overlaps T0 for the inclusive [0,24] window.
-            if hi < 24 and i0-24+lo >= 0:
+            if i0-24+hi < i0 and i0-24+lo >= 0:
                 p = slice(i0-24+lo, i0-24+hi+1)
                 py, px = ret[p], btc_returns[p]
                 if np.isfinite(py).all() and (doc.asset == 'BTC' or np.isfinite(px).all()):
                     row[f'placebo_car_{suffix}'] = float(np.sum(py-alpha-beta*px))
         rows.append(row)
     return pd.DataFrame(rows)
+
+
+def daily_inference(days, bootstrap=False):
+    """Calendar-lag HAC on event-day means; optional seven-calendar-day bootstrap."""
+    days = days.sort_index().astype(float)
+    n = len(days)
+    if n < 5:
+        return np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
+    calendar = days.reindex(pd.date_range(days.index.min(), days.index.max(), freq='D', tz='UTC'))
+    mean = float(days.mean())
+    centered = calendar.fillna(mean).to_numpy() - mean
+    variance = float(np.dot(centered, centered))
+    for lag in range(1, 8):
+        variance += 2 * (1 - lag/8) * float(np.dot(centered[:-lag], centered[lag:]))
+    se = np.sqrt(max(variance, 0))/n
+    t = mean/se if se > 0 else np.nan
+    p = float(2*stats.norm.sf(abs(t))) if np.isfinite(t) else np.nan
+    if not bootstrap:
+        return se, t, p, np.nan, np.nan, 2.802*se
+    rng = np.random.default_rng(42)
+    values = calendar.to_numpy()
+    span = len(values)
+    starts = rng.integers(0, span, size=(1999, (span+6)//7))
+    indices = (starts[:, :, None] + np.arange(7)) % span
+    draws = values[indices.reshape(1999, -1)[:, :span]]
+    counts = np.isfinite(draws).sum(axis=1)
+    while not counts.all():
+        missing = np.flatnonzero(counts == 0)
+        retry = rng.integers(0, span, size=(len(missing), (span+6)//7))
+        draws[missing] = values[((retry[:, :, None] + np.arange(7)) % span).reshape(len(missing), -1)[:, :span]]
+        counts[missing] = np.isfinite(draws[missing]).sum(axis=1)
+    means = np.nansum(draws, axis=1)/counts
+    low, high = np.quantile(means, [.025, .975])
+    p_boot = (1 + np.count_nonzero(np.abs(means-mean) >= abs(mean)))/2000
+    return se, t, p, float(low), float(high), 2.802*se, float(p_boot)
 
 
 def clustered_tests(events):
@@ -144,12 +181,16 @@ def clustered_tests(events):
                 days = valid.groupby('event_day')[column].mean()
                 if len(days) < 5:
                     continue
-                t = stats.ttest_1samp(days, 0)
+                primary = grouping == 'all' and (lo, hi) in WINDOWS[:3] and metric in ('car', 'absret', 'volume')
+                inference = daily_inference(days, bootstrap=primary)
+                se, t, p, ci_low, ci_high, mde = inference[:6]
                 scaled = valid.groupby('event_day')[f'scar_{lo}_{hi}'].mean() if metric == 'car' else pd.Series(dtype=float)
                 bmp = stats.ttest_1samp(scaled.dropna(), 0) if len(scaled.dropna()) >= 5 else None
                 rows.append(dict(grouping=grouping, group=group, window=f'[{lo},{hi}]', metric=metric,
                                  n_events=len(valid), n_days=len(days), mean=float(days.mean()),
-                                 median=float(days.median()), t=float(t.statistic), p_t=float(t.pvalue),
+                                 median=float(days.median()), t=t, p_t=p, hac_se=se, mde=mde,
+                                 bootstrap_ci_low=ci_low, bootstrap_ci_high=ci_high,
+                                 p_bootstrap=inference[6] if primary else np.nan,
                                  bmp_t=float(bmp.statistic) if bmp else np.nan,
                                  p_bmp=float(bmp.pvalue) if bmp else np.nan,
                                  p_wilcoxon=float(stats.wilcoxon(days).pvalue) if days.ne(0).any() else 1.0))
@@ -168,13 +209,14 @@ def asymmetry_tests(events):
                     index='event_day', columns=tone, values=column, aggfunc='mean', observed=True)
                 if not {'negative', 'positive'}.issubset(daily) or len(daily.dropna()) < 5:
                     continue
-                diff = daily.negative-daily.positive
+                diff = daily.positive-daily.negative
                 diff = diff.dropna()
-                t = stats.ttest_1samp(diff, 0)
+                _, t, p, _, _, mde = daily_inference(diff)
                 rows.append(dict(tone=tone, window=f'[{lo},{hi}]', metric=metric, n_days=len(diff),
                                  negative_mean=float(daily.negative.loc[diff.index].mean()),
                                  positive_mean=float(daily.positive.loc[diff.index].mean()),
-                                 negative_minus_positive=float(diff.mean()), p_t=float(t.pvalue),
+                                 positive_minus_negative=float(diff.mean()),
+                                 negative_minus_positive=-float(diff.mean()), t=t, p_t=p, mde=mde,
                                  p_wilcoxon=float(stats.wilcoxon(diff).pvalue) if diff.ne(0).any() else 1.0))
     return pd.DataFrame(rows)
 
@@ -231,6 +273,10 @@ def run_real_events(documents, scores, prices, train_end, output, figures):
     docs, cuts = event_documents(documents, scores, train_end)
     events = event_observations(docs, prices)
     tests = holm_columns(clustered_tests(events))
+    tests['p_primary_holm'] = np.nan
+    primary = tests.grouping.eq('all') & tests.window.isin(['[0,0]', '[0,3]', '[0,23]']) & tests.metric.isin(['car', 'absret', 'volume'])
+    assert primary.sum() == 9, 'The preregistered nine-test family is incomplete'
+    tests.loc[primary, 'p_primary_holm'] = multipletests(tests.loc[primary, 'p_t'], method='holm')[1]
     asymmetry = holm_columns(asymmetry_tests(events))
     timing_pairs, timing = timing_comparison(docs, prices)
     coverage = pd.DataFrame([dict(canonical_en_articles=docs.doc_id.nunique(), article_asset_rows=len(docs),
@@ -243,15 +289,20 @@ def run_real_events(documents, scores, prices, train_end, output, figures):
                                   first_event=events.t0.min(), last_event=events.t0.max(),
                                   timing_audited_articles=docs.loc[docs.source.eq('gdelt') & docs.published_at_utc.notna(), 'doc_id'].nunique(),
                                   finbert_train_cut_low=cuts[0], finbert_train_cut_high=cuts[1])])
+    scope = events.groupby('asset', observed=True).agg(
+        event_rows=('doc_id', 'size'), market_wide_fallback_events=('missing_coin_text', 'sum')).reset_index()
+    scope['coin_specific_events'] = scope.event_rows-scope.market_wide_fallback_events
+    scope['fallback_pct'] = 100*scope.market_wide_fallback_events/scope.event_rows
     tables = dict(event_observations=events, event_tests=tests, event_asymmetry=asymmetry,
-                  event_timing_pairs=timing_pairs, event_timing=timing, event_coverage=coverage)
+                  event_timing_pairs=timing_pairs, event_timing=timing, event_coverage=coverage,
+                  event_text_scope=scope)
     for name, table in tables.items():
         table.to_csv(output/f'{name}.csv', index=False, encoding='utf-8')
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     chosen = tests.loc[(tests.grouping == 'finbert_tercile') & (tests.metric == 'car') &
-                       tests.window.isin(['[0,1]', '[0,4]', '[0,24]'])]
+                       tests.window.isin(['[0,0]', '[0,3]', '[0,23]'])]
     if not chosen.empty:
         fig, ax = plt.subplots(figsize=(7, 4))
         for tone, part in chosen.groupby('group'):

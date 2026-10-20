@@ -179,3 +179,6 @@ def test_coverage_separates_corpus_from_asset_tagged_news():
     assert counted.loc['ETH', 'pct_days_with_asset_news'] == 50
     assert counted.loc['BTC', 'fallback_model_days'] == 0
     assert counted.loc['ETH', 'fallback_model_days'] == 6
+    assert np.isclose(counted.loc['ETH', 'fallback_model_pct'], 100*6/counted.loc['ETH', 'usable_model_days'])
+    eth = make_panel(market, text).loc[lambda frame: frame.asset.eq('ETH')]
+    assert eth.missing_coin_text.sum() == 10

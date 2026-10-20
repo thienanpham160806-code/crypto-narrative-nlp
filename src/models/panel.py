@@ -24,7 +24,9 @@ def make_panel(market, text, horizon=1):
     all_text = text.loc[text.asset == 'ALL'].drop(columns='asset')
     selected = keys.merge(specific, on=['date', 'asset'], how='left', validate='one_to_one', indicator=True)
     absent = selected.pop('_merge').eq('left_only')
+    selected['missing_coin_text'] = False
     fallback = keys.loc[absent].merge(all_text, on='date', how='left', validate='many_to_one')
+    fallback['missing_coin_text'] = True
     selected = pd.concat([selected.loc[~absent], fallback], ignore_index=True)
     panel = market.merge(selected, on=['date', 'asset'], validate='one_to_one')
     future = market[['date', 'asset', 'ret', 'rv', 'logvol']].rename(
