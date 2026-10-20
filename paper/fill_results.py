@@ -57,6 +57,10 @@ def stars(p) -> str:
     return "***" if p < .01 else "**" if p < .05 else "*" if p < .10 else ""
 
 
+POST, PRE = ["[0,0]", "[0,3]", "[0,23]"], "[-4,-1]"          # 1, 4, 24 nến sau T0; 4 nến trước T0
+WIN_VI = {"[0,0]": "1 giờ", "[0,3]": "4 giờ", "[0,23]": "24 giờ", "[-4,-1]": "Trước tin"}
+
+
 def win(w: str) -> str:
     """'0_4' → '[0,4]'; 'm4_m2' không dùng, viết '-4_-2'."""
     a, b = w.split("_")
@@ -182,32 +186,39 @@ def build_facts() -> tuple[dict, dict]:
     if len(q):
         put("quant_n", int(len(q)), None)
         put("quant_sig10_holm", int((q.p_holm < .10).sum()), None)
-    # sự kiện
+    # sự kiện (đặc tả đăng ký trước, docs/PREREG_EVENT.md): 1/4/24 nến sau T0, trước tin [-4,-1]; họ chính 9 kiểm định
     ev = D.evt
     if len(ev):
-        post = ev[(ev.grouping == "all") & ev.window.isin(["[0,1]", "[0,4]", "[0,24]"])]
-        put("evt_car_post_holm", int(((post.metric == "car") & (post.p_t_holm < .10)).sum()), None)
-        put("evt_vol_post_holm", int(((post.metric == "volume") & (post.p_t_holm < .10)).sum()), None)
-        put("evt_any_holm", V["evt_car_post_holm"] + int(((post.metric == "absret") & (post.p_t_holm < .10)).sum()), None)
-        nar = ev[(ev.grouping == "narrative") & (ev.window == "[0,4]") & ev.metric.isin(["car", "absret", "volume"])]
-        put("evt_narr_holm", int((nar.p_t_holm < .10).sum()), None)
-        put("evt_narr_car_holm", int(((nar.metric == "car") & (nar.p_t_holm < .10)).sum()), None)
-        pre = ev[(ev.grouping == "all") & (ev.window == "[-4,-2]")]
-        put("evt_pre_car_sig", int(((pre.metric == "car") & (pre.p_t_holm < .10)).sum()), None)
-        put("evt_pre_other_sig", int(((pre.metric.isin(["absret", "volume"])) & (pre.p_t_holm < .10)).sum()), None)
+        post = ev[(ev.grouping == "all") & ev.window.isin(POST)]
+        sig = post.p_primary_holm < .05
+        put("evt_car_post_holm", int(((post.metric == "car") & sig).sum()), None)
+        put("evt_vol_post_holm", int(((post.metric == "volume") & sig).sum()), None)
+        put("evt_abs_post_holm", int(((post.metric == "absret") & sig).sum()), None)
+        put("evt_any_holm", int(sig.sum()), None)
+        for w, k in zip(POST, ("1", "4", "24")):
+            r = first(post, window=w, metric="car")
+            if r is not None:
+                put(f"mde_car_{k}", float(r.mde * 1e4), vn(r.mde * 1e4, 1))      # điểm cơ bản (bp) log return
+                put(f"ci_car_{k}", f"[{vn(r.bootstrap_ci_low * 1e4, 1)}; {vn(r.bootstrap_ci_high * 1e4, 1)}]")
+        nar = ev[(ev.grouping == "narrative") & (ev.window == "[0,3]") & ev.metric.isin(["car", "absret", "volume"])]
+        put("evt_narr_holm", int((nar.p_t_holm < .05).sum()), None)
+        put("evt_narr_car_holm", int(((nar.metric == "car") & (nar.p_t_holm < .05)).sum()), None)
+        pre = ev[(ev.grouping == "all") & (ev.window == PRE)]
+        put("evt_pre_car_sig", int(((pre.metric == "car") & (pre.p_t_holm < .05)).sum()), None)
+        put("evt_pre_other_sig", int(((pre.metric.isin(["absret", "volume"])) & (pre.p_t_holm < .05)).sum()), None)
     a = D.asym
     if len(a):
-        f = a[(a.tone == "finbert_tercile") & a.window.isin(["[0,1]", "[0,4]", "[0,24]"])]
+        f = a[(a.tone == "finbert_tercile") & a.window.isin(POST)]
         vol = f[f.metric == "volume"]
-        put("asym_vol_holm_sig", int((vol.p_t_holm < .10).sum()), None)
-        sv = vol[vol.p_t_holm < .10]
+        put("asym_vol_holm_sig", int((vol.p_t_holm < .05).sum()), None)
+        sv = vol[vol.p_t_holm < .05]
         put("asym_vol_dir", float(np.sign(sv.negative_minus_positive.mean())) if len(sv) else 0.0, None)
-        put("asym_price_holm_sig", int((f[f.metric.isin(["car", "absret"])].p_t_holm < .10).sum()), None)
-        pre = a[(a.tone == "finbert_tercile") & (a.window == "[-4,0]") & (a.metric == "car")]
-        put("asym_pre_sig", int((pre.p_t_holm < .10).sum()), None)
+        put("asym_price_holm_sig", int((f[f.metric.isin(["car", "absret"])].p_t_holm < .05).sum()), None)
+        pre = a[(a.tone == "finbert_tercile") & (a.window == PRE) & (a.metric == "car")]
+        put("asym_pre_sig", int((pre.p_t_holm < .05).sum()), None)
     tm = D.timing
     if len(tm):
-        t24 = tm[tm.window == "0_24"].iloc[0]
+        t24 = tm[tm.window == "0_23"].iloc[0]
         put("tim_pairs", int(t24.n_pairs), vn(t24.n_pairs, 0))
         put("tim_changed_holm", bool(t24.significance_changed_holm), None)
     # Granger
@@ -252,6 +263,25 @@ def build_facts() -> tuple[dict, dict]:
             if r is not None:
                 for f in ("accuracy", "macro_f1", "auc"):
                     put(f"hand_{f}_{k}", float(r[f]), vn(r[f], 3))
+        for method, k in (("FinBERT", "fb"), ("Baseline: luôn neutral", "base_neu"), ("Baseline: luôn other", "base_oth")):
+            r = first(h, method=method)
+            if r is not None:
+                for f in ("accuracy", "macro_f1", "accuracy_lo", "accuracy_hi", "auc_lo", "auc_hi"):
+                    if f in r and pd.notna(r[f]):
+                        put(f"hand_{f}_{k}", float(r[f]), vn(r[f], 3))
+        dl = read(ROOT / "outputs" / "tables" / "sentiment_auc_delong.csv")
+        for _, r in dl.iterrows():
+            k = "lm" if r.method_b == "LM" else "hv"
+            put(f"delong_p_{k}", float(r.pvalue), pstr(r.pvalue))
+            put(f"delong_diff_{k}", float(r["diff"]), vn(r["diff"], 3))
+        if len(dl):
+            put("delong_sig", int((dl.pvalue < .05).sum()), None)
+            put("delong_npos", int(dl.n_pos.iloc[0]), vn(dl.n_pos.iloc[0], 0))
+            put("delong_nneg", int(dl.n_neg.iloc[0]), vn(dl.n_neg.iloc[0], 0))
+        lc = read(ROOT / "outputs" / "tables" / "validation_label_counts.csv")
+        if len(lc):
+            nn = lc[lc.task == "narrative"].sort_values("n", ascending=False)
+            F["hand_narr_counts"] = "; ".join(f"{NARR_VI.get(r.label, r.label)} {r.n}" for r in nn.itertuples())
         lab = read(ROOT / "data" / "interim" / "validation_sample.csv")
         if len(lab) and "label_narrative" in lab:
             yn = lab.label_narrative.dropna().astype(str).str.strip().str.lower()
@@ -306,7 +336,7 @@ def fn_evt(grouping, group, window, metric, field):
         return None
     x = r[field]
     return vn(x * 100 if field == "mean" and metric in ("car", "absret") else x, 3 if field == "mean" else 4) \
-        if field not in ("p_t", "p_t_holm", "p_wilcoxon_holm") else pstr(x)
+        if not field.startswith("p_") else pstr(x)
 
 
 def fn_asym(tone, window, metric, field):
@@ -382,14 +412,14 @@ def table_mota() -> str | None:
     if "ucry_policy" in panel:
         add("UCRY Policy (chỉ số)", panel.ucry_policy, 1, 2)
         add("UCRY Price (chỉ số)", panel.ucry_price, 1, 2)
-    eo = read(REAL / "event_observations.csv", usecols=["finbert_sentiment", "lm_net", "car_0_4", "absret_0_4", "volume_0_4"])
+    eo = read(REAL / "event_observations.csv", usecols=["finbert_sentiment", "lm_net", "car_0_3", "absret_0_3", "volume_0_3"])
     if len(eo):
         rows.append(["**Panel C. Mẫu sự kiện theo giờ (cặp tin - tài sản)**", "", "", "", "", ""])
         add("Điểm FinBERT của tin", eo.finbert_sentiment)
         add("Điểm Loughran - McDonald của tin", eo.lm_net)
-        add("CAR [0, 4] giờ (%)", eo.car_0_4, 100, 3)
-        add("Độ lớn lợi suất bất thường [0, 4] giờ (%)", eo.absret_0_4, 100, 3)
-        add("Khối lượng bất thường [0, 4] giờ (log)", eo.volume_0_4, 1, 3)
+        add("CAR 4 giờ [0, 3] (%)", eo.car_0_3, 100, 3)
+        add("Độ lớn lợi suất bất thường 4 giờ (%)", eo.absret_0_3, 100, 3)
+        add("Khối lượng bất thường 4 giờ (log)", eo.volume_0_3, 1, 3)
     return md(rows, "lrrrrr")
 
 
@@ -455,8 +485,9 @@ def table_nhan_yeu() -> str | None:
         for task, title in (("sentiment", "Panel B. Cảm xúc, nhãn thủ công"), ("narrative", "Panel C. Câu chuyện thị trường, nhãn thủ công")):
             rows.append([f"**{title}**", "", "", "", "", ""])
             for _, r in h[(h.n > 0) & (h.task == task)].iterrows():
-                rows.append([names.get(r.method, str(r.method)), vn(r.n, 0), vn(r.accuracy, 3), vn(r.macro_f1, 3),
-                             vn(r.get("auc"), 3), "—"])
+                ci = lambda f: (f"{vn(r[f], 3)} [{vn(r[f + '_lo'], 3)}; {vn(r[f + '_hi'], 3)}]"
+                                if pd.notna(r.get(f + "_lo")) else vn(r.get(f), 3))
+                rows.append([names.get(r.method, str(r.method)), vn(r.n, 0), ci("accuracy"), ci("macro_f1"), ci("auc"), "—"])
     return md(rows, "lrrrrr")
 
 
@@ -481,21 +512,32 @@ def table_narrative() -> str | None:
     ev = D.evt
     if not len(ev):
         return None
-    rows = [["Nhóm tin", "Cặp tin - tài sản", "Số ngày", "CAR (%)", "Độ lớn lợi suất bất thường (%)", "Khối lượng bất thường (log)", "p Holm nhỏ nhất"]]
-    for grouping, group, label in [("all", "all", "Toàn bộ")] + [("narrative", k, NARR_VI[k]) for k in NARR + ["other"]]:
-        cells, ps = [], []
+    head = ["Nhóm tin", "Cửa sổ", "Số ngày", "CAR (%)", "MDE của CAR (bp)", "Độ lớn lợi suất bất thường (%)",
+            "Khối lượng bất thường (log)", "p Holm nhỏ nhất"]
+    rows = [head]
+
+    def row(label, grouping, group, w, wl, pcol):
+        cells, ps, n_d, mde = [], [], None, "—"
         for m, scale in (("car", 100), ("absret", 100), ("volume", 1)):
-            r = first(ev, grouping=grouping, group=group, window="[0,4]", metric=m)
+            r = first(ev, grouping=grouping, group=group, window=w, metric=m)
             if r is None:
                 cells.append("—")
                 continue
             cells.append(f"{vn(r['mean'] * scale, 3)}{stars(r.p_t)}")
-            ps.append(r.p_t_holm)
-            n_ev, n_d = int(r.n_events), int(r.n_days)
-        if not ps:
-            continue
-        rows.append([label, vn(n_ev, 0), vn(n_d, 0), *cells, pstr(min(ps))])
-    return md(rows, "lrrrrrr")
+            ps.append(r[pcol] if pd.notna(r.get(pcol)) else r.p_t_holm)
+            n_d = int(r.n_days)
+            if m == "car":
+                mde = vn(r.mde * 1e4, 1)
+        if ps:
+            rows.append([label, wl, vn(n_d, 0), cells[0], mde, cells[1], cells[2], pstr(min(ps))])
+
+    rows.append(["**Panel A. Toàn bộ tin**", "", "", "", "", "", "", ""])
+    for w, wl in zip(POST + [PRE], ("1 giờ [0, 0]", "4 giờ [0, 3]", "24 giờ [0, 23]", "Trước tin [-4, -1]")):
+        row("Toàn bộ", "all", "all", w, wl, "p_primary_holm")
+    rows.append(["**Panel B. Theo câu chuyện thị trường, 4 giờ**", "", "", "", "", "", "", ""])
+    for k in NARR + ["other"]:
+        row(NARR_VI[k], "narrative", k, "[0,3]", "4 giờ [0, 3]", "p_t_holm")
+    return md(rows, "llrrrrrr")
 
 
 def table_wald() -> str | None:
@@ -516,13 +558,13 @@ def table_bat_doi_xung() -> str | None:
     rows = [["Thước đo cảm xúc", "Cửa sổ (giờ)", "Chỉ tiêu", "Số ngày", "Tin xấu", "Tin tốt", "Chênh lệch", "p Holm"]]
     lab = {"car": "CAR (%)", "absret": "Độ lớn lợi suất (%)", "volume": "Khối lượng (log)"}
     for tone, tl in (("finbert_tercile", "FinBERT"), ("lm_tone", "Loughran - McDonald")):
-        for w in ("[0,1]", "[0,4]", "[0,24]"):
+        for w in POST:
             for m in ("car", "absret", "volume"):
                 r = first(a, tone=tone, window=w, metric=m)
                 if r is None:
                     continue
                 sc = 100 if m in ("car", "absret") else 1
-                rows.append([tl, w, lab[m], vn(r.n_days, 0), vn(r.negative_mean * sc, 3), vn(r.positive_mean * sc, 3),
+                rows.append([tl, WIN_VI[w], lab[m], vn(r.n_days, 0), vn(r.negative_mean * sc, 3), vn(r.positive_mean * sc, 3),
                              f"{vn(r.negative_minus_positive * sc, 3)}{stars(r.p_t)}", pstr(r.p_t_holm)])
     return md(rows, "lllrrrrr")
 
@@ -545,10 +587,9 @@ def table_do_nhay() -> str | None:
     t = D.timing
     if not len(t):
         return None
-    rows = [["Cửa sổ (giờ)", "Cặp / ngày", "CAR theo giờ đăng (%)", "CAR theo giờ thấy (%)", "p Holm (giờ đăng)", "p Holm (giờ thấy)", "p Holm (chênh lệch ghép cặp)"]]
+    rows = [["Cửa sổ", "Cặp / ngày", "CAR theo giờ đăng (%)", "CAR theo giờ thấy (%)", "p Holm (giờ đăng)", "p Holm (giờ thấy)", "p Holm (chênh lệch ghép cặp)"]]
     for _, r in t.iterrows():
-        a, b = str(r.window).split("_")
-        rows.append([f"[{a},{b}]", f"{int(r.n_pairs)} / {int(r.n_days)}", f"{vn(r.mean_car_published * 100, 3)}{stars(r.p_public_holm)}",
+        rows.append([WIN_VI.get(win(str(r.window)), str(r.window)), f"{int(r.n_pairs)} / {int(r.n_days)}", f"{vn(r.mean_car_published * 100, 3)}{stars(r.p_public_holm)}",
                      f"{vn(r.mean_car_seen * 100, 3)}{stars(r.p_seen_holm)}", pstr(r.p_public_holm), pstr(r.p_seen_holm),
                      pstr(r.p_paired_t_holm)])
     return md(rows, "lrrrrrr")

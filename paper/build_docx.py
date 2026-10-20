@@ -218,9 +218,11 @@ class Writer:
                  for c in rows[1]]
         rows = [rows[0]] + rows[2:]
         n = len(rows[0])
-        size = 11 if n <= 6 else 9.5
+        long = max(len(c) for r in rows[1:] for c in r[1:]) > 16          # ô có khoảng tin cậy → chữ nhỏ hơn để không xuống dòng
+        size = 11 if n <= 6 and not long else 9.5
         head = [max(len(x) for x in r.split()) for r in rows[0]]
-        weight = [max(min(max(len(r[j]) for r in rows[1:]), 40), head[j]) + 5 for j in range(n)]
+        body = [r for r in rows[1:] if not r[0].startswith("**")] or rows[1:]   # dòng "Panel" không quyết định độ rộng
+        weight = [max(min(max(len(r[j]) for r in body), 40), head[j]) + 5 for j in range(n)]
         widths = [TEXT_W * x / sum(weight) for x in weight]
         t = self.doc.add_table(rows=len(rows), cols=n)
         t.autofit = False

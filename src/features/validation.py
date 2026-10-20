@@ -3,7 +3,9 @@
 sample : 300 tiêu đề en canonical ngẫu nhiên (seed), chỉ lấy tin ≤ split.valid_end (test không dùng để chọn phương pháp)
          → data/interim/validation_sample.csv, cột label_sentiment (positive|negative|neutral) và label_narrative
          (8 narrative | other) để trống cho người gán.
-evaluate: so nhãn tay với LM, Harvard, FinBERT, LLM zero-shot (nếu có) → outputs/tables/sentiment_validation.csv.
+evaluate: so nhãn tay với LM, Harvard, FinBERT, LLM zero-shot (nếu có) và baseline đa số → outputs/tables/
+          sentiment_validation.csv (KTC bootstrap 1.999 lần theo tiêu đề), sentiment_confusion.csv,
+          sentiment_auc_delong.csv (DeLong FinBERT vs LM/HV), validation_label_counts.csv.
           Điểm liên tục → 3 lớp: > 0 positive, < 0 negative, = 0 neutral. FinBERT: lớp xác suất lớn nhất.
 Chạy: python -m features.validation sample | evaluate | weak (nhãn yếu CryptoPanic, + CryptoBERT, AUC)
 """
@@ -95,8 +97,9 @@ def canonical_ids(ids: pd.Series, docs: pd.DataFrame) -> pd.Series:
     return ids.map(lambda d: canon.get(group.get(d), d))
 
 
-def evaluate(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = None,
-             llm: pd.DataFrame | None = None) -> pd.DataFrame:
+def predictions(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = None,
+                llm: pd.DataFrame | None = None) -> tuple:
+    """Nhãn tay và dự đoán của từng phương pháp, cùng chỉ số dòng (một dòng = một tiêu đề)."""
     df = lab.merge(sc, on="doc_id", how="left")
     if nar is not None:
         df = df.merge(nar[["doc_id", "zs_narr", "lda_narr", "bt_narr"]], on="doc_id", how="left")
@@ -105,15 +108,126 @@ def evaluate(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = Non
     y = df.label_sentiment.replace("", np.nan).str.strip().str.lower()
     probs = df[["positive_prob", "negative_prob", "neutral_prob"]]
     fb = probs.fillna(-1).idxmax(axis=1).str.replace("_prob", "").where(probs.notna().all(axis=1))
-    sent = {"LM": sign3(df.lm_net), "Harvard IV-4": sign3(df.hv_net), "FinBERT": fb, "LLM zero-shot": df.get("llm_sent")}
+    sent = {k: v for k, v in {"LM": sign3(df.lm_net), "Harvard IV-4": sign3(df.hv_net), "FinBERT": fb,
+                              "LLM zero-shot": df.get("llm_sent")}.items() if v is not None}
+    sent["Baseline: luôn neutral"] = pd.Series("neutral", index=df.index).where(y.notna())
     cont = {"LM": df.lm_net, "Harvard IV-4": df.hv_net, "FinBERT": df.positive_prob - df.negative_prob}
-    rows = [dict(task="sentiment", method=k, **scores(y, v), auc=auc(y, cont[k]) if k in cont else np.nan,
-                 pct_positive_labels=100 * y.eq("positive").sum() / max(y.notna().sum(), 1))
-            for k, v in sent.items() if v is not None]
     yn = df.label_narrative.replace("", np.nan).str.strip().str.lower()
-    narr = {"LDA": df.get("lda_narr"), "BERTopic": df.get("bt_narr"), "zero-shot embedding": df.get("zs_narr"),
-            "LLM zero-shot": df.get("llm_narr")}
-    rows += [dict(task="narrative", method=k, **scores(yn, v)) for k, v in narr.items() if v is not None]
+    narr = {k: v for k, v in {"LDA": df.get("lda_narr"), "BERTopic": df.get("bt_narr"),
+                              "zero-shot embedding": df.get("zs_narr"), "LLM zero-shot": df.get("llm_narr")}.items()
+            if v is not None}
+    narr["Baseline: luôn other"] = pd.Series("other", index=df.index).where(yn.notna())
+    return y, sent, cont, yn, narr
+
+
+def fast_metrics(y: np.ndarray, p: np.ndarray, classes: list[str]) -> tuple[float, float]:
+    """Accuracy và macro-F1 (trên tập lớp cố định) — đủ nhanh cho bootstrap."""
+    acc = float((y == p).mean())
+    f1 = []
+    for c in classes:
+        tp = np.sum((y == c) & (p == c))
+        fp, fn = np.sum((y != c) & (p == c)), np.sum((y == c) & (p != c))
+        f1.append(2 * tp / (2 * tp + fp + fn) if tp + fp + fn else 0.0)
+    return acc, float(np.mean(f1))
+
+
+def fast_auc(pos: np.ndarray, s: np.ndarray) -> float:
+    """AUC = Mann–Whitney (hạng trung bình cho giá trị trùng)."""
+    n1, n0 = pos.sum(), (~pos).sum()
+    if not n1 or not n0:
+        return np.nan
+    r = pd.Series(s).rank().to_numpy()
+    return float((r[pos].sum() - n1 * (n1 + 1) / 2) / (n1 * n0))
+
+
+def bootstrap(y: pd.Series, p: pd.Series, s: pd.Series | None, n_boot: int, seed: int) -> dict:
+    """KTC 95% phân vị, lấy mẫu lại theo tiêu đề (n_boot lần) cho accuracy, macro-F1 và AUC."""
+    m = y.notna() & p.notna()
+    yy, pp = y[m].to_numpy(), p[m].to_numpy()
+    ss = s[m].to_numpy(dtype=float) if s is not None else None
+    classes = sorted(set(yy) | set(pp))
+    rng = np.random.default_rng(seed)
+    out = []
+    for _ in range(n_boot):
+        i = rng.integers(0, len(yy), len(yy))
+        acc, f1 = fast_metrics(yy[i], pp[i], classes)
+        a = np.nan
+        if ss is not None:
+            keep = np.isin(yy[i], ["positive", "negative"]) & ~np.isnan(ss[i])
+            a = fast_auc(yy[i][keep] == "positive", ss[i][keep])
+        out.append((acc, f1, a))
+    arr = np.array(out, dtype=float)
+    q = np.percentile(arr[:, :2], [2.5, 97.5], axis=0)
+    ci = dict(accuracy_lo=q[0, 0], accuracy_hi=q[1, 0], macro_f1_lo=q[0, 1], macro_f1_hi=q[1, 1])
+    if ss is not None:
+        lo, hi = np.nanpercentile(arr[:, 2], [2.5, 97.5])
+        ci.update(auc_lo=lo, auc_hi=hi)
+    return ci
+
+
+def evaluate(lab: pd.DataFrame, sc: pd.DataFrame, nar: pd.DataFrame | None = None,
+             llm: pd.DataFrame | None = None, n_boot: int = 0, seed: int = CFG["seed"]) -> pd.DataFrame:
+    """Accuracy, macro-F1, AUC (+ KTC bootstrap nếu n_boot > 0) cho mọi phương pháp và baseline đa số."""
+    y, sent, cont, yn, narr = predictions(lab, sc, nar, llm)
+    pct_pos = 100 * y.eq("positive").sum() / max(y.notna().sum(), 1)
+    rows = []
+    for task, truth, preds in (("sentiment", y, sent), ("narrative", yn, narr)):
+        for k, v in preds.items():
+            r = dict(task=task, method=k, **scores(truth, v))
+            if task == "sentiment":
+                r.update(auc=auc(truth, cont[k]) if k in cont else np.nan, pct_positive_labels=pct_pos)
+            if n_boot:
+                r.update(bootstrap(truth, v, cont.get(k) if task == "sentiment" else None, n_boot, seed))
+            rows.append(r)
+    return pd.DataFrame(rows)
+
+
+def confusion(lab: pd.DataFrame, sc: pd.DataFrame) -> pd.DataFrame:
+    """Ma trận nhầm lẫn 3 lớp (nhãn tay × dự đoán) cho từng thước đo cảm xúc, dạng dài."""
+    y, sent, _, _, _ = predictions(lab, sc)
+    classes = ["negative", "neutral", "positive"]
+    rows = []
+    for k, p in sent.items():
+        m = y.notna() & p.notna()
+        ct = pd.crosstab(y[m], p[m]).reindex(index=classes, columns=classes, fill_value=0)
+        rows += [dict(method=k, label=t, predicted=c, n=int(ct.loc[t, c])) for t in classes for c in classes]
+    return pd.DataFrame(rows)
+
+
+def delong(pos: np.ndarray, a: np.ndarray, b: np.ndarray) -> dict:
+    """Kiểm định DeLong cho hai AUC có cặp (cùng tiêu đề): H0 AUC_a = AUC_b."""
+    from scipy.stats import norm
+
+    def parts(s):
+        x, z = s[pos], s[~pos]
+        v10 = ((x[:, None] > z[None, :]) + 0.5 * (x[:, None] == z[None, :])).mean(1)
+        v01 = ((x[:, None] > z[None, :]) + 0.5 * (x[:, None] == z[None, :])).mean(0)
+        return v10.mean(), v10, v01
+
+    auc_a, a10, a01 = parts(a)
+    auc_b, b10, b01 = parts(b)
+    s10, s01 = np.cov(np.vstack([a10, b10])), np.cov(np.vstack([a01, b01]))
+    var = (s10[0, 0] + s10[1, 1] - 2 * s10[0, 1]) / len(a10) + (s01[0, 0] + s01[1, 1] - 2 * s01[0, 1]) / len(a01)
+    z = (auc_a - auc_b) / np.sqrt(var) if var > 0 else np.nan
+    return dict(auc_a=auc_a, auc_b=auc_b, diff=auc_a - auc_b, z=z, pvalue=2 * norm.sf(abs(z)) if var > 0 else np.nan)
+
+
+def auc_tests(lab: pd.DataFrame, sc: pd.DataFrame) -> pd.DataFrame:
+    """FinBERT so với LM và Harvard IV-4 trên các tiêu đề gán tích cực/tiêu cực (bỏ trung tính)."""
+    y, _, cont, _, _ = predictions(lab, sc)
+    m = y.isin(["positive", "negative"]) & pd.concat(cont, axis=1).notna().all(axis=1)
+    pos = y[m].eq("positive").to_numpy()
+    rows = [dict(method_a="FinBERT", method_b=b, n_pos=int(pos.sum()), n_neg=int((~pos).sum()),
+                 **delong(pos, cont["FinBERT"][m].to_numpy(float), cont[b][m].to_numpy(float)))
+            for b in ("LM", "Harvard IV-4")]
+    return pd.DataFrame(rows)
+
+
+def label_counts(lab: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for task, col in (("sentiment", "label_sentiment"), ("narrative", "label_narrative")):
+        v = lab[col].replace("", np.nan).dropna().str.strip().str.lower()
+        rows += [dict(task=task, label=k, n=int(n), pct=100 * n / len(v)) for k, n in v.value_counts().items()]
     return pd.DataFrame(rows)
 
 
@@ -142,10 +256,15 @@ def main(cmd: str):
         llm = None
         if CFG["nlp"]["llm"]["enabled"]:
             llm = llm_labels(lab)
-        out = evaluate(lab, pd.read_parquet(D("interim", "doc_scores.parquet")),
-                       pd.read_parquet(nar) if nar.exists() else None, llm)
+        sc = pd.read_parquet(D("interim", "doc_scores.parquet"))
+        out = evaluate(lab, sc, pd.read_parquet(nar) if nar.exists() else None, llm, n_boot=1999)
         out.to_csv(O("tables", "sentiment_validation.csv"), index=False)
+        confusion(lab, sc).to_csv(O("tables", "sentiment_confusion.csv"), index=False)
+        tests = auc_tests(lab, sc)
+        tests.to_csv(O("tables", "sentiment_auc_delong.csv"), index=False)
+        label_counts(lab).to_csv(O("tables", "validation_label_counts.csv"), index=False)
         print(out.round(3).to_string())
+        print(tests.round(4).to_string())
 
 
 if __name__ == "__main__":

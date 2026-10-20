@@ -1,0 +1,37 @@
+method,label,predicted,n
+LM,negative,negative,24
+LM,negative,neutral,23
+LM,negative,positive,3
+LM,neutral,negative,33
+LM,neutral,neutral,126
+LM,neutral,positive,15
+LM,positive,negative,8
+LM,positive,neutral,52
+LM,positive,positive,16
+Harvard IV-4,negative,negative,27
+Harvard IV-4,negative,neutral,14
+Harvard IV-4,negative,positive,9
+Harvard IV-4,neutral,negative,35
+Harvard IV-4,neutral,neutral,88
+Harvard IV-4,neutral,positive,51
+Harvard IV-4,positive,negative,11
+Harvard IV-4,positive,neutral,34
+Harvard IV-4,positive,positive,31
+FinBERT,negative,negative,30
+FinBERT,negative,neutral,18
+FinBERT,negative,positive,2
+FinBERT,neutral,negative,28
+FinBERT,neutral,neutral,118
+FinBERT,neutral,positive,28
+FinBERT,positive,negative,4
+FinBERT,positive,neutral,46
+FinBERT,positive,positive,26
+Baseline: luôn neutral,negative,negative,0
+Baseline: luôn neutral,negative,neutral,50
+Baseline: luôn neutral,negative,positive,0
+Baseline: luôn neutral,neutral,negative,0
+Baseline: luôn neutral,neutral,neutral,174
+Baseline: luôn neutral,neutral,positive,0
+Baseline: luôn neutral,positive,negative,0
+Baseline: luôn neutral,positive,neutral,76
+Baseline: luôn neutral,positive,positive,0

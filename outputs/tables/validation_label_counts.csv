@@ -1,0 +1,13 @@
+task,label,n,pct
+sentiment,neutral,174,58.0
+sentiment,positive,76,25.333333333333332
+sentiment,negative,50,16.666666666666668
+narrative,other,126,42.0
+narrative,price_speculation,56,18.666666666666668
+narrative,regulation,37,12.333333333333334
+narrative,etf_institutional,33,11.0
+narrative,defi,14,4.666666666666667
+narrative,security_hacks,10,3.3333333333333335
+narrative,ai_tokens,9,3.0
+narrative,macro_monetary,8,2.6666666666666665
+narrative,stablecoins,7,2.3333333333333335

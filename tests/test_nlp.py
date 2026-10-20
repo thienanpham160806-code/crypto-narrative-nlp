@@ -264,3 +264,21 @@ def test_bertopic_nan_reduction_rows_become_other(monkeypatch):
     monkeypatch.setitem(sys.modules, "umap", types.SimpleNamespace(UMAP=lambda **kw: None))
     t, p, _ = narrative.bertopic(pd.Series(list("abcd")), np.zeros((4, 3)), pd.Series(["train"] * 4), 0)
     assert t.tolist() == [1, 1, -1, 1] and p[2] == 0 and p[0] == .5      # NaN → -1; còn lại qua map của BERTopic
+
+
+def test_validation_bootstrap_delong_confusion_and_baselines():
+    rng = np.random.default_rng(0)
+    y = np.array(["positive"] * 40 + ["negative"] * 40 + ["neutral"] * 20)
+    good = np.where(y == "positive", 1, np.where(y == "negative", -1, 0)) + rng.normal(0, .3, 100)
+    lab = pd.DataFrame(dict(doc_id=[f"d{i}" for i in range(100)], label_sentiment=y, label_narrative="other"))
+    sc = pd.DataFrame(dict(doc_id=lab.doc_id, lm_net=rng.normal(0, 1, 100), hv_net=good,
+                           positive_prob=(good > .3) * .8 + .1, negative_prob=(good < -.3) * .8 + .1, neutral_prob=.1))
+    r = validation.evaluate(lab, sc, n_boot=199).set_index(["task", "method"])
+    fb = r.loc[("sentiment", "FinBERT")]
+    assert fb.accuracy_lo <= fb.accuracy <= fb.accuracy_hi and fb.auc_lo <= fb.auc <= fb.auc_hi
+    assert r.loc[("sentiment", "Baseline: luôn neutral"), "accuracy"] == .2
+    assert r.loc[("narrative", "Baseline: luôn other"), "accuracy"] == 1
+    t = validation.auc_tests(lab, sc).set_index("method_b")
+    assert t.loc["LM", "diff"] > .3 and t.loc["LM", "pvalue"] < .001          # FinBERT ≫ điểm ngẫu nhiên
+    cm = validation.confusion(lab, sc)
+    assert (cm.groupby("method").n.sum() == 100).all() and len(cm) == 9 * cm.method.nunique()
