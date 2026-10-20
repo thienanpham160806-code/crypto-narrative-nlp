@@ -1,4 +1,4 @@
-# REAL (partial corpus; provenance audit required)
+# REAL (observed corpus; provenance audit required)
 
 Daily forecast horizon is the single outcome at t+h, not a cumulative h-day return.
 Missing news/scores remain missing. No interpolation, fabricated labels or split changes.
@@ -27,59 +27,9 @@ RQ2: rejection means negative and positive sentiment have different conditional 
 
 RQ4: text-to-market significance indicates a predictive lead, while the reverse direction suggests price feedback. Missing/short contiguous samples cannot support this inference.
 
-### stationarity.csv (50 rows)
-
-RQ4: ADF tests a unit-root null and KPSS tests a level-stationarity null. Conflicting outcomes call for specification review; KPSS p-values are lookup-table bounds.
-
-### robustness.csv (5400 rows)
-
-RQ1–RQ3: compare pre/post January 2025 and horizon sensitivity with momentum and raw document count. A break dummy cannot repair changing news coverage.
-
-### robustness_status.csv (2 rows)
-
-Both sensitivity variants were reaggregated from canonical articles and marked provided. Compare them with the baseline on development observations; associations are not causal effects.
-
-### quantiles.csv (45 rows)
-
-RQ2: negative/positive RV slopes at tau 0.1/0.5/0.9 expose tail asymmetry hidden by mean regressions. Reported heteroskedastic-robust p-values do not correct serial dependence.
-
-### rolling_quantiles.csv (1350 rows)
-
-RQ2: 500-calendar-day, 20-day-step coefficients show temporal stability. Overlapping windows are dependent and cannot be counted as independent replications.
-
-### quantile_status.csv (15 rows)
-
-Short samples cannot estimate the requested rolling window. An unavailable window provides no evidence of stable tail effects.
-
-### oos.csv (270 rows)
-
-RQ5: positive Campbell–Thompson R² beats the recursive historical mean; lower forecast loss is better. Positive DM/CW favors text; CW with tuned/shrunk nonlinear models remains exploratory.
-
 ### forecasts.csv (58284 rows)
 
 RQ5: dated paired forecasts let reviewers audit when information and targets were available. They are research predictions, not executable trade instructions.
-
-### strategy.csv (0 rows)
-
-RQ5 economic-value test only: net return includes 10 bps turnover fees and final liquidation. Zero processing latency and omitted extra slippage make it optimistic.
-
-Unavailable for this input sample; no inference reported.
-
-### shap.csv (1050 rows)
-
-RQ1/RQ3: development-only SHAP shows inputs used by the validation-selected model. Importance is neither a causal effect nor proof of out-of-sample value.
-
-### tuning.csv (540 rows)
-
-RQ5: validation losses choose model settings before the frozen test pass. Test results never revise these settings.
-
-### refit_audit.csv (7518 rows)
-
-RQ5: every recorded refit satisfies max(train_target_date) + horizon + embargo < origin. This conservative purge also applies to fixed-window GW fits.
-
-### ml_status.csv (75 rows)
-
-RQ5: pending or skipped cases lack enough honest validation/test observations or contiguous strategy dates. Missing results are not zero effects.
 
 ### gw.csv (90 rows)
 
@@ -89,23 +39,35 @@ RQ5: GW uses fixed 500-observation training windows and origin-known return as i
 
 RQ5: the 90% Model Confidence Set retains models not rejected by Tmax block-bootstrap elimination. Membership does not establish superiority or select a trading model on test data.
 
-### ucry_regressions.csv (5400 rows)
+### oos.csv (270 rows)
 
-RQ3: UCRY-controlled regressions use only dates with released weekly observations, in a separate common sample. Retrospective indices lack vintages and cannot justify live forecast claims.
+RQ5: positive Campbell–Thompson R² beats the recursive historical mean; lower forecast loss is better. Positive DM/CW favors text; CW with tuned/shrunk nonlinear models remains exploratory.
 
-### ucry_wald.csv (15 rows)
+### quantiles.csv (45 rows)
 
-RQ2/RQ3: the asymmetry test conditions on weekly uncertainty where available. Its sample differs from the main table; unavailable post-2024 UCRY is never extrapolated.
+RQ2: negative/positive RV slopes at tau 0.1/0.5/0.9 expose tail asymmetry hidden by mean regressions. Reported heteroskedastic-robust p-values do not correct serial dependence.
 
-### event_observations.csv.gz (150160 rows)
+### robustness.csv (5400 rows)
 
-The publication stores this large event-level CSV as UTF-8 gzip. `run_real.py` keeps an untracked local `.csv` for `paper/fill_results.py`; after a fresh clone, extract the archive before rebuilding the paper without rerunning the analysis.
+RQ1–RQ3: compare pre/post January 2025 and horizon sensitivity with momentum and raw document count. A break dummy cannot repair changing news coverage.
+
+### shap.csv (1050 rows)
+
+RQ1/RQ3: development-only SHAP shows inputs used by the validation-selected model. Importance is neither a causal effect nor proof of out-of-sample value.
+
+### strategy.csv (0 rows)
+
+RQ5 economic-value test only: net return includes 10 bps turnover fees and final liquidation. Zero processing latency and omitted extra slippage make it optimistic.
+
+Unavailable for this input sample; no inference reported.
+
+### event_observations.csv (150160 rows)
 
 Each row is a canonical English article and tagged asset, or BTC for untagged market news. CAR uses an hourly BTC market model for altcoins and a past-hour mean for BTC; overlapping articles share market shocks.
 
-### event_tests.csv (342 rows)
+### event_tests.csv (288 rows)
 
-Hourly reactions are tested on event-day means, so multiple articles on one day form one cluster. BMP-style CAR is estimation-error standardized and day clustered. The −24h placebo omits [0,24], whose inclusive endpoint would overlap T0.
+Hourly reactions use calendar-lag Bartlett HAC(7) on event-day means, with seven-day block bootstrap for nine preregistered tests. BMP-style CAR and Wilcoxon are supplementary. A shifted placebo window ends before T0.
 
 ### event_asymmetry.csv (24 rows)
 
@@ -122,6 +84,10 @@ A changed significance flag shows the timing choice can alter a nominal conclusi
 ### event_coverage.csv (1 rows)
 
 Article count, scored count, usable event days and training-only tercile cutoffs limit the scope of hourly inference.
+
+### event_text_scope.csv (5 rows)
+
+Market-wide untagged news falls back to BTC; coin-specific tagged news is counted separately. Fallback percentages refer to usable event rows, not calendar days.
 
 ### coverage.csv (5 rows)
 

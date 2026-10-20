@@ -1,0 +1,2 @@
+tone,window,metric,n_days,negative_mean,positive_mean,negative_minus_positive,p_t,p_wilcoxon,p_t_holm,p_wilcoxon_holm
+finbert_tercile,"[0,4]",car,1352,-1.986731173940843e-05,-0.0001590760061069,0.0001392086943675,0.0933565372244484,0.0477445101215513,0.4307644971445389,0.3450626622415839
