@@ -1,12 +1,13 @@
 // Vercel function: tin crypto mới nhất cho tab Live (không thuộc kết quả nghiên cứu).
-// Nguồn: RSS The Block (robots.txt cho phép) + GDELT DOC 2.0 API (chỉ tiêu đề + link). Không chấm FinBERT ở đây
-// (Python/model không chạy trên Vercel); câu chuyện thị trường gán theo từ khóa và được ghi rõ trên giao diện.
-// Server local (dashboard/server.py) vẫn trả cùng schema kèm điểm FinBERT.
+// Nguồn: lô GKG 15 phút của GDELT (cùng nguồn và cùng bộ lọc tiêu đề với nghiên cứu, src/data/news_gdelt.py) + RSS The Block
+// (robots.txt cho phép). Chỉ tiêu đề + link. Không chấm FinBERT ở đây (Python/model không chạy trên Vercel); câu chuyện
+// thị trường gán theo từ khóa và được ghi rõ trên giao diện. Server local (dashboard/server.py) trả cùng schema kèm FinBERT.
+import { inflateRawSync } from 'node:zlib'
 
 const RSS = 'https://www.theblock.co/rss.xml'
-const GDELT = 'https://api.gdeltproject.org/api/v2/doc/doc?query=' +
-  encodeURIComponent('(bitcoin OR ethereum OR crypto OR cryptocurrency OR stablecoin OR solana OR xrp OR "bnb") sourcelang:english') +
-  '&mode=artlist&format=json&maxrecords=60&sort=datedesc&timespan=6h'
+const GKG_LAST = 'https://data.gdeltproject.org/gdeltv2/lastupdate.txt'
+const GKG_BATCHES = 4                       // 4 lô 15 phút ≈ 1 giờ gần nhất
+const KEEP = /\b(bitcoin|btc|ethereum|eth|ether|crypto\w*|stablecoins?|solana|xrp|binance|bnb|blockchain|defi|altcoins?|memecoins?|tether|usdt|usdc|coinbase)\b/i
 const LIMIT = 40
 export const config = { maxDuration: 25 }
 
@@ -44,14 +45,38 @@ export async function rss() {
   })
 }
 
-export async function gdelt() {
-  const text = await (await get(GDELT, 15000)).text()
-  if (!text.trimStart().startsWith('{')) throw new Error('GDELT: vượt giới hạn truy vấn, dùng RSS')
-  const j = JSON.parse(text)   // GDELT chậm 5–15 giây; giới hạn 1 truy vấn / 5 giây (CDN cache 30 giây)
-  return (j.articles ?? []).map((a) => {
-    const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(a.seendate ?? '')
-    return { url: a.url, title: a.title, source: a.domain, public_ts_utc: m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}.000Z` : null }
+/** Giải nén tệp duy nhất trong zip (đọc kích thước nén từ central directory). */
+export function unzip(buf) {
+  const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]))
+  const cd = buf.readUInt32LE(eocd + 16)
+  const size = buf.readUInt32LE(cd + 20), local = buf.readUInt32LE(cd + 42)
+  const start = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28)
+  return inflateRawSync(buf.subarray(start, start + size)).toString('utf8')
+}
+
+const TITLE = /<PAGE_TITLE>(.*?)<\/PAGE_TITLE>/
+export function parseGkg(csv) {
+  return csv.split('\n').flatMap((line) => {
+    const c = line.split('\t')
+    const t = c.length > 26 ? decode((TITLE.exec(c[26]) ?? [, ''])[1]) : ''
+    if (!t || !KEEP.test(t)) return []
+    const d = c[1]   // giờ GDELT thấy bài (YYYYMMDDHHMMSS) = public_ts_utc khi không có giờ đăng hợp lệ
+    return [{ url: c[4], title: t, source: c[3],
+      public_ts_utc: `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}T${d.slice(8, 10)}:${d.slice(10, 12)}:${d.slice(12, 14)}.000Z` }]
   })
+}
+
+const stamp = (t) => t.toISOString().replace(/\D/g, '').slice(0, 14)
+
+export async function gdelt() {
+  const last = /(\d{14})\.gkg\.csv\.zip/.exec(await (await get(GKG_LAST)).text())[1]
+  const t0 = Date.UTC(+last.slice(0, 4), +last.slice(4, 6) - 1, +last.slice(6, 8), +last.slice(8, 10), +last.slice(10, 12))
+  const urls = Array.from({ length: GKG_BATCHES }, (_, i) =>
+    `https://data.gdeltproject.org/gdeltv2/${stamp(new Date(t0 - i * 15 * 60000))}.gkg.csv.zip`)
+  const batches = await Promise.allSettled(urls.map(async (u) => parseGkg(unzip(Buffer.from(await (await get(u, 15000)).arrayBuffer())))))
+  const ok = batches.filter((b) => b.status === 'fulfilled').flatMap((b) => b.value)
+  if (!ok.length) throw new Error('GDELT GKG: không tải được lô nào')
+  return ok
 }
 
 export function merge(lists) {
@@ -70,10 +95,10 @@ export function merge(lists) {
 }
 
 export default async function handler(req, res) {
-  const settled = await Promise.allSettled([rss(), gdelt()])
+  const settled = await Promise.allSettled([gdelt(), rss()])
   const ok = settled.filter((s) => s.status === 'fulfilled').map((s) => s.value)
-  const body = { updated_utc: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), feeds: ['theblock', 'gdelt'],
+  const body = { updated_utc: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), feeds: ['gdelt-gkg', 'theblock'],
     scoring: 'keyword', items: merge(ok), errors: settled.filter((s) => s.status === 'rejected').map((s) => String(s.reason)) }
-  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120')
+  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300')   // GKG cập nhật 15 phút/lần
   res.status(ok.length ? 200 : 502).json(body)
 }
