@@ -146,6 +146,25 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .snips a:hover { text-decoration: underline; }
 .tag { font-size: 12px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; }
 .score { margin-right: 12px; }
+.tag.asset { font: 600 11px/1 var(--sans, inherit); padding: 3px 6px; border: 1px solid var(--rule); border-radius: 3px; }
+.snips li.fresh { animation: fresh 6s ease-out; }
+.snips .new { color: var(--accent); font-size: 11px; letter-spacing: .06em; }
+@keyframes fresh { from { background: color-mix(in srgb, var(--accent) 18%, transparent); } to { background: transparent; } }
+.ticker { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--grid); border: 1px solid var(--grid); }
+.tick { background: var(--surface); padding: 12px 14px; display: grid; gap: 2px; }
+.tick .sym { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+.tick .px { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; border-radius: 3px; }
+.tick .px.up { animation: flash-up .9s ease-out; }
+.tick .px.down { animation: flash-down .9s ease-out; }
+.tick .chg { font-size: 13px; }
+.tick .chg.neg { color: var(--neg); }
+.tick .chg.pos { color: var(--pos); }
+@keyframes flash-up { from { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); } }
+@keyframes flash-down { from { color: var(--neg); background: color-mix(in srgb, var(--neg) 14%, transparent); } }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pos); display: inline-block; margin-left: 8px; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (max-width: 760px) { .ticker { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tick .px { font-size: 18px; } }
+@media (prefers-reduced-motion: reduce) { .snips li.fresh, .tick .px.up, .tick .px.down, .live-dot { animation: none; } }
 .score.neg { color: var(--neg); font-weight: 600; }
 .score.pos { color: var(--pos); font-weight: 600; }
 .note { font-size: 13px; color: var(--muted); max-width: 75ch; }
