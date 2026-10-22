@@ -72,7 +72,7 @@ export async function gdelt() {
   const last = /(\d{14})\.gkg\.csv\.zip/.exec(await (await get(GKG_LAST)).text())[1]
   const t0 = Date.UTC(+last.slice(0, 4), +last.slice(4, 6) - 1, +last.slice(6, 8), +last.slice(8, 10), +last.slice(10, 12))
   const urls = Array.from({ length: GKG_BATCHES }, (_, i) =>
-    `https://data.gdeltproject.org/gdeltv2/${stamp(new Date(t0 - i * 15 * 60000))}.gkg.csv.zip`)
+    `http://data.gdeltproject.org/gdeltv2/${stamp(new Date(t0 - i * 15 * 60000))}.gkg.csv.zip`   // đúng dạng URL trong lastupdate.txt; https trực tiếp trả 404 từ Vercel)
   const batches = await Promise.allSettled(urls.map(async (u) => parseGkg(unzip(Buffer.from(await (await get(u, 15000)).arrayBuffer())))))
   const ok = batches.filter((b) => b.status === 'fulfilled').flatMap((b) => b.value)
   if (!ok.length) throw new Error('GDELT GKG: không tải được lô nào: ' + batches.map((b) => String(b.reason).slice(0, 120)).join(' | '))
