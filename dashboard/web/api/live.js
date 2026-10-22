@@ -75,7 +75,7 @@ export async function gdelt() {
     `https://data.gdeltproject.org/gdeltv2/${stamp(new Date(t0 - i * 15 * 60000))}.gkg.csv.zip`)
   const batches = await Promise.allSettled(urls.map(async (u) => parseGkg(unzip(Buffer.from(await (await get(u, 15000)).arrayBuffer())))))
   const ok = batches.filter((b) => b.status === 'fulfilled').flatMap((b) => b.value)
-  if (!ok.length) throw new Error('GDELT GKG: không tải được lô nào')
+  if (!ok.length) throw new Error('GDELT GKG: không tải được lô nào: ' + batches.map((b) => String(b.reason).slice(0, 120)).join(' | '))
   return ok
 }
 
