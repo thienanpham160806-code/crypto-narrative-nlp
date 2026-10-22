@@ -48,7 +48,7 @@ const T = {
       p90: '|Lệch| P90', gt1h: '% > 1 giờ', dayShift: '% đổi ngày', method: 'Phương pháp', topic: 'Topic', words: 'Từ đặc trưng',
       target: 'Biến mục tiêu', model: 'Mô hình', version: 'Phiên bản', outcome: 'Biến kết quả', conclusion: 'Kết luận', task: 'Nhiệm vụ', newsDays: 'Ngày có tin', pctDays: '% ngày', fbDays: 'Ngày có FinBERT', devDays: 'Ngày phát triển', testDays: 'Ngày test' },
     sortBy: 'Sắp xếp theo',
-    live: { title: 'Live: tin mới nhất (không thuộc kết quả nghiên cứu)', note: 'Bản demo sản phẩm. Điểm được chấm bằng cùng FinBERT và zero-shot narrative, nhưng không đưa vào chỉ số nghiên cứu.', noteKeyword: 'Bản demo sản phẩm, không đưa vào chỉ số nghiên cứu. Tin từ The Block và GDELT tự làm mới mỗi 30 giây; câu chuyện thị trường gán theo từ khóa vì bản trực tuyến không chạy FinBERT.', updated: 'Cập nhật', refresh: 'làm mới sau', new: 'MỚI', prices: 'Giá theo thời gian thực', priceNote: 'Giá cuối và thay đổi 24 giờ của cặp USDT trên Binance, nhận trực tiếp qua WebSocket dữ liệu thị trường công khai.' },
+    live: { title: 'Live: tin mới nhất (không thuộc kết quả nghiên cứu)', note: 'Bản demo sản phẩm. Điểm được chấm bằng cùng FinBERT và zero-shot narrative, nhưng không đưa vào chỉ số nghiên cứu.', noteKeyword: 'Bản demo sản phẩm, không đưa vào chỉ số nghiên cứu. Trang kiểm tra tin mới mỗi 30 giây từ GDELT (lô mới mỗi 15 phút, cùng nguồn và bộ lọc tiêu đề với nghiên cứu) và The Block; câu chuyện thị trường gán theo từ khóa vì bản trực tuyến không chạy FinBERT.', updated: 'Cập nhật', refresh: 'làm mới sau', new: 'MỚI', prices: 'Giá theo thời gian thực', priceNote: 'Giá cuối và thay đổi 24 giờ của cặp USDT trên Binance, nhận trực tiếp qua WebSocket dữ liệu thị trường công khai.' },
   },
   en: {
     brandSub: 'Narrative & sentiment from news · 2023–2026',
@@ -97,7 +97,7 @@ const T = {
       p90: 'P90 |lag|', gt1h: '% > 1h', dayShift: '% day shift', method: 'Method', topic: 'Topic', words: 'Top words',
       target: 'Target', model: 'Model', version: 'Version', outcome: 'Outcome', conclusion: 'Conclusion', task: 'Task', newsDays: 'News days', pctDays: '% days', fbDays: 'FinBERT days', devDays: 'Dev days', testDays: 'Test days' },
     sortBy: 'Sort by',
-    live: { title: 'Live: latest stories (not part of the research results)', note: 'Product demo. Scored with the same FinBERT and zero-shot narrative model, but never fed into the research indices.', noteKeyword: 'Product demo, never fed into the research indices. Stories from The Block and GDELT refresh every 30 seconds; narratives are keyword-tagged because the hosted version does not run FinBERT.', updated: 'Updated', refresh: 'next refresh in', new: 'NEW', prices: 'Real-time prices', priceNote: 'Last price and 24-hour change of the USDT pairs on Binance, streamed over the public market-data WebSocket.' },
+    live: { title: 'Live: latest stories (not part of the research results)', note: 'Product demo. Scored with the same FinBERT and zero-shot narrative model, but never fed into the research indices.', noteKeyword: 'Product demo, never fed into the research indices. The page checks for new stories every 30 seconds from GDELT (a new batch every 15 minutes, same source and title filter as the research) and The Block; narratives are keyword-tagged because the hosted version does not run FinBERT.', updated: 'Updated', refresh: 'next refresh in', new: 'NEW', prices: 'Real-time prices', priceNote: 'Last price and 24-hour change of the USDT pairs on Binance, streamed over the public market-data WebSocket.' },
   },
 }
 

@@ -6,7 +6,7 @@ import { inflateRawSync } from 'node:zlib'
 
 const RSS = 'https://www.theblock.co/rss.xml'
 const GKG_LAST = 'https://data.gdeltproject.org/gdeltv2/lastupdate.txt'
-const GKG_BATCHES = 4                       // 4 lô 15 phút ≈ 1 giờ gần nhất
+const GKG_BATCHES = 8                       // 8 lô 15 phút ≈ 2 giờ gần nhất
 const KEEP = /\b(bitcoin|btc|ethereum|eth|ether|crypto\w*|stablecoins?|solana|xrp|binance|bnb|blockchain|defi|altcoins?|memecoins?|tether|usdt|usdc|coinbase)\b/i
 const LIMIT = 40
 export const config = { maxDuration: 25 }
